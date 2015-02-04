@@ -1,3 +1,5 @@
+'use strict'; 
+
 var Parse = require('parse').Parse;
 
 //Extend Parse user

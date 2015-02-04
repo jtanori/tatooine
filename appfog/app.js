@@ -1,3 +1,5 @@
+'use strict'; 
+
 var express = require('express');
 var Parse = require('parse').Parse;
 var app = express();
@@ -8,9 +10,12 @@ var multer = require('multer');
 var _ = require('lodash');
 var validations = require('./validations');
 var ejs = require('ejs-locals');
+//Jound utils
+var utils = require('./utils.js');
 
 var LocalStorage = require('node-localstorage').LocalStorage;
-    localStorage = new LocalStorage('./scratch');
+
+this.localStorage = new LocalStorage('./scratch');
 
 Parse.initialize('hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH', 'cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC');
 
@@ -87,7 +92,9 @@ Dashboard.get('/categories', function(req, res){
             model:Category,
             query: (new Parse.Query(Category)).ascending('name')
         });
-
+        //var Country = Parse.Object.extend('Country');
+        //var Countries = new Parse.Query(Country);
+        //TODO: Fetch countries to return them too
         var categories = new Categories();
         var onLoad = function(){
             res.status(200).json({ status: 'success',  results: categories.toJSON() });
@@ -109,6 +116,83 @@ Dashboard.get('/categories', function(req, res){
         });
     }
 });
+
+Dashboard.post('/categories/import', function(req, res){
+    var isAjax = req.xhr;
+    var data = req.body;
+    var LocationModel = Parse.Object.extend('Location');
+    var Category = Parse.Object.extend('Category');
+    var objects = [], ACL, venueObject;
+
+    if(isAjax){
+        if(data && data.venues && data.venues.length){
+            ACL = new Parse.ACL();
+            ACL.setPublicReadAccess(true);
+            ACL.setRoleReadAccess('SuperAdministrator', true);
+            ACL.setRoleWriteAccess('SuperAdministrator', true);
+            ACL.setRoleReadAccess('Administrator', true);
+            ACL.setRoleWriteAccess('Administrator', true);
+            //Iterate over all venues in the request body
+            _.each(data.venues, function(v){
+                //Create category for all venues in current object
+                var category = new Category();
+                category.id = v.category;
+
+                _.each(v.venues, function(venue){
+                    //Mea culpa, didn't fix all headers on the CSV files
+                    if(venue.latitud){venue.latitude = parseFloat(venue.latitud, 10); delete venue.latitud;}//Fix spanish name for lat/lng
+                    if(venue.longitud){venue.longitude = parseFloat(venue.longitud, 10); delete venue.longitud;}
+                    if(venue.id){venue.deneueId = venue.id+""; delete venue.id;}//Remove source id (legacy)
+                    if(_.isNumber(venue.postal_code)){venue.postal_code = venue.postal_code+"";}
+                    if(_.isNumber(venue.phone_number)){venue.phone_number = venue.phone_number+"";}
+                    if(_.isNumber(venue.exterior_number)){venue.exterior_number = venue.exterior_number+"";}
+                    if(_.isNumber(venue.activity_type)){venue.activity_type = venue.activity_type+"";}
+                    if(_.isNumber(venue.road_name)){venue.road_name = venue.road_name+"";}//It may happen that PapaParse converts a name such as 43 or 13 to number (logically)
+                    if(_.isNumber(venue.road_name_2)){venue.road_name_2 = venue.road_name_2+"";}
+                    if(_.isNumber(venue.road_name_3)){venue.road_name_3 = venue.road_name_3+"";}
+                    if(_.isNumber(venue.basic_geostatistical_area)){venue.basic_geostatistical_area = venue.basic_geostatistical_area+"";}
+
+                    //Set category object
+                    venue.category = category;
+                    //Add name keywords
+                    venue.keywords = venue.keywords.split(',').concat(utils.strings.keywordize(venue.name, ' '));
+                    venue.position = new Parse.GeoPoint({latitude: venue.latitude, longitude: venue.longitude});
+                    venue.createdBy = User.current();
+                    venue.updateHistory = [{op: 'created', timestamp: (new Date())*1, by: User.current().id}];
+                    //Add name to object object for latter save
+                    venueObject = new LocationModel(venue);
+                    venueObject.setACL(ACL);
+                    //Push to venues object
+                    objects.push(venueObject);
+                });
+            });
+
+            var onLoad = function(){
+                res.status(200).json({ status: 'success' });
+            };
+            var onError = function(e){
+                console.log(e);
+                res.status(404).json({ status: 'error', error: e.message, code: e.code });
+            };
+
+            //Do the fucked up thing
+            Parse.Object.saveAll(objects, {
+                success: onLoad,
+                error: onError
+            });
+        }else{
+            res.status(404).json({ status: 'error', error: 'Venues can not be empty.'});
+        }
+    }else {
+        res.render('categories', {
+            data: {
+                activeMenuItem: 'categories',
+                title: 'Jound Manager :: Categories'
+            }
+        });
+    }
+});
+
 Dashboard.post('/categories', function(req, res){
     var isAjax = req.xhr;
     var data = req.body;
@@ -131,7 +215,7 @@ Dashboard.post('/categories', function(req, res){
             //Save historycal data
             data.createdBy = User.current();
             data.priority = data.priority || 0;
-            data.updateHistory = [{op: 'created', timestamp: (new Date())*1}];
+            data.updateHistory = [{op: 'created', timestamp: (new Date())*1, by: User.current().id}];
             //Create category object
             var Category = Parse.Object.extend({className: 'Category'});
             var category = new Category(data);
@@ -151,8 +235,12 @@ Dashboard.post('/categories', function(req, res){
 
             var categoryQuery = Parse.Query.or(nameQuery, pluralQuery);
             //Create public read permissions
-            var acl = new Parse.ACL();
-            acl.setPublicReadAccess(true);
+            var ACL = new Parse.ACL();
+            ACL.setPublicReadAccess(true);
+            ACL.setRoleReadAccess('SuperAdministrator', true);
+            ACL.setRoleWriteAccess('SuperAdministrator', true);
+            ACL.setRoleReadAccess('Administrator', true);
+            ACL.setRoleWriteAccess('Administrator', true);
             //Unleash it
             categoryQuery
                 .count({
@@ -161,7 +249,7 @@ Dashboard.post('/categories', function(req, res){
                         if(count){
                             res.status(404).json({ status: 'error', error: 'Category already exists', code: 403 });
                         }else{
-                            category.setACL(acl);
+                            category.setACL(ACL);
                             category.save({
                                 success:onLoad,
                                 error: onError
@@ -346,15 +434,6 @@ Dashboard.get('/profile', checkAuth, function(req, res){
         data: {
             activeMenuItem: 'profile',
             title: 'Jound Manager :: My Profile'
-        }
-    });
-});
-
-Dashboard.get('/import', checkAuth, function(req, res){
-    res.render('import', {
-        data: {
-            activeMenuItem: 'import',
-            title: 'Jound Manager :: Import data objects'
         }
     });
 });

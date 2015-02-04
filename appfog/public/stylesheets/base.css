@@ -40,6 +40,26 @@
 	margin-bottom: 5px;
 }
 
+#import-modal-content label {
+	height: 150px;
+}
+
+#import-modal-content [type=file]{
+	position: absolute;
+	top: 0;
+	height: 100%;
+	left: 0;
+	vertical-align: top;
+	padding-top: 120px;
+	outline: none;
+}
+
+/* Import modal content */
+#venues-container {
+	max-height: 400px;
+	overflow-y: scroll;
+}
+
 [type="text/html"]{
 	display: none;
 }
