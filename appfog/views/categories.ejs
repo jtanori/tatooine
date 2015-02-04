@@ -1,0 +1,931 @@
+<% layout('./layouts/boilerplate') -%>
+<% script('/components/lodash/dist/lodash.min.js') -%>
+<% script('/components/backbone/backbone.js') -%>
+<% script('/components/papaparse/papaparse.min.js') -%>
+
+
+<div class="ui fixed tiered menu w-tiered-menu">
+    <div class="menu">
+        <% include partials/menu %>
+    </div>
+    <div class="ui sub menu" id="sub-menu">
+        <div class="item">
+            <div class="ui icon input">
+                <input type="text" placeholder="Search categories...">
+                <i class="search icon"></i>
+            </div>
+        </div>
+        <a class="item add"><i class="icon plus"></i> Add new category</a>
+        <a class="item add-sub"><i class="icon plus"></i> Add new sub category</a>
+        <a class="item import-venues"><i class="code icon"></i> Import Venues</a>
+    </div>
+</div>
+
+<div class="basic segment">
+    <div class="ui left fixed vertical menu" id="main-sidebar-container">
+        <div id="main-sidebar">
+        <div class="ui inverted dimmer">
+            <h5 class="ui icon header">
+                <i class="asterisk loading icon"></i>
+                Loading...
+            </h5>
+        </div>
+        </div>
+    </div>
+</div>
+
+<div id="main-container" class="basic segment w-tiered-menu">
+    <div class="ui padded grid">
+        <div class="sixteen wide column">
+            <h3 class="ui top attached header">
+                <i class="settings icon"></i>
+                Category Details
+            </h3>
+            <div class="ui segment attached disabled" id="main-segment">
+                
+                <form class="ui form">
+                    <div class="two fields">
+                        <div class="required field">
+                            <label>Name</label>
+                            <div class="ui icon input">
+                                <input type="text" placeholder="E.g. supermarket" id="name" name="category-name">
+                                <i class="cube icon"></i>
+                            </div>
+                        </div>
+                        <div class="required field">
+                            <label>Name in plural</label>
+                            <div class="ui icon input">
+                                <input type="text" placeholder="E.g. supermarkets" id="plural-name" name="category-plural-name">
+                                <i class="cubes icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui grid">
+                        <div class="three column row">
+                            <div class="column field">
+                                <div class="ui toggle checkbox" id="category-is-primary-checkbox">
+                                    <input type="checkbox" id="category-is-primary" name="category-is-primary" value=0>
+                                    <label>Make primary category</label>
+                                </div>
+                            </div>
+                            <div class="column field">
+                                <div class="ui toggle checkbox" id="category-is-active-checkbox">
+                                    <input type="checkbox" id="category-is-active" name="category-is-active" value=0>
+                                    <label>Activate/Publish category</label>
+                                </div>
+                            </div>
+                            <div class="column field">
+                                <label>Set priority level</label>
+                                <div class="ui selection dropdown" id="category-priority-dropdown">
+                                    <input type="hidden" name="gender">
+                                    <i class="dropdown icon"></i>
+                                    <div class="default text">Priority level</div>
+                                    <div class="menu">
+                                        <div class="item" data-value="1" data-text="Very Low">
+                                            Very Low
+                                        </div>
+                                        <div class="item" data-value="2" data-text="Low">
+                                            Low
+                                        </div>
+                                        <div class="item" data-value="3" data-text="Moderate">
+                                            Moderate
+                                        </div>
+                                        <div class="item" data-value="4" data-text="High">
+                                            High
+                                        </div>
+                                        <div class="item" data-value="5" data-text="Very High">
+                                            Veyr High
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ui two column grid">
+                        <div class="column">
+                            <h3 class="ui header">Sub Categories</h3>
+                            <div class="ui divided list">
+                                <div class="item">
+                                    <div class="right floated mini ui icon red button"><i class="unlink icon"></i> Unlink</div>
+                                    <i class="tag icon"></i>
+                                    <div class="content">
+                                        <div class="header">Category</div>
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="right floated mini ui icon red button"><i class="unlink icon"></i> Unlink</div>
+                                    <i class="tag icon"></i>
+                                    <div class="content">
+                                        <div class="header">Category</div>
+                                    </div>
+                                </div>
+                                <div class="item">
+                                    <div class="right floated mini ui icon red button"><i class="unlink icon"></i> Unlink</div>
+                                    <i class="tag icon"></i>
+                                    <div class="content">
+                                        <div class="header">Category</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ui icon buttons">
+                                <div class="ui tiny button"><i class="wizard icon"></i> New</div>
+                                <div class="ui tiny button"><i class="linkify icon"></i> Link</div>
+                            </div>
+                        </div>
+
+                        <div class="column">
+                            <h3 class="ui header">Keywords</h3>
+                            <div id="category-keywords">
+                            </div>
+                            <textarea id="category-keywords-area" name="category-keywords-area" hidden></textarea>
+                        </div>
+                    </div>
+
+                    <div class="ui actions right aligned basic segment">
+                        <div class="ui positive right labeled icon button disabled" id="category-update-button">
+                        Update Category
+                        <i class="checkmark icon"></i>
+                        </div>
+                    </div>
+                </form>
+                <div class="ui inverted dimmer">
+                    <h5 class="ui icon header">
+                        <i class="asterisk loading icon"></i>
+                        Saving...
+                    </h5>
+                </div>
+            </div>
+            <div class="ui bottom attached warning message">
+                <i class="icon warning sign"></i> Be aware that editing a category may alter the results in any of our client apps, proceed with caution.
+            </div>
+        </div>
+    </div>
+    <div class="ui inverted dimmer">
+        <div class="ui text loader">Loading...</div>
+    </div>
+</div>
+
+<div type="text/html" id="modal-template">
+    <i class="close icon"></i>
+    <div class="header">
+        Add New Category
+    </div>
+    <div class="content">
+        <form class="ui form">
+            <div class="two fields">
+                <div class="required field">
+                    <label>Name (case sensitive)</label>
+                    <div class="ui icon input">
+                        <input type="text" placeholder="E.g. supermarket" id="new-name" name="new-name">
+                        <i class="cube icon"></i>
+                    </div>
+                </div>
+                <div class="required field">
+                    <label>Name in plural (case sensitive)</label>
+                    <div class="ui icon input">
+                        <input type="text" placeholder="E.g. supermarkets" id="new-name-plural" name="new-name-plural">
+                        <i class="cubes icon"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="inline field">
+                <div class="ui toggle checkbox">
+                    <input type="checkbox" id="new-is-primary" name="new-is-primary" value=0>
+                <label>Make primary</label>
+                </div>
+            </div>
+            <div class="inline field">
+                <div class="ui toggle checkbox">
+                    <input type="checkbox" id="new-is-primary" name="new-is-primary" value=0>
+                <label>Activate</label>
+                </div>
+            </div>
+            <div class="required field">
+                <label>Keywords</label>
+                <textarea placeholder="Comma separated, e.g. supermarket, apple store, souvenir stands" id="new-keywords" name="new-keywords"></textarea>
+            </div>
+            <div class="ui error message">
+                <ul class="list">
+
+                </ul>
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui positive right labeled icon button">
+        Save new category
+        <i class="checkmark icon"></i>
+        </div>
+    </div>
+    <div class="ui inverted dimmer">
+        <h5 class="ui icon header">
+            <i class="asterisk loading icon"></i>
+            Saving...
+        </h5>
+    </div>
+</div>
+
+<div type="text/html" id="import-modal-template">
+    <i class="close icon"></i>
+    <div class="header">
+        Import Venues
+    </div>
+    <div class="content">
+        <form class="ui form">
+
+            <div class="field">
+                <label for="file">Upload FIle</label>
+                <input type="file" name="file" id="file" multiple />
+            </div>
+            <div class="ui horizontal divider">
+                Or
+            </div>
+            <div class="field">
+                <label>Direct Input</label>
+                <textarea name="csv" id="csv"></textarea>
+            </div>
+            <div class="group inline fields">
+                <label for="fruit">Data type:</label>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="format" checked>
+                        <label>csv</label>
+                    </div>
+                </div>
+                <div class="field">
+                    <div class="ui radio checkbox">
+                        <input type="radio" name="format">
+                        <label>json</label>
+                    </div>
+                </div>
+                
+            </div>
+        </form>
+    </div>
+    <div class="actions">
+        <div class="ui positive right labeled icon button disabled" id="venue-import-button">
+        Import
+        <i class="checkmark icon"></i>
+        </div>
+    </div>
+    <div class="ui inverted dimmer">
+        <h5 class="ui icon header">
+            <i class="asterisk loading icon"></i>
+            Saving...
+        </h5>
+    </div>
+</div>
+<script>
+    $(function(){
+        _.templateSettings = {
+            interpolate: /\{\{(.+?)\}\}/g,
+            evaluate: /\{\%(.+?)\%\}/g
+        };
+
+        var $sidebar = $('#main-sidebar');
+        var $sidebarList = $sidebar.find('ul');
+        var colors = ['black', 'yellow', 'green', 'blue', 'orange', 'red', 'pink', 'purple', 'teal'];
+        var Category = Backbone.Model.extend({
+            defaults: {
+                active: false,
+                hasSubcategory: false,
+                keywords: [],
+                name: 'New category',
+                pluralized: '',
+                priority: 0/*,
+                subCategories: []*/
+            },
+            urlRoot: '/categories',
+            idAttribute: 'objectId'
+        });
+        var Categories = Backbone.Collection.extend({
+            url: '/categories', model: Category,
+            parse: function(response){
+                var categories = [];
+                if(!_.isEmpty(response) && !_.isEmpty(response.results)){
+                    categories = response.results;
+                }
+
+                return categories;
+            }
+        });
+        var CategoryItem = Backbone.View.extend({
+            className: 'item category-item',
+            tagName: 'a',
+            attributes: {
+                href: '#'
+            },
+            events: {
+                'click': 'open'
+            },
+            template: _.template('{% if(data.active) { %}<i class="icon cloud left"></i>{% } %}{% if(data.primary) { %}<i class="icon bookmark left"></i>{% } %}{% if(data.hasSubcategory) { %}<i class="icon caret right"></i> {% } %}{% if(data.pluralized) { %}{{ (data.pluralized) }}{% } else { %}{{ (data.displayName) }}{% } %}'),
+            initialize: function(options){
+                if(!options || !options.model){
+                    this.model = new Category();
+                }
+
+                this.listenTo(this.model, 'change:name', this.render, this);
+                this.listenTo(this.model, 'change:selected', this.toggle, this);
+
+                this.render();
+                return this;
+            },
+            render: function(){
+                this.$el.html(this.template({data: this.model.toJSON()}));
+            },
+            open: function(e){
+                if(e && e.preventDefault){
+                    e.preventDefault();
+                }
+                this.model.set('selected', true);
+                Backbone.trigger('category:show', this.model.toJSON());
+            },
+            toggle: function(){
+                if(this.model.get('selected')){
+                    this.$el.addClass('active');
+                }else{
+                    this.$el.removeClass('active');
+                }
+            }
+        })
+        var CategoriesView = Backbone.View.extend({
+            el: '#main-sidebar',
+            views: [],
+            events: {
+                'click .category-item': 'clearSelected'
+            },
+            initialize: function(options){
+                if(!options || !options.collection){
+                    this.collection = new Categories();
+                }
+
+                this.listenTo(this.collection, 'reset', this.addAll, this);
+                this.listenTo(this.collection, 'add', this.addOne, this);
+
+                Backbone.on('category:show', this.select, this);
+            },
+            addAll: function(){
+                this.collection.each(this.addOne, this);
+
+                return this;
+            },
+            addOne: function(model){
+                var view = new CategoryItem({model: model});
+
+                this.views.push(view);
+                this.$el.append(view.$el);
+
+                return this;
+            },
+            select: function(current){
+                var selected = this.collection.filter(function(s){return s.get('selected');});
+
+                _.each(selected, function(s){
+                    if(!_.isEqual(s.id, current.objectId)){
+                        s.set('selected', false);
+                    }
+                });
+            }
+        });
+        var CategoryView = Backbone.View.extend({
+            el: '#main-container',
+            dom: {},
+            keywordTemplate: _.template('<div class="ui label {{ color }}">{{ label }} <i class="delete icon"></i></div>'),
+            events: {
+                'change': 'onChange',
+                'click .label .delete.icon': 'deleteLabel',
+                'click #category-update-button': 'submit' 
+            },
+            initialize: function(options){
+                if(!options || !options.model){
+                    this.model = new Category();
+                }
+
+                this.listenTo(this.model, 'request', this.showDimmer, this);
+                this.listenTo(this.model, 'sync', this.onSuccess, this);
+                this.listenTo(this.model, 'error', this.onError, this);
+
+                Backbone.on('category:show', this.update, this);
+
+                this.render();
+            },
+            render: function(){
+                this.undelegateEvents();
+                //Fields
+                this.dom.label = this.$el.find('#category-labels');
+                this.dom.isActive = this.$el.find('#category-is-active-checkbox');
+                this.dom.isPrimary = this.$el.find('#category-is-primary-checkbox');
+                this.dom.name = this.$el.find('#name');
+                this.dom.pluralName = this.$el.find('#plural-name');
+                this.dom.priority = this.$el.find('#category-priority');
+                this.dom.keywords = this.$el.find('#category-keywords');
+                this.dom.keywordsArea = this.$el.find('#category-keywords-area');
+                //Components
+                this.dom.priorityDropdown = this.$el.find('#category-priority-dropdown');
+                this.dom.priorityDropdown.dropdown();
+                this.dom.isActive.checkbox();
+                this.dom.isPrimary.checkbox();
+
+                this.dom.button = this.$el.find('#category-update-button');
+
+                this.dom.form = this.$el.find('form');
+
+                this.dom.form.form({
+                    'category-name': {
+                        identifier: 'category-name',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Name can not be empty'
+                            },
+                            { 
+                                type: 'length[2]',
+                                prompt: 'Name must be at least three characters length'
+                            }
+                        ]
+                    },
+                    'category-plural-name': {
+                        identifier: 'category-name',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Plural name can not be empty'
+                            },
+                            { 
+                                type: 'length[2]',
+                                prompt: 'Plural name must be at least three characters length'
+                            }
+                        ]
+                    },
+                    'category-keywords-area': {
+                        identifier: 'category-keywords-area',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Keywords can not be empty'
+                            },
+                            {
+                                type: 'length[3]',
+                                prompt: 'Keywords must be at least three characters length'
+                            }
+                        ]
+                    }
+                });
+
+                return this;
+            },
+            update: function(data){
+                if(!_.isEmpty(data)){
+                    this.snapshot = data;
+
+                    this.undelegateEvents();
+
+                    this.$el.find('#main-segment').removeClass('disabled');
+                    this.model.set(data);
+
+                    console.log(data, this.model, 'data');
+
+                    this.dom.name.val(data.name);
+                    this.dom.pluralName.val(data.pluralized);
+
+                    if(data.active){
+                        this.dom.isActive.checkbox('check');
+                    }else{
+                        this.dom.isActive.checkbox('uncheck');
+                    }
+
+                    if(data.primary){
+                        this.dom.isPrimary.checkbox('check');
+                    }else{
+                        this.dom.isPrimary.checkbox('uncheck');
+                    }
+
+                    if(data.priority){
+                        this.dom.priorityDropdown.dropdown('set value', data.priority);
+                    }else{
+                        this.dom.priorityDropdown.dropdown('restore defaults');
+                    }
+
+                    var keywordsText = data.keywords.sort().join(',');
+                    var keywordsView = [];
+
+                    _.each(data.keywords, _.bind(function(k){
+                        var color = colors[_.random(0, colors.length-1)];
+                        keywordsView.push(this.keywordTemplate({label: k, color: color}));
+                    }, this));
+
+                    this.dom.keywords.html(keywordsView.join(' '));
+                    this.dom.keywordsArea.val(keywordsText);
+
+                    this.delegateEvents();
+
+                }else{
+                    this.$el.find('#main-segment').addClass('disabled');
+                }
+            },
+            deleteLabel: function(e){
+                var $target = $(e.currentTarget).parents('.label');
+
+                $target.remove();
+                
+                var $tags = this.dom.keywords.find('.label');
+                var tags = _.map($tags, function(t){return $.trim($(t).text());});
+
+                this.dom.keywordsArea.val(tags.join(',')).trigger('change');
+            },
+            showDimmer: function(){
+                this.$el.dimmer('show');
+            },
+            hideDimmer: function(){
+                this.$el.dimmer('hide');
+            },
+            onChange: function(){
+                this.model.set('name', $.trim(this.dom.name.val()));
+                this.model.set('pluralized', $.trim(this.dom.pluralName.val()));
+                this.model.set('active', this.dom.isActive.checkbox('is checked'));
+                this.model.set('primary', this.dom.isPrimary.checkbox('is checked'));
+                this.model.set('priority', this.dom.priorityDropdown.dropdown('get value')*1);
+                this.model.set('keywords', this.dom.keywordsArea.val().split(',').sort());
+
+                if(_.isEqual(this.snapshot, this.model.toJSON())){
+                    this.dom.button.addClass('disabled');
+                }else{
+                    this.dom.button.removeClass('disabled');
+                }
+            },
+            onError: function(){
+                this.hideDimmer();
+                console.log('error', arguments);
+            },
+            onSuccess: function(){
+                this.hideDimmer();
+                console.log('ok', arguments);
+            },
+            submit: function(){
+                if(this.model.hasChanged()){
+                    this.model.save();
+                }
+            }
+        });
+        var Modal = Backbone.View.extend({
+            className: 'ui small modal',
+            template: _.template($('#modal-template').html()),
+            dom: {},
+            events: {
+                'submit': 'submit'
+            },
+            initialize: function(){
+                this.model = new Category();
+
+                this.listenTo(this.model, 'sync', this.onSave, this);
+                this.listenTo(this.model, 'error', this.onError, this);
+            },
+            render: function(){
+                this.$el.html(this.template());
+                this.$el.modal({
+                    closable: false,
+                    onApprove: _.bind(function(){
+                        this.dom.form.submit();
+                        return false;
+                    }, this)
+                });
+                this.dom.checkbox = this.$el.find('#new-is-primary').checkbox();
+                this.dom.form = this.$el.find('form');
+                this.dom.errorList = this.$el.find('.error.message ul');
+
+                this.dom.form.form({
+                    'new-name': {
+                        identifier: 'new-name',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Category name can not be empty'
+                            },
+                            {
+                                type: 'length[3]',
+                                prompt: 'Category name must be at least three characters length'
+                            }
+                        ]
+                    },
+                    'new-name-plural': {
+                        identifier: 'new-name-plural',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Pluralized category name can not be empty'
+                            },
+                            {
+                                type: 'length[3]',
+                                prompt: 'Pluralized category name must be at least three characters length'
+                            }
+                        ]
+                    },
+                    'new-is-primary': {
+                        identifier: 'new-is-primary',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Please select if this category is primary or not'
+                            }
+                        ]
+                    },
+                    'new-keywords': {
+                        identifier: 'new-keywords',
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Keywords can not be empty'
+                            },
+                            {
+                                type: 'length[3]',
+                                prompt: 'Keywords must be at least three characters length'
+                            }
+                        ]
+                    }
+                });
+
+                return this;
+            },
+            submit: function(e){
+                if(e && e.preventDefault){
+                    e.preventDefault();
+                }
+
+                var isValid = this.dom.form.form('validate form');
+                var values, isPrimary, name, keywords;
+
+                if(isValid){
+                    this.dom.form.removeClass('error');
+                    this.dom.errorList.empty();
+                    this.$el.dimmer('show');
+
+                    values = this.dom.form.form('get values');
+                    isPrimary = !!(values['new-is-primary']*1);
+                    name = values['new-name'].toLowerCase();
+                    keywords = values['new-keywords'].split(',');
+                    keywords = _.map(keywords, function(v){
+                        v = $.trim(v);
+                        if(v.length > 2){return v;}
+                    });
+
+                    this.model.set({
+                        name: name,
+                        displayName: $.trim(_.escape(values['new-name'])),
+                        keywords: _.uniq(keywords),
+                        primary: isPrimary,
+                        pluralized: $.trim(_.escape(values['new-name-plural']))
+                    });
+
+                    this.model.save();
+                }
+            },
+            onSave: function(){
+                this.$el.dimmer('hide');
+                this.dom.form.form('clear');
+
+                categories.add(this.model.toJSON());
+                this.model.clear();
+
+                alert('Category has been saved');
+            },
+            onError: function(mode, xhr){
+                var data = JSON.parse(xhr.responseText);
+
+                alert('ERROR: ' + data.error || 'An unknown error has occurred, please try again or contact customer support.');
+
+                this.$el.dimmer('hide');
+            },
+            show: function(){
+                if(!this.$el.parent().length){
+                    this.$el.appendTo('body');
+                }
+                this.dom.form.form('clear');
+                this.$el.modal('show');
+            },
+            hide: function(){
+                this.$el.detach();
+                this.$el.modal('hide');
+            }
+        });
+
+        var ImportModal = Backbone.View.extend({
+            className: 'ui large modal',
+            template: _.template($('#import-modal-template').html()),
+            dom: {},
+            events: {
+                'submit': 'submit',
+                'change #file': 'onFileChange',
+                'change textarea': 'onTextChange'
+            },
+            initialize: function(){
+
+            },
+            render: function(){
+                this.$el.html(this.template());
+                this.$el.modal({
+                    closable: false,
+                    onApprove: _.bind(function(){
+                        this.dom.form.submit();
+                        return false;
+                    }, this)
+                });
+
+                //his.dom.checkbox = this.$el.find('#new-is-primary').checkbox();
+                this.dom.form = this.$el.find('form');
+                this.dom.errorList = this.$el.find('.error.message ul');
+
+                this.dom.form.form({
+                    'file': {
+                        identifier: 'file',
+                        optional: true,
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'File can not be empty'
+                            }
+                        ]
+                    },
+                    text: {
+                        identifier: 'text',
+                        optional: true,
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Text can not be empty'
+                            }
+                        ]
+                    },
+                    format: {
+                        identifier: 'format',
+                        optional: true,
+                        rules: [
+                            {
+                                type: 'empty',
+                                prompt: 'Data type can not be empty'
+                            }
+                        ]
+                    }
+                });
+
+                return this;
+            },
+            submit: function(e){
+                if(e && e.preventDefault){
+                    e.preventDefault();
+                }
+
+                var isValid = this.dom.form.form('validate form');
+
+                if(isValid){
+                    this.dom.form.removeClass('error');
+                    this.dom.errorList.empty();
+                    this.$el.dimmer('show');
+
+                    values = this.dom.form.form('get values');
+                    console.log(values);
+                    /*
+                    this.model.set({
+                        name: name,
+                        displayName: $.trim(_.escape(values['new-name'])),
+                        keywords: _.uniq(keywords),
+                        primary: isPrimary,
+                        pluralized: $.trim(_.escape(values['new-name-plural']))
+                    });
+
+                    this.model.save();
+                    */
+                }
+            },
+            onSave: function(){
+                this.$el.dimmer('hide');
+                this.dom.form.form('clear');
+
+                categories.add(this.model.toJSON());
+                this.model.clear();
+
+                alert('Venues have been saved');
+            },
+            onError: function(mode, xhr){
+                var data = JSON.parse(xhr.responseText);
+
+                alert('ERROR: ' + data.error || 'An unknown error has occurred, please try again or contact customer support.');
+
+                this.$el.dimmer('hide');
+            },
+            show: function(){
+                if(!this.$el.parent().length){
+                    this.$el.appendTo('body');
+                }
+                this.dom.form.form('clear');
+                this.dom.file = this.$el.find('input[type=file]');
+                this.dom.text = this.$el.find('textarea');
+                this.dom.radio = this.$el.find('input[type=radio]');
+                this.dom.button = this.$el.find('#venue-import-button');
+
+                this.dom.button.addClass('disabled');
+                this.dom.radio.removeClass('disabled');
+                this.dom.text.removeClass('disabled');
+                this.dom.file.removeClass('disabled');
+
+                this.$el.modal('show');
+            },
+            hide: function(){
+                this.$el.detach();
+                this.$el.modal('hide');
+            },
+            onFileChange: function(){
+                this.dom.text.prop('disabled', true);
+                this.dom.radio.prop('disabled', true);
+                this.dom.button.removeClass('disabled');
+
+                this.dom.file.parse({
+                    config: {
+                        header: true,
+                        dynamicTyping: false,
+                        preview: 0,
+                        encoding: "UTF-8",
+                        complete: function(results, file){
+                            console.log('RESULTADOS: ', file);
+                            console.log(results.data);
+                        }
+                    },
+                    complete: function(){
+                        console.log('all files done');
+                    }
+                });
+            },
+            onTextChange: function(){
+                this.dom.file.addClass('disabled');
+                this.dom.button.removeClass('disabled');
+
+                Papa.parse(this.dom.text.text(),{
+                    header: true,
+                    dynamicTyping: false,
+                    preview: 0,
+                    encoding: "UTF-8",
+                    complete: function(results, file){
+                        console.log('text done', results, file);
+                    }
+                });
+            }
+        });
+        var SubMenu = Backbone.View.extend({
+            el: '#sub-menu',
+            modal: null,
+            venuesModal: null,
+            events: {
+                'click .add': 'add',
+                'click .add-sub': 'addSubcategory',
+                'click .import-venues': 'importVenues'
+            },
+            add: function(){
+                if(!this.modal){
+                    this.modal = new Modal().render();
+                }
+
+                this.modal.show();
+            },
+            addSubcategory: function(){
+                if(!this.modal){
+                    this.modal = new Modal().render();
+                }
+
+                this.modal.show();
+            },
+            importVenues: function(){
+                if(!this.venuesModal){
+                    this.venuesModal = new ImportModal().render();
+                }
+
+                this.venuesModal.show();
+            }
+        })
+        //Create view and collection
+        var categories = new Categories();
+        var categoriesView = new CategoriesView({collection: categories});
+        var categoryView = new CategoryView({model: new Category()});
+        var subMenu = new SubMenu();
+
+        window.categoryView = categoryView;
+
+        $sidebar.dimmer('show');
+        //Fetch categories
+        categories.fetch({
+            success: _.bind(function(){
+                $sidebar.dimmer('hide');
+
+                if(this.length){
+                    var first = this.at(0);
+                    first.set('selected', true);
+                    categoryView.update(first.toJSON());
+                }
+            }, categories),
+            error: function(){
+                $sidebar.dimmer('hide');
+            }
+        });
+    });
+</script>

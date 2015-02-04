@@ -1,0 +1,85 @@
+<% layout('./layouts/boilerplate') -%>
+<div class="ui three column centered grid">
+    <div class="column">
+        <img id="logo" class="ui small circular image" src="/images/logo-with-bg.jpg" />
+        <form class="ui segment form" id="loginForm">
+            <div class="field">
+                <input name="email" type="email" placeholder="Email"/>
+            </div>
+
+            <button type="submit" class="ui basic submit icon button"><i class="sign in icon"></i> Send</button>
+
+            <a href="/login"><i class="icon user"></i> Login instead</a>
+
+            <div class="ui error message">
+                <ul class="list">
+
+                </ul>
+            </div>
+        </form>
+
+        <div class="ui icon hidden message info">
+            <i class="empty heart icon"></i>
+            <div class="content">
+                <div class="header">
+                Sorry to hear you're having problems
+                </div>
+                <p>We have sent you a message to the email address you have provided containing instruction on how to recover/reset your Jound password</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        var $form = $('form');
+        var $errorList = $form.find('.error.message ul');
+        var $succesMessage = $('.info.message');
+
+        $form.form({
+            email: {
+                identifier: 'email',
+                rules: [
+                    {
+                        type: 'empty',
+                        prompt: 'Please enter your email address'   
+                    },
+                    {
+                        type: 'email',
+                        prompt: 'Please enter a valid email address'
+                    }
+                ]
+            }
+        });
+
+        $form.on('submit', function(e){
+            e.preventDefault();
+
+            if($form.form('validate form')){
+                var data = $form.form('get values');
+
+                $form.addClass('loading').removeClass('error');
+                $succesMessage.addClass('hidden');
+                $.ajax({
+                    url: '/forgot',
+                    type: 'POST',
+                    data: {username: data.email},
+                    dataType: 'json',
+                    success: function(xhr, s) {
+                        $form.removeClass('loading');
+                        $succesMessage.removeClass('hidden');
+                    },
+                    error: function(xhr, status){
+                        $form.removeClass('loading').addClass('error');
+                        if(status === 'error'){
+                            var data = JSON.parse(xhr.responseText);
+                            $errorList.html('<li>' + data.error + '</li>');
+                        }else{
+                            $errorList.html('<li>An unknow error has occurred, please contact customer support.</li>');
+                        }
+                    }
+                });
+            }
+        });
+    });
+</script>

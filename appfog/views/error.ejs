@@ -1,0 +1,28 @@
+<% layout('./layouts/boilerplate') -%>
+<% script('/components/lodash/dist/lodash.min.js') -%>
+<% script('/components/backbone/backbone.js') -%>
+
+
+<div class="ui fixed tiered menu w-tiered-menu">
+    <div class="menu">
+        <% include partials/menu %>
+    </div>
+    <div class="ui sub menu" id="sub-menu">
+        <div class="item">
+            <div class="ui icon input">
+                <input type="text" placeholder="Search cities...">
+                <i class="search icon"></i>
+            </div>
+        </div>
+        <a class="item add">
+            <i class="icon plus"></i> Import country (csv/json)
+        </a>
+        <a class="item add-sub">
+            <i class="icon plus"></i> Add new country
+        </a>
+    </div>
+</div>
+
+<div class="ui padded grid">
+    An error has occurred
+</div>

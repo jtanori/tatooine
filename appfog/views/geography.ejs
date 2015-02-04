@@ -1,0 +1,22 @@
+<% layout('./layouts/boilerplate') -%>
+<% script('/components/lodash/dist/lodash.min.js') -%>
+<% script('/components/backbone/backbone.js') -%>
+
+
+<div class="ui fixed tiered menu w-tiered-menu">
+    <div class="menu">
+        <% include partials/menu %>
+    </div>
+    <div class="ui sub menu" id="sub-menu">
+        <a class="item add">
+            <i class="icon plus"></i> Import country (csv/json)
+        </a>
+        <a class="item add-sub">
+            <i class="icon plus"></i> Add new country
+        </a>
+    </div>
+</div>
+
+<div class="ui padded grid">
+<%= data.country.code %>    
+</div>

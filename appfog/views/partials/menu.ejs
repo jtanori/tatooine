@@ -1,0 +1,12 @@
+<!--div class="ui fixed tiered menu"-->
+<a href="/" class="item <% if(data.activeMenuItem ==='dashboard'){ %>active<% } %>"><i class="dashboard icon"></i> Dashboard</a>
+<a href="/venues" class="item <% if(data.activeMenuItem ==='venues'){ %>active<% } %>"><i class="building icon"></i> Venues</a>
+<a href="/categories" class="item <% if(data.activeMenuItem ==='categories'){ %>active<% } %>"><i class="tags icon"></i> Categories</a>
+<a href="/geography" class="item <% if(data.activeMenuItem ==='geography'){ %>active<% } %>"><i class="world icon"></i> Geography</a>
+<a href="/users" class="item <% if(data.activeMenuItem ==='users'){ %>active<% } %>"><i class="users icon"></i> Users</a>
+
+<div class="right menu">
+	<a href="/profile" class="item"><i class="icon user"></i> My Profile</a>
+    <a href="/logout" class="item"><i class="icon unlock"></i> Logout</a>
+</div>
+<!--/div-->

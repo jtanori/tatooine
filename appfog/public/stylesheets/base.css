@@ -1,0 +1,45 @@
+#logo {
+	margin: 20px auto;	
+}
+
+#main-sidebar {
+	top:0;
+	z-index: 0;
+	position: absolute;
+	bottom: 0;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+}
+
+#main-sidebar-container, #main-sidebar{
+	width: 230px;
+}
+
+#main-sidebar-container {
+	top: 0;
+	z-index: 0;
+}
+
+.fixed.tiered.menu + .basic.segment #main-sidebar,
+#main-container.w-tiered-menu {
+	top: 70px;
+}
+
+#main-container {
+	position: absolute;
+	left: 230px;
+	top: 36px;
+	right: 0;
+}
+
+#main-sidebar .category-item {
+	text-transform: : capitalize;
+}
+
+#category-keywords .label {
+	margin-bottom: 5px;
+}
+
+[type="text/html"]{
+	display: none;
+}
