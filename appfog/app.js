@@ -25,8 +25,8 @@ app.engine('ejs', ejs);
 app.set('views', __dirname + '/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
 app.use(compression());
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(multer());
 app.use(express.static(__dirname + '/public'));
 
@@ -139,31 +139,45 @@ Dashboard.post('/categories/import', function(req, res){
                 category.id = v.category;
 
                 _.each(v.venues, function(venue){
-                    //Mea culpa, didn't fix all headers on the CSV files
-                    if(venue.latitud){venue.latitude = parseFloat(venue.latitud, 10); delete venue.latitud;}//Fix spanish name for lat/lng
-                    if(venue.longitud){venue.longitude = parseFloat(venue.longitud, 10); delete venue.longitud;}
-                    if(venue.id){venue.deneueId = venue.id+""; delete venue.id;}//Remove source id (legacy)
-                    if(_.isNumber(venue.postal_code)){venue.postal_code = venue.postal_code+"";}
-                    if(_.isNumber(venue.phone_number)){venue.phone_number = venue.phone_number+"";}
-                    if(_.isNumber(venue.exterior_number)){venue.exterior_number = venue.exterior_number+"";}
-                    if(_.isNumber(venue.activity_type)){venue.activity_type = venue.activity_type+"";}
-                    if(_.isNumber(venue.road_name)){venue.road_name = venue.road_name+"";}//It may happen that PapaParse converts a name such as 43 or 13 to number (logically)
-                    if(_.isNumber(venue.road_name_2)){venue.road_name_2 = venue.road_name_2+"";}
-                    if(_.isNumber(venue.road_name_3)){venue.road_name_3 = venue.road_name_3+"";}
-                    if(_.isNumber(venue.basic_geostatistical_area)){venue.basic_geostatistical_area = venue.basic_geostatistical_area+"";}
 
-                    //Set category object
-                    venue.category = category;
-                    //Add name keywords
-                    venue.keywords = venue.keywords.split(',').concat(utils.strings.keywordize(venue.name, ' '));
-                    venue.position = new Parse.GeoPoint({latitude: venue.latitude, longitude: venue.longitude});
-                    venue.createdBy = User.current();
-                    venue.updateHistory = [{op: 'created', timestamp: (new Date())*1, by: User.current().id}];
-                    //Add name to object object for latter save
-                    venueObject = new LocationModel(venue);
-                    venueObject.setACL(ACL);
-                    //Push to venues object
-                    objects.push(venueObject);
+                    //Check if the thing is valid at all, no name, no position, no fucking record.
+                    if(_.isNumber(venue.latitud) && _.isNumber(venue.longitud)){
+                        //Mea culpa, didn't fix all headers on the CSV files
+                        if(venue.latitud){venue.latitude = parseFloat(venue.latitud, 10); delete venue.latitud;}//Fix spanish name for lat/lng
+                        if(venue.longitud){venue.longitude = parseFloat(venue.longitud, 10); delete venue.longitud;}
+                        if(venue.id){venue.deneueId = venue.id+""; delete venue.id;}//Remove source id (legacy)
+                        if(_.isNumber(venue.postal_code)){venue.postal_code = venue.postal_code+"";}
+                        if(_.isNumber(venue.phone_number)){venue.phone_number = venue.phone_number+"";}
+                        if(_.isNumber(venue.exterior_number)){venue.exterior_number = venue.exterior_number+"";}
+                        if(_.isNumber(venue.activity_type)){venue.activity_type = venue.activity_type+"";}
+                        if(_.isNumber(venue.road_name)){venue.road_name = venue.road_name+"";}
+                        if(_.isNumber(venue.road_name_1)){venue.road_name_1 = venue.road_name_1+"";}//It may happen that PapaParse converts a name such as 43 or 13 to number (logically)
+                        if(_.isNumber(venue.road_name_2)){venue.road_name_2 = venue.road_name_2+"";}
+                        if(_.isNumber(venue.road_name_3)){venue.road_name_3 = venue.road_name_3+"";}
+                        if(_.isNumber(venue.basic_geostatistical_area)){venue.basic_geostatistical_area = venue.basic_geostatistical_area+"";}
+                        if(_.isNumber(venue.shopping_center_store_number)){venue.shopping_center_store_number = venue.shopping_center_store_number+"";}
+                        if(_.isNumber(venue.building)){venue.building = venue.building+"";}
+                        if(_.isNumber(venue.exterior_letter)){venue.exterior_letter = venue.exterior_letter+"";}
+                        if(_.isNumber(venue.internal_number)){venue.internal_number = venue.internal_number+"";}
+                        if(_.isNumber(venue.internal_letter)){venue.internal_letter = venue.internal_letter+"";}
+                        if(_.isNumber(venue.settling_name)){venue.settling_name = venue.settling_name+"";}
+                        //Remove extra info if existen
+                        if(venue.__parsed_extra){delete venue.__parsed_extra;}
+                        //Publish by default
+                        venue.online = true;
+                        //Set category object
+                        venue.category = category;
+                        //Add name keywords
+                        venue.keywords = venue.keywords.split(',').concat(utils.strings.keywordize(venue.name, ' '));
+                        venue.position = new Parse.GeoPoint({latitude: venue.latitude, longitude: venue.longitude});
+                        venue.createdBy = User.current();
+                        venue.updateHistory = [{op: 'created', timestamp: (new Date())*1, by: User.current().id}];
+                        //Add name to object object for latter save
+                        venueObject = new LocationModel(venue);
+                        venueObject.setACL(ACL);
+                        //Push to venues object
+                        objects.push(venueObject);
+                    }
                 });
             });
 

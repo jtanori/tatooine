@@ -74,7 +74,7 @@ $(function(){
         events: {
             'click': 'open'
         },
-        template: _.template('{% if(data.active) { %}<i class="icon cloud left"></i>{% } %}{% if(data.primary) { %}<i class="icon bookmark left"></i>{% } %}{% if(data.hasSubcategory) { %}<i class="icon caret right"></i> {% } %}{% if(data.pluralized) { %}{{ (data.pluralized) }}{% } else { %}{{ (data.displayName) }}{% } %}'),
+        template: _.template('{% if(data.active) { %}<i class="icon green cloud left"></i>{% } %}{% if(data.primary) { %}<i class="icon green bookmark left"></i>{% } %}{% if(data.hasSubcategory) { %}<i class="icon caret right"></i> {% } %}{% if(data.pluralized) { %}{{ (data.pluralized) }}{% } else { %}{{ (data.displayName) }}{% } %}'),
         initialize: function(options){
             if(!options || !options.model){
                 this.model = new Category();
@@ -735,7 +735,6 @@ $(function(){
         },
         views: [],
         initialize: function(){
-            this.categories = categories.toJSON();
             this.model = new ImportModel();
 
             return this;
@@ -791,7 +790,6 @@ $(function(){
             this.$el.dimmer('show');
         },
         onSave: function(){
-            console.log('save', arguments);
             this.$el.dimmer('hide');
 
             alert('Venues have been saved');
@@ -818,6 +816,8 @@ $(function(){
             this.listenTo(this.model, 'sync', this.onSave, this);
             this.listenTo(this.model, 'error', this.onError, this);
 
+            this.categories = categories.toJSON();
+
             this.$el.modal('show');
         },
         close: function(){
@@ -841,6 +841,7 @@ $(function(){
                     encoding: "UTF-8",
                     skipEmptyLines: true,
                     complete: _.bind(function(results, file){
+                        console.log(results, file, 'results');
                         var view = new Venues({items: results.data, categories: categories, file: file.name});
                         this.views.push(view);
                         elements.appendChild(view.$el[0]);
