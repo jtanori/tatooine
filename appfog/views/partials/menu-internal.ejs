@@ -1,0 +1,45 @@
+<div class="ui fixed top orange inverted tiered menu" id="header">
+    <div class="menu">
+        <a href="/" class='item' id="header-logo">
+            <img src="/images/icon-white.png" />
+        </a>
+        <a href="/corporate" class="item active">Jound Corporate</a>
+        <% if(!data.user){ %>
+        <div class="right menu" id="header-user-menu">
+            <a class='item' id="facebook-login-button">
+                <i class="icon facebook"></i>
+            </a>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon lock"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-login-button">Iniciar Sesion</a>
+                    <a class="item" id="header-signup-button">Crear Cuenta</a>
+                </div>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="right menu" id="header-user-menu">
+            <div class="item" id="">
+                <% if(data.user.avatar) { %>
+                <div class="item" id="header-avatar">
+                    <img src="<%= data.user.avatar %>" class="ui image rounded" />
+                </div>
+                <% } %>
+                Hola <%= data.user.username %>
+            </div>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon user"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-profile-button">Mi Perfil</a>
+                    <a class="item" id="header-signout-button">Cerrar Sesion</a>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+    <div class="ui inverted sub menu">
+        <a href="/about" class="item active">Acerca de</a>
+        <a href="/what-is-jound" class="item">¿Que es Jound?</a>
+        <a href="/products" class="item">Productos</a>
+    </div>
+</div>

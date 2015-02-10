@@ -1,7 +1,6 @@
 'use strict'; 
 
 var _ = require('lodash');
-var XRegExp = require('./xregexp.min.js').XRegExp;
 
 var nobueno = [
 	'S.A',

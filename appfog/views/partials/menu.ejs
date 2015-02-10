@@ -1,12 +1,63 @@
-<!--div class="ui fixed tiered menu"-->
-<a href="/" class="item <% if(data.activeMenuItem ==='dashboard'){ %>active<% } %>"><i class="dashboard icon"></i> Dashboard</a>
-<a href="/venues" class="item <% if(data.activeMenuItem ==='venues'){ %>active<% } %>"><i class="building icon"></i> Venues</a>
-<a href="/categories" class="item <% if(data.activeMenuItem ==='categories'){ %>active<% } %>"><i class="tags icon"></i> Categories</a>
-<a href="/geography" class="item <% if(data.activeMenuItem ==='geography'){ %>active<% } %>"><i class="world icon"></i> Geography</a>
-<a href="/users" class="item <% if(data.activeMenuItem ==='users'){ %>active<% } %>"><i class="users icon"></i> Users</a>
+<div class="ui fixed top orange inverted menu" id="header">
+    <a href="/" class='item' id="header-logo">
+        <img src="/images/icon-white.png" />
+    </a>
+    <form class="item" id="search-box">
+        <div class="ui icon input">
+            <input type="text" placeholder="Search..." id="header-search-text">
+            <i class="search link icon disabled" id="header-search-icon"></i>
+        </div>
+    </form>
+    <div class="ui item search selection dropdown" id="header-category-dropdown-wrapper">
+        <input type="hidden" name="header-category-dropdown" id="header-category-dropdown">
+        <i class="dropdown icon"></i>
+        <div class="default text">Categorias</div>
+        <div class="menu">
+            <div class="item" data-value="all">Todo</div>
+            <% data.categories.forEach(function(c){ console.log(c, 'category'); %><div class="item" data-value="<%= c.objectId %>"><%= c.pluralized %></div><% }); %>
+        </div>
+    </div>
 
-<div class="right menu">
-	<a href="/profile" class="item"><i class="icon user"></i> My Profile</a>
-    <a href="/logout" class="item"><i class="icon unlock"></i> Logout</a>
+    <a class='item disabled' id="position-toggle">
+        <i class="icon location arrow"></i>
+    </a>
+    <% if(!data.user){ %>
+    <div class="right menu" id="header-user-menu">
+        <a class='item' id="facebook-login-button">
+            <i class="icon facebook"></i>
+            Inicio con Facebook
+        </a>
+        <div class="ui dropdown item" id="header-user-options-dropdown">
+            <i class="icon lock"></i>
+            <div class="menu" id="header-user-options-dropdown-menu">
+                <a class="item" id="header-login-button">Iniciar Sesion</a>
+                <a class="item" id="header-signup-button">Crear Cuenta</a>
+            </div>
+        </div>
+        <a class='item' id="header-settings-button">
+            <i class="icon settings"></i>
+        </a>
+    </div>
+    <% } else { %>
+    <div class="right menu" id="header-user-menu">
+        <div class="item" id="">
+            <% if(data.user.avatar) { %>
+            <div class="item" id="header-avatar">
+                <img src="<%= data.user.avatar %>" class="ui image rounded" />
+            </div>
+            <% } %>
+            Hola <%= data.user.username %>
+        </div>
+        <div class="ui dropdown item" id="header-user-options-dropdown">
+            <i class="icon user"></i>
+            <div class="menu" id="header-user-options-dropdown-menu">
+                <a class="item" id="header-profile-button">Mi Perfil</a>
+                <a class="item" id="header-signout-button">Cerrar Sesion</a>
+            </div>
+        </div>
+        <a class='item' id="header-settings-button">
+            <i class="icon settings"></i>
+        </a>
+    </div>
+    <% } %>
 </div>
-<!--/div-->
