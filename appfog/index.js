@@ -12,6 +12,11 @@ var ejs = require('ejs-locals');
 var MobileDetect = require('mobile-detect');
 var helmet = require('helmet');
 var gmaputil = require('googlemapsutil');
+var memjs = require('memjs');
+var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
+  username: process.env.MEMCACHEDCLOUD_USERNAME,
+  password: process.env.MEMCACHEDCLOUD_PASSWORD
+});
 //Jound utils
 var validations = require('./validations.js');
 var utils = require('./utils.js');
@@ -19,11 +24,12 @@ var utils = require('./utils.js');
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
 //Set localstorage
 //Initialize Parse
-Parse.initialize('hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH', 'cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC', '5AUkhNy5iHbwLA0Z6zNVNMLBxy4idgZ9CZCPurTm');
+Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JS_KEY, process.env.PARSE_MASTER_KEY);
 //===============EXPRESS================
 // Configure Express
 var app = express();
-app.use(session({secret: 'bdccdb947a30ffd271fa073051143529305ece1c', rolling: true, saveUninitialized: true, resave: false}));
+app.set('port', (process.env.PORT || 5000));
+app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
 app.engine('ejs', ejs);
 app.set('views', __dirname + '/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
@@ -154,8 +160,19 @@ var getVenueByPosition = function(req, res){
             )
         }
     };
-    //Try getting those damm categories
-    categories.fetch({success: onLoad, error: onLoad});
+    
+    client.get("categories", function (err, value, key) {
+        if (!_.isEmpty(value)) {
+            categories.reset(value);
+            onLoad();
+        }else{
+            //Try getting those damm categories
+            categories.fetch({
+                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                error: onLoad
+            });
+        }
+    });
 };
 
 var getVenueById = function(req, res){
@@ -228,8 +245,19 @@ var getVenueById = function(req, res){
             )
         }
     };
-    //Try getting those damm categories
-    categories.fetch({success: onLoad, error: onLoad});
+    
+    client.get("categories", function (err, value, key) {
+        if (!_.isEmpty(value)) {
+            categories.reset(value);
+            onLoad();
+        }else{
+            //Try getting those damm categories
+            categories.fetch({
+                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                error: onLoad
+            });
+        }
+    });
 };
 
 var getDirections = function(req, res){
@@ -356,7 +384,19 @@ var home = function(req, res){
         });
     };
     //Try getting those damm categories
-    categories.fetch({success: onLoad, error: onLoad});
+    client.get("categories", function (err, value, key) {
+        console.log('CATEGORIES', err, value, key);
+        if (!_.isEmpty(value)) {
+            categories.reset(value);
+            onLoad();
+        }else{
+            //Try getting those damm categories
+            categories.fetch({
+                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                error: onLoad
+            });
+        }
+    });
 };
 
 var profile = function(req, res){
@@ -369,7 +409,6 @@ var profile = function(req, res){
 };
 
 var search = function(req, res){
-    console.log('search');
     var data = req.body || {};
     var isAjax = req.xhr;
     var Venue = Parse.Object.extend({className: 'Location'});
@@ -417,7 +456,6 @@ var search = function(req, res){
         query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10));
     }
 
-    console.log(data, 'data');
     //If keywords or category, and position
     if((data.q || data.c) && data.p){
         Parse.Cloud.useMasterKey();
@@ -478,7 +516,7 @@ var whatIsJound = function(req, res){
 var products = function(req, res){
     res.render('products' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Agrega tu negocio'
+            title: 'Jound - Productos'
         }
     });
 };
@@ -516,8 +554,7 @@ Jound.post('/address', getAddress);
 Jound.post('/search', search);
 
 app.use('/', Jound);
-//===============START=================
-var port = process.env.VCAP_APP_PORT || 4000;
-app.listen(port);
-
-console.log('listening on port: ' + port);
+//===============START=================//===============START=================
+app.listen(app.get('port'), function() {
+  console.log("Node app is running at localhost:" + app.get('port'));
+});
