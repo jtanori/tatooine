@@ -163,12 +163,12 @@ var getVenueByPosition = function(req, res){
     
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
-            categories.reset(value);
+            categories.reset(JSON.parse(value));
             onLoad();
         }else{
             //Try getting those damm categories
             categories.fetch({
-                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
                 error: onLoad
             });
         }
@@ -248,12 +248,12 @@ var getVenueById = function(req, res){
     
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
-            categories.reset(value);
+            categories.reset(JSON.parse(value));
             onLoad();
         }else{
             //Try getting those damm categories
             categories.fetch({
-                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
                 error: onLoad
             });
         }
@@ -385,14 +385,13 @@ var home = function(req, res){
     };
     //Try getting those damm categories
     client.get("categories", function (err, value, key) {
-        console.log('CATEGORIES', err, value, key);
         if (!_.isEmpty(value)) {
-            categories.reset(value);
+            categories.reset(JSON.parse(value));
             onLoad();
         }else{
             //Try getting those damm categories
             categories.fetch({
-                success: function(){client.set('categories', categories.toJSON()); onLoad();}, 
+                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
                 error: onLoad
             });
         }
@@ -418,14 +417,12 @@ var search = function(req, res){
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
-            _.each(r, function(r){console.log(r.toJSON())});
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
             res.redirect('/');
         }
     };
     var onError = function(e){
-        console.log(e, 'not found');
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
             res.status(404).json({ status: 'error', error: e.message, code: e.code });
