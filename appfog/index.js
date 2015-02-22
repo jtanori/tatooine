@@ -28,7 +28,7 @@ Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JS_KEY, process.env
 //===============EXPRESS================
 // Configure Express
 var app = express();
-app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 4000));
 app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
 app.engine('ejs', ejs);
 app.set('views', __dirname + '/views');  // Specify the folder to find templates
