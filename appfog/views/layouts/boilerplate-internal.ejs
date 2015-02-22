@@ -49,7 +49,6 @@
     <% include ../partials/footer %>
     <div id="template-user-menu" template>
         {%  if(!data.user){ %}
-        <div class="right menu" id="header-user-menu">
             <a class='item' id="facebook-login-button">
                 <i class="icon facebook"></i>
                 Inicio con Facebook
@@ -64,9 +63,7 @@
             <a class='item' id="header-settings-button">
                 <i class="icon settings"></i>
             </a>
-        </div>
         {% } else { console.log(data, 'data') %}
-        <div class="right menu" id="header-user-menu">
             <div class="item" id="">
                 
                 Hola {{ data.user.username }}
@@ -81,7 +78,6 @@
             <a class='item' id="header-settings-button">
                 <i class="icon settings"></i>
             </a>
-        </div>
         {% } %}
     </div>
 

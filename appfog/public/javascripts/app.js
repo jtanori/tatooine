@@ -4,11 +4,22 @@ $(function(){
         interpolate: /\{\{(.+?)\}\}/g,
         evaluate: /\{\%(.+?)\%\}/g
     };
+    var md5 = CryptoJS.MD5;
 	var User = Parse.User.extend({
 		getDisplayName: function(){
 			var name = this.escape('name') ? this.escape('name') : this.escape('username') ? this.escape('username') : 'Joundini';
 
 			return name;
+		},
+		getAvatar: function(){
+			var a = this.get('avatar');
+			if(_.isString(a)){
+				return a;
+			}else if(!_.isEmpty() && this.get('avatar').get('file')){
+				return this.get('avatar').get('file').url();
+			}else{
+				return '//www.gravatar.com/avatar/' + md5(this.get('username'))
+			}
 		},
 		getBasicData: function(){
 			var data = {
@@ -17,7 +28,7 @@ $(function(){
 				email: this.get('email'),
 				displayName: User.prototype.getDisplayName.call(this),
 				settings: this.get('settings'),
-				avatar: this.get('avatar'),
+				avatar: User.prototype.getAvatar.call(this),
 				name: this.get('name'),
 				lastName: this.get('lastName')
 			}
@@ -25,6 +36,7 @@ $(function(){
 			return data;
 		}
 	});
+	var Visitor = Parse.Object.extend('Visitor');
 	var gmaps = google.maps;
 	var config = {
 		PARSE: {
@@ -35,6 +47,12 @@ $(function(){
 			DEFAULT: { enableHighAccuracy: true/*, timeout: 10000, maximumAge: 600000*/},
 			DEFAULT_CENTER: {coords: {latitude: 19.432608, longitude: -99.133208}},
 			DEFAULT_ZOOM: 5
+		},
+		GOOGLE: {
+			MAPS_WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
+		},
+		FACEBOOK: {
+			APP_ID: '688997761197114'
 		},
 		MAP: {
 			DEFAULT_OPTIONS: {
@@ -139,7 +157,7 @@ $(function(){
 		},
 		VENUE_FIELDS: ['name', 'activity_description', 'block', 'building', 'building_floor', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
                 'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name', 
-                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www']
+                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'logo', 'avatar', 'page']
 	};
 
 	Parse.initialize(config.PARSE.KEY, config.PARSE.JSKEY);
@@ -151,6 +169,7 @@ $(function(){
 		userMenuTemplate: _.template($('#template-user-menu').html()),
 		events: {
 			'change #header-category-dropdown': 'setCategory',
+			'click #header-logo': 'home',
 			'click #facebook-login-button': 'facebookLogin',
 			'click #header-login-button': 'login',
 			'click #header-signup-button': 'signup',
@@ -181,7 +200,7 @@ $(function(){
 			return this.render();
 		},
 		render: function(){
-			this._cacheElements();
+			this.updateOptions();
 
 			return this;
 		},
@@ -221,13 +240,12 @@ $(function(){
 
 			var keywords = _.chain(this.dom.search.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
 			var category = this.dom.dropdown.dropdown('get value');
-			var data = {}, p = this.positionModel.toJSON();
-
-			console.log(p, 'position', category, this.dom.dropdown.dropdown('get value'));
+			var p = this.positionModel.toJSON();
+			var data = {};
 
 			if(keywords.length || !!category){
 				data.q = keywords;
-				data.p = {lat: p.center.k, lng: p.center.B, radius: p.radius};
+				data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
 
 				if(category && category !== 'all'){
 					data.c = category;
@@ -253,6 +271,13 @@ $(function(){
 			if(!!this.dom.dropdown.dropdown('get value')){
 				this.dom.searchIcon.removeClass('disabled');
 			}
+		},
+		home: function(e){
+			if(e && e.preventDefault){
+				e.preventDefault();
+			}
+
+			Backbone.history.navigate('/', {trigger: false});
 		},
 		login: function(){
 			if(User.current()){
@@ -283,49 +308,34 @@ $(function(){
 				success: function(user){
 					var isNew = !user.existed();
 
-					if(!user.setting && !user.settings.avatar){
+					if(!user.setting && !user.get('avatar')){
 						//Get user picture
 						FB.api(
 							'/me/picture',
 							function (response) {
+								$('body').dimmer('hide');
 								if (response && !response.error) {
-									Backbone.trigger('user:profile:photo', responser.url);
-									user.set('avatar', response.url).save().then(function(){console.log('avatar saved');}).fail(function(){console.log('avatar not saved');});
+									user.set('avatar', response.url)
+										.save()
+										.then(function(){Backbone.trigger('user:profile:photo', response.url)});
 								}
 							}
 						);
+					}else{
+						$('body').dimmer('hide');
 					}
 
-					$.ajax({
-						type: 'POST',
-						dataType: 'json',
-						url: '/become',
-						data: {token: user.getSessionToken()}
-					})
-					.then(function(){
-						$('body').dimmer('hide');
-						Backbone.trigger('user:login', isNew);
-					})
-					.fail(function(){
-						$('body').dimmer('hide');
-						Backbone.trigger('user:login:fail', isNew);
-					});
+					Backbone.trigger('user:login', isNew);
 				}.bind(this),
 				error: function(user, error) {
+					$('body').dimmer('hide');
 					alert("No hemos podido enlazar a tu cuenta de Facebook.");
 				}
 			});
 		},
 		signout: function(){
-			$('body').dimmer('show');
-			$.ajax({
-				url: '/logout',
-				type: 'POST'
-			}).always(function(){
-				User.logOut();
-				Backbone.trigger('user:logout');
-				$('body').dimmer('hide');
-			});
+			User.logOut();
+			Backbone.trigger('user:logout');
 		},
 		settings: function(){
 			if(!this.settingsModal){
@@ -335,15 +345,14 @@ $(function(){
 			this.settingsModal.show();
 		},
 		updateAvatar: function(url){
-			this.dom.avatar.attr(url);
+			this.dom.avatar.attr('src', url);
 		},
 		updateOptions: function(){
 			var user = User.current();
 
 			this.undelegateEvents();
 
-			this.dom.userMenu.remove();
-			this.$el.append(this.userMenuTemplate({data: {user: user ? user.getBasicData() : null}}));
+			this.$el.find('#header-user-menu').html(this.userMenuTemplate({data: {user: user ? user.getBasicData() : null}}));
 
 			this._cacheElements();
 			this.delegateEvents();
@@ -359,7 +368,8 @@ $(function(){
 				dropdown: this.$el.find('#header-category-dropdown-wrapper'),
 				userDropdown: this.$el.find('#header-user-options-dropdown'),
 				userMenu: this.$el.find('#header-user-menu'),
-				form: this.$el.find('form')
+				form: this.$el.find('form'),
+				avatar: this.$el.find('#header-avatar img')
 			};
 
 			this.dom.userDropdown.dropdown();
@@ -398,6 +408,7 @@ $(function(){
 	};
 	var Place = Parse.Object.extend('Location');
 	var PlaceModel = Place.extend({
+		pageLoaded: false,
 		getAddress: function(){
 			var address = '';
 			var n = this.get('exterior_number');
@@ -476,7 +487,8 @@ $(function(){
 				phoneNumber: this.get('phone_number'),
 				url: this.get('www'),
 				activity: this.get('activity_description'),
-				logo: PlaceModel.prototype.getLogo.call(this)
+				logo: PlaceModel.prototype.getLogo.call(this),
+				email: !!this.get('email_address')
 			};
 		}
 	});
@@ -493,13 +505,9 @@ $(function(){
 		bounds: null,
 		position: null,
 		usingGeolocation: false,
+		directionsService: null,
+		directionsDisplay: null,
 		initialize: function(options){
-			//Backbone.on('geolocation:on', this.getCurrentPosition, this);
-			//Backbone.on('geolocation:off', this.clearGeolocation, this);
-			Backbone.on('search:start', this.onSearchStart, this);
-			Backbone.on('search:end', this.onSearchEnd, this);
-			Backbone.on('search:results', this.parse, this);
-
 			if(options && options.positionModel){
 				this.positionModel = options.positionModel;
 			}else{
@@ -518,6 +526,14 @@ $(function(){
 			this.collection = new Places();
 			this.listenTo(this.collection, 'reset', this.addAll, this);
 			this.listenTo(this.collection, 'add', this.addOne, this);
+
+			this.directionsService = new google.maps.DirectionsService();
+			this.directionsDisplay = new google.maps.DirectionsRenderer();
+
+			Backbone.on('search:start', this.onSearchStart, this);
+			Backbone.on('search:end', this.onSearchEnd, this);
+			Backbone.on('search:results', this.parse, this);
+			Backbone.on('route:trace', this.route, this);
 
 			return this.render();
 		},
@@ -553,6 +569,8 @@ $(function(){
 
 			//this.getCurrentPosition();
 
+			this.directionsDisplay.setMap(this.map);
+
 			return this;			
 		},
 		clearVenue: function(e){
@@ -569,6 +587,8 @@ $(function(){
 			this.currentRadius.setCenter(p);
 			this.currentRadius.setVisible(true);
 			this.positionModel.set('center', p, o);
+
+			Backbone.trigger('position:change');
 		},
 		onGeolocationModeChange: function(model, useGeolocation){
 			switch(useGeolocation){
@@ -658,7 +678,7 @@ $(function(){
 			}
 
 			google.maps.event.addListener(marker, 'click', function() {
-				Backbone.trigger('venue:info', model.getBasicData());
+				Backbone.trigger('venue:info', model.toJSON());
 				Backbone.history.navigate('venue/' + model.id, {trigger: false});
 			});
 			/*
@@ -707,8 +727,23 @@ $(function(){
 			this.currentRadius.setCenter(p);
 			this.currentRadius.setVisible(true);
 		},
+		route: function(from, to){
+			var request = {
+				origin:from,
+				destination:to,
+				travelMode: google.maps.TravelMode.DRIVING
+			};
+			this.directionsService.route(request, _.bind(function(response, status) {
+				if (status == google.maps.DirectionsStatus.OK) {
+					this.directionsDisplay.setPanel(document.getElementById('directions-panel'));
+					this.directionsDisplay.setDirections(response);
+					Backbone.trigger('route:complete');
+				}
+			}, this));
+		},
 		zoomTo: function(model, newRadius){
 			this._updateRadius(newRadius*1);
+			this.centerMap();
 		},
 		_updateRadius: function(newRadius){
 			try{
@@ -816,33 +851,28 @@ $(function(){
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
 				values = this.dom.form.form('get values');
-				$.ajax({
-					url: '/login',
-					dataType: 'json',
-					type: 'POST',
-					data: {username: values['login-modal-username'], password: values['login-modal-password']}
-				})
-				.then(_.bind(this.onSuccess, this))
-				.fail(_.bind(this.onError, this));
+
+				User
+					.logIn(values['login-modal-username'], values['login-modal-password'])
+					.then(_.bind(this.onSuccess, this))
+					.fail(_.bind(this.onError, this))
+					.always(_.bind(function(){this.dom.form.removeClass('loading');}, this));
 			}
 		},
-		onBecomeUser: function(){
-			this.dom.form.removeClass('loading');
+		onSuccess: function(u){
 			Backbone.trigger('user:login');
 			this.hide();
 		},
-		onSuccess: function(response){
-			User.become(response.token).then(_.bind(this.onBecomeUser, this)).fail(_.bind(this.onError, this));
-		},
-		onError: function(xhr, e){
-			var data = JSON.parse(xhr.responseText);
-
-			this.dom.form.removeClass('loading').addClass('error');
-			switch(data.code){
-			case 101: data.error = 'Tu correo y contrasena no coinciden, intenta de nuevo.'; break;
+		onError: function(e){
+			var values = this.dom.form.form('get values');
+			
+			switch(e.code){
+			case 101: e.error = 'Tu correo y contraseña no coinciden, intenta de nuevo.'; break;
 			}
 
-			alert(data.error);
+			this.dom.form.addClass('error');
+
+			alert(e.error);
 		}
 	});
 	var SignupModal = Backbone.View.extend({
@@ -941,32 +971,27 @@ $(function(){
 				this.dom.form.addClass('loading').removeClass('error');
 				values = this.dom.form.form('get values');
 
-				$.ajax({
-					url: '/login',
-					dataType: 'json',
-					type: 'POST',
-					data: {username: values['signup-modal-username'], password: values['signup-modal-password']}
-				})
-				.then(_.bind(this.onSuccess, this))
-				.fail(_.bind(this.onError, this));
+				User
+					.signUp(values['signup-modal-username'], values['signup-modal-password'])
+					.then(_.bind(this.onSuccess, this))
+					.fail(_.bind(this.onError, this))
+					.always(_.bind(function(){this.dom.form.removeClass('loading');}, this));
 			}
 		},
 		onSuccess: function(u){
-
-			console.log(u, arguments);
-
-			this.dom.form.removeClass('loading');
 			Backbone.trigger('user:login');
 			this.hide();
 		},
-		onError: function(xhr, e){
-			console.log('error', arguments);
-			this.dom.form.removeClass('loading').addClass('error');
+		onError: function(e){
+			var values = this.dom.form.form('get values');
+			
 			switch(e.code){
-			case 101: e.message = 'Tu correo y contrasena no coinciden, intenta de nuevo.'; break;
+			case 202: e.error = 'El usuario ' + values['signup-modal-username'] + ' ya esta registrado.'; break;
 			}
 
-			alert(e.message);
+			this.dom.form.addClass('error');
+
+			alert(e.error);
 		}
 	});
 
@@ -1065,18 +1090,38 @@ $(function(){
 			if(User.current()){
 				User.current().set('settings', this.model.toJSON()).save();
 			}
-		},
+		}
 	});
 
 	/********* VENUE **********/
+	var Directions = Backbone.Collection.extend({
+		model: Backbone.Model.extend()
+	});
 	var Venue = Backbone.View.extend({
 		className: 'venue',
+		id: 'ui-card-wrapper',
 		template: _.template($('#venue-template').html()),
+		routeEnabled: false,
+		share: null,
+		events: {
+			'click a.label': 'hide',
+			'click #venue-card-directions': 'getDirecctions',
+			'click #venue-card-like': 'like',
+			'click #venue-card-unlike': 'unlike',
+			'click #venue-card-share': 'share',
+			'click #venue-options-send-message': 'sendMessage'
+		},
 		initialize: function(options){
 			Backbone.on('venue:info', this.update, this);
 			
+			this.positionModel = positionModel;
 			this.model = new PlaceModel();
-			this.listenTo(this.model, 'change', this.render, this);
+			this.directionsCollection = new Directions();
+
+			this.listenTo(this.model, 'change:name', this.render, this);
+			this.listenTo(this.directionsCollection, 'request', this.onDirectionsRequest, this);
+			this.listenTo(this.directionsCollection, 'reset', this.onDirections, this);
+			this.listenTo(this.directionsCollection, 'error', this.onDirectionsError, this);
 
 			if(options){
 				if(options.venue){
@@ -1084,44 +1129,290 @@ $(function(){
 				}
 			}
 
-			return this.render();
+			Backbone.on('route:complete', this.onDirections, this);
+			Backbone.on('route:error', this.onDirectionsError, this);
+			Backbone.on('position:change', this._requestDirections, this);
+
+			return this;
 		},
 		render: function(){
-			this.$el.html(this.template({data: this.model.toJSON()}));
+			var u = User.current();
+			var id = this.model.id;
+			var data = this.model.getBasicData();
+			var p = this.model.get('position');
 
+			data.liked = false;
+			data.page = this.model.get('page');
+
+			if(u && _.indexOf(u.get('likedVenues'), id) >= 0){
+				data.liked = true;
+			}else{
+				data.liked = false;
+			}
+
+			this.$el.html(this.template({data: data}));
+			
+			if(this.model.get('page') && !this.model.pageLoaded){
+				this.model.get('page').fetch();
+			}
+
+			this.dom = {
+				rating: this.$el.find('.rating'),
+				directionsButton: this.$el.find('#venue-card-directions'),
+				likeButton: this.$el.find('#venue-card-like'),
+				shareButton: this.$el.find('#venue-card-share'),
+				unlikeButton: this.$el.find('#venue-card-unlike'),
+				address: this.$el.find('#venue-card-address')
+			};
+
+			this.dom.rating.rating();
+			Backbone.trigger('page:set:title', this.model.get('name') + ' - Jound');
+
+			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
+			/*
+			$.ajax({url: '/address', type: 'POST', data: {latitude: p.latitude, longitude: p.longitude}})
+				.then(_.bind(function(r){
+					if(r && r.address && r.address.results.length){
+						this.dom.address.text(r.address.results[0].formatted_address);
+					}else{
+						this.dom.address.text(PlaceModel.prototype.getAddress.call(this.model));
+					}
+				}, this))
+				.fail(_.bind(function(){
+					this.dom.address.text(PlaceModel.prototype.getAddress.call(this.model));
+				}));*/
+
+			console.log(this.model.toJSON());
+
+			
 			return this;
 		},
 		show: function(){
-			this.$el.removeAttr('hidden');
+			if(!this.$el.is(':visible')){
+				this.$el.transition('fade up');
+			}
+			return this;
+		},
+		hide: function(){
+			if(this.$el.is(':visible')){
+				this.$el.transition('fade down');
+				Backbone.history.navigate('/', {trigger: false});
+			}
 			return this;
 		},
 		update: function(data){
-			this.model.set(data);
+			this.model.clear({silent: true}).set(data);
 			this.show();
 		},
-		load: function(p){
+		onPage: function(){
+
+		},
+		onPageError: function(){
+
+		},
+		getDirecctions: function(){
+			this.routeEnabled = true;
+			this.dom.directionsButton.addClass('active');
+			this._requestDirections();
+		},
+		onDirections: function(){
+			this.dom.directionsButton.removeClass('loading');
+		},
+		onDirectionsError: function(){
+			this.dom.directionsButton.removeClass('loading').addClass('error');
+		},
+		like: function(e){
+			if(e && e.preventDefault){
+				e.preventDefault();
+			}
+
+			var id = this.model.id;
+			var u = User.current();
+			var $button = this.dom.likeButton;
+			var liked, data;
+
+			if(u){
+				$button.addClass('loading');
+				data = {id: id, u: u.id, token: u.getSessionToken()};
+				liked = (_.indexOf(u.get('likedVenues'), id) >= 0);
+				//Like it or not
+				if(liked){
+					u.remove('likedVenues', id).save();
+					$.ajax({url: '/unlike', type: 'POST', data: data})
+						.then(function(){$button.removeClass('orange');})
+						.fail(function(){console.log('unable to unlike', arguments);})
+						.always(function(){$button.removeClass('loading');});
+				}else{
+					u.addUnique('likedVenues', id).save();
+					$.ajax({url: '/like', type: 'POST', data: data})
+						.then(function(){$button.addClass('orange');})
+						.fail(function(){console.log('unable to like', arguments);})
+						.always(function(){$button.removeClass('loading');});
+				}
+			}
+		},
+		share: function(){
+			console.log('share');
+		},
+		sendMessage: function(){
+			Backbone.trigger('message:write', this.model.id);
+		},
+		_requestDirections: function(){
+			if(!this.routeEnabled) return;//Route already been traced
+
+			var p = this.model.get('position');
+			var pp = this.positionModel.get('center');
+			var to = p.latitude + ',' + p.longitude;
+			var from = pp.lat() + ',' + pp.lng();
+
+			this.dom.directionsButton.addClass('loading');
+
+			Backbone.trigger('route:trace', from, to);
+		}
+	});
+
+	/********* MESSAGE MODAL ***********/
+	var MessageModel = Parse.Object.extend('Message');
+	var MessageModal = Backbone.View.extend({
+		className: 'ui small modal',
+		template: _.template($('#venue-message-template').html()),
+		dom: {},
+		events: {
+			'click .ok.button': 'onSubmit',
+			'click .cancel.button': 'hide',
+			'submit': 'submit'
+		},
+		initialize: function(){
+			this.model = new MessageModel();
+
+			return this.render();
+		},
+		render: function(){
+			this.$el.html(this.template());
+			this.$el.modal({
+				closable: false,
+				onApprove: _.bind(this.onApprove, this),
+                onDeny: _.bind(this.onDeny, this)
+			});
+
+			this.dom = {
+				form: this.$el.find('form'),
+				checkboxWrapper: this.$el.find('#message-modal-contact-wrapper'),
+				checkbox: this.$el.find('input[type=checkbox]')
+			};
+
+			this.dom.checkboxWrapper.checkbox();
+			this.dom.form.form({
+				inline: true,
+				on: 'blur',
+				'name': {
+                    identifier: 'message-modal-name',
+                    rules: [
+                        {
+                            type: 'empty',
+                            prompt: 'Por favor introduce tu nombre completo.'
+                        }
+                    ]
+                },
+                'email': {
+                    identifier: 'message-modal-email',
+                    rules: [
+                        {
+                            type: 'email',
+                            prompt: 'Por favor introduce un correo electronico valido.'
+                        }
+                    ]
+                },
+                'phone': {
+                    identifier: 'message-modal-phone',
+                    rules: [
+                        {
+                            type: 'length[10]',
+                            prompt: 'Por favor introduce un numero telefonico valido, e.g. 123-456-7890.'
+                        }
+                    ]
+                },
+                'message': {
+                    identifier: 'message-modal-message',
+                    rules: [
+                        {
+                            type: 'length[10]',
+                            prompt: 'Por favor introduce un mensaje mas significativo.'
+                        }
+                    ]
+                }
+			})
+
+			return this;
+		},
+		show: function(venueID){
+			var venue = new Place();
+			var visitor;
+			if(venueID){
+				venue.id = venueID;
+				this.model.set('venue', venue);
+			}else{
+				return false;
+			}
+
+			if(User.current()){
+				this.model.set('user', User.current());
+			}else{
+				visitor = new Visitor();
+				this.model.set('visitor', visitor);
+			}
+
+			this.$el.modal('show');
+
+			return this;
+		},
+		hide: function(){
+			this.$el.modal('hide');
+			this.dom.form.form('reset');
+			this.dom.checkbox.checkbox('uncheck');
+			this.model.clear();
+
+			return this;
+		},
+		onApprove: function(){
+			this.dom.form.trigger('submit');
+
+			return false;
+		},
+		onDeny: function(){
+			this.hide();
+		},
+		submit: function(e){
+			if(e && e.preventDefault){
+				e.preventDefault();
+			}
+
 			this.$el.dimmer('show');
 
-			var geoPoint, query = new Parse.Query(Place);
+			var values = this.dom.form.form('get values');
+			var visitor;
 
-			if(_.isArray(p)){
-				geoPoint = new Parse.GeoPoint({latitude: p[0], longitude: p[1]});
-				query
-					.equalTo('position', geoPoint)
-					.select(config.VENUE_FIELDS)
-					.find({success: _.bind(this.onLoad, this), error: _.bind(this.onError, this)});
-			}else if(_.isString(position)){
-
+			var onVisitorSave = _.bind(function(){
+				console.log('visitor saved', arguments);
+			}, this);
+			var onMessageSave = _.bind(function(){
+				console.log('message saved', arguments);
+			}, this);
+			var onError = function(){
+				console.log('error', arguments);
 			}
-			return this.show();
-		},
-		onLoad: function(){
-			this.$el.dimmer('hide');
-			console.log('loaded', arguments);
-		},
-		onError: function(){
-			this.$el.dimmer('hide');
-			console.log('error', arguments);
+
+			if(this.model.get('visitor')){
+				visitor = this.model.get('visitor');
+				visitor.set('email', values['message-modal-email']);
+				visitor.set('phone', values['message-modal-phone']);
+				visitor.set('name', values['message-modal-name']);
+				visitor.set('canBeContacted', this.dom.checkboxWrapper.checkbox('is checked'));
+
+				visitor.save().then(onVisitorSave).fail(onError);
+			}else{
+				this.model.save().then(onMessageSave).fail(onError);
+			}
 		}
 	});
 	
@@ -1144,7 +1435,8 @@ $(function(){
 			'': 'home'
 		},
 		initialize: function(){
-			//console.log('initialize router');
+			Backbone.on('page:set:title', this.constructor.setTitle);
+			Backbone.on('message:write', this.constructor.sendMessage);
 		},
 		home: function(){
 			positionModel.set('usingGeolocation', true);
@@ -1165,7 +1457,6 @@ $(function(){
 				this.views.map.map.setZoom(14);
 				//Show view
 				this.views.venue.show();
-				Backbone.trigger('venue:info', this.views.venue.model.getBasicData());
 			}else if(this.views.venue.model){
 				console.log('venue model exist in venue view');
 			}
@@ -1174,39 +1465,21 @@ $(function(){
 
 			window.initialVenueConfig = null;
 			delete window.initialVenueConfig;
+		}
+	}, {
+		setTitle: function(title){
+			$('title').text(title || 'Jound');
 		},
-
-		position: function(){
-			var view, p, latln;
-			if(!this.views.venue){
-				this.views.venue = venue;
+		sendMessage: function(venueID){
+			if(!venueID){
+				return;
 			}
 
-			if(this.views.venue.model && window.initialVenueConfig){
-				p = this.views.venue.model.toJSON();
-
-				latln = new google.maps.LatLng(p.position.latitude,p.position.longitude);
-				this.views.map.map.setCenter(latln);
-				this.views.map.collection.add(this.views.venue.model);
-				this.views.map.map.setZoom(14);
-				//Show view
-				this.views.venue.show();
-			}else {
-				p = position.split(',');
-				p = _.map(p, function(p){return parseFloat($.trim(p));});
-
-				if(p.length === 2){
-					this.views.venue.update(p);
-				}else{
-					//Go to home, or maybe go to a 404 instead
-					Backbone.history.navigate('/', {trigger: true});
-				}
+			if(!this._messageModal){
+				this._messageModal = new MessageModal();
 			}
 
-			positionModel.set('center', latln);
-
-			window.initialVenueConfig = null;
-			delete window.initialVenueConfig;
+			this._messageModal.show(venueID);
 		}
 	});
 	//Create anonymous router
@@ -1216,7 +1489,7 @@ $(function(){
 	//Load FB
     window.fbAsyncInit = function() {
         Parse.FacebookUtils.init({ // this line replaces FB.init({
-            appId      : '688997761197114', // Facebook App ID
+            appId      : config.FACEBOOK.APP_ID, // Facebook App ID
             status     : true,  // check Facebook Login status
             cookie     : true,  // enable cookies to allow Parse to access the session
             xfbml      : true,  // initialize Facebook social plugins on the page
@@ -1233,27 +1506,4 @@ $(function(){
     js.src = "//connect.facebook.net/en_US/sdk.js";
     fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
-
-    //Enforce server sync for users
-    if(User.current()){
-    	if(!window.initialUser){
-    		$('body').dimmer('show');
-			$.ajax({
-					type: 'POST',
-					dataType: 'json',
-					url: '/become',
-					data: {token: User.current().getSessionToken()}
-				})
-				.then(function(){
-					$('body').dimmer('hide');
-					Backbone.trigger('user:login');
-				})
-				.fail(function(){
-					$('body').dimmer('hide');
-					Backbone.trigger('user:login:fail');
-				});
-			delete window.initialUser;
-    	}
-    }
-	
 });

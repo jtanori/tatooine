@@ -1,22 +1,25 @@
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<title><%= data.title %></title>
-<meta name="description" content="">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<!-- Open Graph -->
-<meta property="og:title" content="<%= data.title %>"/>
-<meta property="og:image" content="http://www.jound.mx/images/logo-icon.png"/>
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="117">
-<meta property="og:image:height" content="111">
-<meta property="og:site_name" content="Jound"/>
-<meta property="og:description" content="Jound te permite buscar entre mas de 13,000 establecimientos"/>
-<meta property="fb:app_id" content="688997761197114" />
-<meta property="og:type" content="website" />
-<!-- stylesheets -->
-<link rel="stylesheet" href="/semantic/semantic.min.css">
-<link rel="stylesheet" href="/stylesheets/semantic.css">
-<!-- Core scripts -->
-<script src="/components/modernizr/modernizr.js"></script>
-<script src="/components/jquery/dist/jquery.min.js"></script>
-<script src="/semantic/semantic.min.js"></script>
+<div class="ui fixed top orange inverted menu" id="header">
+    <a href="/#" class='item' id="header-logo">
+        <img src="/images/icon-white.png" />
+    </a>
+    <form class="item" id="search-box">
+        <div class="ui icon input">
+            <input type="text" placeholder="Search..." id="header-search-text">
+            <i class="search link icon disabled" id="header-search-icon"></i>
+        </div>
+    </form>
+    <div class="ui item search selection dropdown" id="header-category-dropdown-wrapper">
+        <input type="hidden" name="header-category-dropdown" id="header-category-dropdown">
+        <i class="dropdown icon"></i>
+        <div class="default text">Categorias</div>
+        <div class="menu">
+            <div class="item" data-value="all">Todo</div>
+            <% data.categories.forEach(function(c){ console.log(c, 'category'); %><div class="item" data-value="<%= c.objectId %>"><%= c.pluralized %></div><% }); %>
+        </div>
+    </div>
+
+    <a class='item disabled' id="position-toggle">
+        <i class="icon location arrow"></i>
+    </a>
+    <div class="right menu" id="header-user-menu"></div>
+</div>

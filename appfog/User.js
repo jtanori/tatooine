@@ -1,6 +1,7 @@
 'use strict'; 
 
 var Parse = require('parse').Parse;
+var md5 = require('MD5');
 
 //Extend Parse user
 var User = Parse.User.extend({
@@ -9,6 +10,13 @@ var User = Parse.User.extend({
 
 		return name;
 	},
+	getAvatar: function(){
+		if(this.get('avatar')){
+			return this.get('avatar').get('file').url();
+		}else{
+			return '//www.gravatar.com/avatar/' + md5(this.get('username'))
+		}
+	},
 	getBasicData: function(){
 		var data = {
 			id: this.id,
@@ -16,7 +24,7 @@ var User = Parse.User.extend({
 			email: this.get('email'),
 			displayName: User.prototype.getDisplayName.call(this),
 			settings: this.get('settings'),
-			avatar: this.get('avatar'),
+			avatar: User.prototype.getAvatar.call(this),
 			name: this.get('name'),
 			lastName: this.get('lastName')
 		}

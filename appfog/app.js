@@ -1,30 +1,29 @@
 'use strict'; 
 
 var express = require('express');
+var session = require('express-session');
 var Parse = require('parse').Parse;
-var app = express();
-var User = require('./User.js');
+var _ = require('lodash');
+var s = require("underscore.string");
 var bodyParser = require('body-parser');
 var compression = require('compression');
 var multer = require('multer');
-var _ = require('lodash');
-var validations = require('./validations.js');
 var ejs = require('ejs-locals');
 var MobileDetect = require('mobile-detect');
-var s = require("underscore.string");
 var helmet = require('helmet');
+var gmaputil = require('googlemapsutil');
 //Jound utils
+var validations = require('./validations.js');
 var utils = require('./utils.js');
-
-var LocalStorage = require('node-localstorage').LocalStorage;
+//Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
-
-this.localStorage = new LocalStorage('./scratch');
-
-Parse.initialize('hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH', 'cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC');
-
+//Set localstorage
+//Initialize Parse
+Parse.initialize('hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH', 'cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC', '5AUkhNy5iHbwLA0Z6zNVNMLBxy4idgZ9CZCPurTm');
 //===============EXPRESS================
 // Configure Express
+var app = express();
+app.use(session({secret: 'bdccdb947a30ffd271fa073051143529305ece1c', rolling: true, saveUninitialized: true, resave: false}));
 app.engine('ejs', ejs);
 app.set('views', __dirname + '/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
@@ -38,8 +37,8 @@ app.use(helmet());
 //===============ROUTES===============
 var title = 'Jound - Busca y encuentra entre mas de 13000 establecimientos y contando';
 var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building', 'building_floor', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
-                'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name', 
-                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www'];
+                'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name',
+                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'page', 'logo', 'category'];
 var logRequest = function(req, res, next){
     console.log('%s %s %s', req.method, req.url, req.path);
     next();
@@ -52,14 +51,14 @@ var getDeviceExtension = function(ua){
 
 // a middleware with no mount path; gets executed for every request to the app
 var checkAuth = function (req, res, next) {
-    var currentUser = User.current();
+    var sess = req.session;
     /*
     * If there is not user we do the following:
     * - Check the request url
     * -- If it is equal to /forgot or /login we continue
     * -- We redirect to /login otherwise (because there is no user)
     */
-    if(_.isEmpty(currentUser)){
+    if(_.isEmpty(sess.user)){
         switch(req.url){
         case '/forgot':
         case '/login': next(); break;
@@ -108,23 +107,34 @@ var getVenueByPosition = function(req, res){
         });
     };
     var onVenueLoad = function(v){
-        render(
-            {
-                activeMenuItem: 'home',
-                title: 'Jound - ' + v.get('name') + ' en ' + v.get('locality'),
-                user: User.current(),
-                categories: categories.toJSON() || [],
-                position: position,
-                venue: v.toJSON()
-            }
-        );
+        if(v){
+            render(
+                {
+                    activeMenuItem: 'home',
+                    title: 'Jound - ' + v[0].get('name') + ' en ' + v[0].get('locality'),
+                    categories: categories.toJSON() || [],
+                    position: position,
+                    venue: v.toJSON()
+                }
+            );
+        }else{
+            render(
+                {
+                    activeMenuItem: 'home',
+                    title: title,
+                    categories: categories.toJSON() || [],
+                    position: position,
+                    error: {error: 'No position found'}
+                }
+            );
+        }
+        
     };
     var onVenueError = function(e){
         render(
             {
                 activeMenuItem: 'home',
                 title: title,
-                user: User.current(),
                 categories: categories.toJSON() || [],
                 position: position,
                 error: e
@@ -133,13 +143,12 @@ var getVenueByPosition = function(req, res){
     };
     var onLoad = function(){
         if(venueQuery){
-            venueQuery.find().then(onVenueLoad).fail(onVenueError);
+            venueQuery.first().then(onVenueLoad).fail(onVenueError);
         }else{
             render(
                 {
                     activeMenuItem: 'home',
                     title: title,
-                    user: User.current(),
                     categories: categories.toJSON() || []
                 }
             )
@@ -153,7 +162,11 @@ var getVenueById = function(req, res){
     var Venue = Parse.Object.extend('Location');
     var venueQuery = new Parse.Query(Venue);
 
-    venueQuery.include('category').include('logo').select(venueFieldsWhitelist);
+    venueQuery
+        .include('category')
+        .include('logo')
+        .include('page')
+        .select(venueFieldsWhitelist);
 
     var Category = Parse.Object.extend({className: 'Category'});
     var Categories = Parse.Collection.extend({
@@ -167,12 +180,26 @@ var getVenueById = function(req, res){
         });
     };
     var onVenueLoad = function(v){
-        console.log('venueloaded', v.length);
+        //Fix format (We need to get ride of this)
+        v.set('name', s(v.get('name')).humanize().value());
+        v.set('vecinity_type', s(v.get('vecinity_type')).titleize().value());
+        v.set('road_type', s(v.get('road_type')).humanize().value());
+        v.set('road_type_1', s(v.get('road_type_1')).humanize().value());
+        v.set('road_type_2', s(v.get('road_type_2')).humanize().value());
+        v.set('road_type_3', s(v.get('road_type_3')).humanize().value());
+        v.set('road_name', s(v.get('road_name')).titleize().value());
+        v.set('road_name_1', s(v.get('road_name_1')).titleize().value());
+        v.set('road_name_2', s(v.get('road_name_2')).titleize().value());
+        v.set('road_name_3', s(v.get('road_name_3')).titleize().value());
+        v.set('locality', s(v.get('locality')).titleize().value());
+        v.set('municipality', s(v.get('municipality')).titleize().value());
+        v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
+        v.set('www', v.get('www').toLowerCase());
+
         render(
             {
                 activeMenuItem: 'home',
-                title: 'Jound - ' + v.get('name') + ' en ' + v.get('locality'),
-                user: User.current(),
+                title: v.get('name') + ', ' + v.get('locality') + ' - Jound',
                 categories: categories.toJSON() || [],
                 venue: v.toJSON()
             }
@@ -183,7 +210,6 @@ var getVenueById = function(req, res){
             {
                 activeMenuItem: 'home',
                 title: title,
-                user: User.current(),
                 categories: categories.toJSON() || [],
                 error: e
             }
@@ -197,7 +223,6 @@ var getVenueById = function(req, res){
                 {
                     activeMenuItem: 'home',
                     title: title,
-                    user: User.current(),
                     categories: categories.toJSON() || []
                 }
             )
@@ -207,13 +232,114 @@ var getVenueById = function(req, res){
     categories.fetch({success: onLoad, error: onLoad});
 };
 
-//Main router
-var Jound = express.Router();
-//Log all requests
-Jound.use(logRequest);
+var getDirections = function(req, res){
+    var from = req.params.from;
+    var to = req.params.to;
 
-Jound.get('/', function(req, res){
-    var u = User.current();
+    if(validations.POSITION.test(from) && validations.POSITION.test(to)){
+        gmaputil.directions(from, to, null, function(e, r){
+            if(e){
+                res.status(404).json({ status: 'error', error: e, code: 404 });
+            }else{
+                res.status(200).json({ status: 'success', message: 'Drive safetly!', results: JSON.parse(r)});
+            }
+        });
+    }else{
+        res.status(404).json({ status: 'error', error: 'Invalid data input', code: 404 });
+    }
+};
+
+var like = function(req, res){
+    var data = req.body;
+    var userQuery = new Parse.Query(Parse.User);
+    var Venue = Parse.Object.extend('Location');
+    var venueQuery = new Parse.Query(Venue);
+
+    if(_.isString(data.u) && _.isString(data.token) && data.id){
+        userQuery
+            .select('likedVenues').get(data.u)
+            .then(function(u){
+                venueQuery.get(data.id, {
+                    success: function(v){
+                        Parse.Cloud.useMasterKey();
+
+                        var relation = v.relation('likedBy');
+                        relation.add(u);
+
+                        v.increment('likes')
+                            .save()
+                            .done(function(){res.status(200).json({ status: 'success' });})
+                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
+                    },
+                    error: function(o, e){
+                        res.status(400).json({ status: 'error', error: e.message, code: e.code });
+                    }
+                });    
+            })
+            .fail(function(o, e){
+                res.status(400).json({ status: 'error', error: e.message, code: e.code });
+            });
+    }else{
+        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
+    }
+};
+
+var unlike = function(req, res){
+    var data = req.body;
+    var userQuery = new Parse.Query(Parse.User);
+    var Venue = Parse.Object.extend('Location');
+    var venueQuery = new Parse.Query(Venue);
+
+    if(_.isString(data.u) && _.isString(data.token) && data.id){
+        userQuery
+            .select('likedVenues').get(data.u)
+            .then(function(u){
+                venueQuery.get(data.id, {
+                    success: function(v){
+                        Parse.Cloud.useMasterKey();
+
+                        var relation = v.relation('likedBy');
+                        relation.remove(u);
+
+                        if(v.get('likes') > 0){
+                            v.increment('likes', -1)
+                        }
+
+                        v.save()
+                            .done(function(){res.status(200).json({ status: 'success' });})
+                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
+                    },
+                    error: function(o, e){
+                        res.status(400).json({ status: 'error', error: e.message, code: e.code });
+                    }
+                });    
+            })
+            .fail(function(o, e){
+                res.status(400).json({ status: 'error', error: e.message, code: e.code });
+            });
+    }else{
+        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
+    }
+};
+
+var getAddress = function(req, res){
+    var lat = parseFloat(req.body.latitude, 10);
+    var lng = parseFloat(req.body.longitude, 10);
+
+    if( validations.POSITION.test(lat + ',' + lng)){
+        gmaputil.reverseGeocoding(lat, lng, null, function(e, r){
+            if(e){
+                res.status(400).json({ status: 'error', error: 'Error getting address', code: 400 });
+            }else {
+                res.status(200).json({ status: 'success', address: JSON.parse(r)});
+            }
+        });
+    }else{
+        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
+    }
+};
+
+var home = function(req, res){
     var Category = Parse.Object.extend({className: 'Category'});
     var Categories = Parse.Collection.extend({
         model: Category,
@@ -225,30 +351,25 @@ Jound.get('/', function(req, res){
             data: {
                 activeMenuItem: 'home',
                 title: title,
-                user: u ? u.getBasicData() : null,
                 categories: categories.toJSON() || []
             }
         });
     };
-    console.log('current user', u);
-    if(u){console.log(u.toJSON(), 'user to json');}
     //Try getting those damm categories
     categories.fetch({success: onLoad, error: onLoad});
-});
+};
 
-Jound.get('/venue/:id', getVenueById);
-Jound.get('/position/:position', getVenueByPosition);
-
-Jound.get('/profile', checkAuth, function(req, res){
+var profile = function(req, res){
     res.render('profile' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             activeMenuItem: 'profile',
             title: 'Jound - Mi perfil'
         }
     });
-});
+};
 
-Jound.post('/search', function(req, res){
+var search = function(req, res){
+    console.log('search');
     var data = req.body || {};
     var isAjax = req.xhr;
     var Venue = Parse.Object.extend({className: 'Location'});
@@ -258,29 +379,14 @@ Jound.post('/search', function(req, res){
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
-            //Parse results
-            r.forEach(function(r){
-                r.set('name', s(r.get('name')).humanize().value());
-                r.set('vecinity_type', s(r.get('vecinity_type')).titleize().value());
-                r.set('road_type', s(r.get('road_type')).humanize().value());
-                r.set('road_type_1', s(r.get('road_type_1')).humanize().value());
-                r.set('road_type_2', s(r.get('road_type_2')).humanize().value());
-                r.set('road_type_3', s(r.get('road_type_3')).humanize().value());
-                r.set('road_name', s(r.get('road_name')).titleize().value());
-                r.set('road_name_1', s(r.get('road_name_1')).titleize().value());
-                r.set('road_name_2', s(r.get('road_name_2')).titleize().value());
-                r.set('road_name_3', s(r.get('road_name_3')).titleize().value());
-                r.set('locality', s(r.get('locality')).titleize().value());
-                r.set('municipality', s(r.get('municipality')).titleize().value());
-                r.set('federal_entity', s(r.get('federal_entity')).titleize().value());
-            });
-
+            _.each(r, function(r){console.log(r.toJSON())});
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
             res.redirect('/');
         }
     };
     var onError = function(e){
+        console.log(e, 'not found');
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
             res.status(404).json({ status: 'error', error: e.message, code: e.code });
@@ -290,10 +396,12 @@ Jound.post('/search', function(req, res){
     };
 
     if(data.q){
+        var q = _.chain(data.q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+
         if(data.q.length === 1){
-            query.equalTo('keywords', data.q[0]);
+            query.equalTo('keywords', q[0].toLowerCase());
         }else{
-            query.containsAll('keywords', data.q);
+            query.containsAll('keywords', utils.strings.sanitize(q));
         }
     }
 
@@ -308,11 +416,15 @@ Jound.post('/search', function(req, res){
         query.near('position', position);
         query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10));
     }
+
+    console.log(data, 'data');
     //If keywords or category, and position
     if((data.q || data.c) && data.p){
+        Parse.Cloud.useMasterKey();
         query
             .select(venueFieldsWhitelist)
             .include('logo')
+            .include('page')
             .limit(200)
             .find({
                 success: onSuccess,
@@ -321,233 +433,89 @@ Jound.post('/search', function(req, res){
     }else{
         res.status(404).json({ status: 'error', error: 'Invalid parameters', code: 601});
     }
-});
+};
 
-//Simple login
-Jound.get('/about', function(req, res){
-        var u = User.current();
-
-        res.render('about' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - Acerca de la empresa',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var about = function(req, res){
+    res.render('about' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - Acerca de la empresa'
+        }
     });
+};
 
-app.get('/privacy', function(req, res){
-        var u = User.current();
-
-        res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - Politicas de privacidad',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var privacy = function(req, res){
+    res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - Politicas de privacidad'
+        }
     });
+};
 
-app.get('/referrals', function(req, res){
-        var u = User.current();
-        
-        res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - Nuestro programa de afiliados (en el laboratorio)',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var referrals = function(req, res){
+    res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - Nuestro programa de afiliados (en el laboratorio)'
+        }
     });
+};
 
-app.get('/business-add', function(req, res){
-        var u = User.current();
-        
-        res.render('business-add' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - Agrega tu negocio',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var businessAdd = function(req, res){
+    res.render('business-add' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - Agrega tu negocio'
+        }
     });
+};
 
-app.get('/what-is-jound', function(req, res){
-        var u = User.current();
-        
-        res.render('what-is-jound' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - ¿Que es Jound?',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var whatIsJound = function(req, res){
+    res.render('what-is-jound' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - ¿Que es Jound?'
+        }
     });
+};
 
-app.get('/products', function(req, res){
-        var u = User.current();
-        
-        res.render('products' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - Agrega tu negocio',
-                user: u ? u.getBasicData() : null,
-            }
-        });
+var products = function(req, res){
+    res.render('products' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - Agrega tu negocio'
+        }
     });
+};
+
+var forgot = function(req, res){
+    res.render('forgot' + getDeviceExtension(req.headers['user-agent']), {
+        data: {
+            title: 'Jound - ¿Se te olvido el password?'
+        }
+    });
+};
+
+//Main router
+var Jound = express.Router();
+
+Jound.use(logRequest);
+
+Jound.get('/', home);
+Jound.get('/venue/:id', getVenueById);
+Jound.get('/position/:position', getVenueByPosition);
+Jound.get('/directions/:from/:to', getDirections);
+Jound.get('/about', about);
+Jound.get('/privacy', privacy);
+Jound.get('/referrals', referrals);
+Jound.get('/about', about);
+Jound.get('/profile', checkAuth, profile);
+Jound.get('/business-add', businessAdd);
+Jound.get('/what-is-jound', whatIsJound);
+Jound.get('/products', products);
+Jound.get('/forgot', forgot);
+
+Jound.post('/like', like);
+Jound.post('/unlike', unlike);
+Jound.post('/address', getAddress);
+Jound.post('/search', search);
 
 app.use('/', Jound);
-
-app.route('/logout')
-    .post(function(req, res){
-        var isAjax = req.xhr;
-
-        User.logOut();
-        
-        if(isAjax){
-            res.setHeader('Content-Type', 'application/json');
-            res.status(200).json({ status: 'success', message: 'Good bye'});
-        }else{
-            res.redirect('/');
-        }
-    });
-
-app.route('/become')
-    .post(function(req, res){
-        var data = req.body || {};
-        var isAjax = req.xhr;
-
-        var onSuccess = function(){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).json({ status: 'success', message: 'Become the bull!' });
-            }else{
-                res.redirect('/');
-            }
-        };
-        var onError = function(r, e){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(404).json({ status: 'error', error: e.message, code: e.code });
-            }else{
-                res.redirect('/');
-            }
-        };
-
-        if(data.token && !_.isEmpty(data.token) && _.isString(data.token)){
-            User.become(data.token).then(onSuccess).fail(onError);
-        }else{
-            res.status(404).json({ status: 'error', error: 'Invalid parameters', code: 601});
-        }
-    });
-
-app.route('/login')
-    .get(function(req, res){
-        res.render('home' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: title
-            }
-        });
-    })
-    .post(function(req, res){
-        var data = req.body || {};
-        var isAjax = req.xhr;
-
-        var onSuccess = function(){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).json({ status: 'success',  user: User.current().getBasicData(), token: User.current().getSessionToken()});
-            }else{
-                res.redirect('/');
-            }
-        };
-        var onError = function(r, e){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(404).json({ status: 'error', error: e.message, code: e.code });
-            }else{
-                res.redirect('/');
-            }
-        };
-        
-        if(data.username && validations.EMAIL.test(data.username) && data.password && data.password.length > 4){
-            Parse.User.logIn(data.username, data.password, {success: onSuccess, error: onError});
-        }else{
-            res.status(404).json({ status: 'error', error: 'Invalid parameters', code: 601});
-        }
-    });
-
-app.route('/signup')
-    .get(function(req, res){
-        res.render('home' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: title
-            }
-        });
-    })
-    .post(function(req, res){
-        var data = req.body || {};
-        var isAjax = req.xhr;
-
-        var onSuccess = function(){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).json({ status: 'success',  user: User.current().getBasicData(), token: User.current().getSessionToken()});
-            }else{
-                res.redirect('/');
-            }
-        };
-        var onError = function(r, e){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(404).json({ status: 'error', error: e.message, code: e.code });
-            }else{
-                res.redirect('/');
-            }
-        };
-
-        if(data.username && validations.EMAIL.test(data.username) && data.password && data.password.length > 4){
-            user = new Parse.User();
-            user.signUp({username: data.username, password: data.password, email: data.username}, {success:onSuccess, error:onError});
-        }else{
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(404).json({ status: 'error', error: 'Invalid parameters', code: 601});
-            }else{
-                res.redirect('/');
-            }
-        }
-    });
-
-app.route('/forgot')
-    .get(function(req, res){
-        res.render('forgot' + getDeviceExtension(req.headers['user-agent']), {
-            data: {
-                title: 'Jound - ¿Se te olvido el password?'
-            }
-        });
-    })
-    .post(function(req, res){
-        var data = req.body || {};
-        var isAjax = req.xhr;
-
-        var onSuccess = function(){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(200).json({ status: 'success',  user: User.current().getBasicData(), token: User.current().getSessionToken()});
-            }else{
-                res.redirect('/');
-            }
-        };
-        var onError = function(r, e){
-            if(isAjax){
-                res.setHeader('Content-Type', 'application/json');
-                res.status(404).json({ status: 'error', error: e.message, code: e.code });
-            }else{
-                res.redirect('/');
-            }
-        };
-
-        if(data.username && validations.EMAIL.test(data.username)){
-            User.requestPasswordReset(data.username, {success: onSuccess, error: onError});
-        }else{
-            res.status(404).json({ status: 'error', error: 'Invalid email', code: 602});
-        }
-    });
 //===============START=================
 var port = process.env.VCAP_APP_PORT || 4000;
 app.listen(port);

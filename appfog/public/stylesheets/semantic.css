@@ -5,6 +5,14 @@
 	box-shadow: 0 0 5px rgba(0,0,0,0.5);
 	background: rgba(0,0,0,0.2);
 }
+#header-avatar {
+	padding: 0;
+}
+
+#header-avatar img {
+	width: 2em;
+	height: 2em;
+}
 #search-box{padding-left:10px;padding-right:10px}
 #category-dropdown-menu{max-height:300px;overflow-y:scroll}
 #category-dropdown-menu .item{text-transform:capitalize}
@@ -24,24 +32,71 @@
 #header-category-dropdown-wrapper .text {
 	text-transform: capitalize;
 }
-#venue-view {
+#venue-view{
 	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	min-width: 300px;
+}
+#venue-view .card{
+	position: fixed;
 	top: 50px;
 	left: 10px;
-	min-width: 300px;
 	bottom: 45px;
-	max-width: 300px;
-}
-
-#venue-view .card {
+	margin: 0;
 	box-shadow: 0 0 20px rgba(0,0,0,0.2);
 	border: 1px solid rgba(0,0,0,0.5);
+	overflow-y: scroll;
+	width: 300px;
+	z-index: 2;
 }
 
-#venue-view .ui.segment.center {
+#venue-view .card .options{
+	text-align: center;
+}
+
+#venue-view .card .rating {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	background: rgba(0,0,0,0.1);
+	padding: 10px;
+	border-top: 1px solid rgba(0,0,0,0.1);
+	border-bottom: 1px solid rgba(0,0,0,0.2);
+}
+
+#venue-view .card .ui.segment.center {
 	min-height: 80%;
 }
 
+#venue-view .card .image {
+	max-height: 250px;
+	overflow: hidden;
+}
+
+#venue-view #venue-options {
+	position: absolute;
+	left: 305px;
+	top: 100px;
+	padding-left: 0;
+	min-width: 150px;
+	z-index: 1;
+}
+#venue-view #venue-options .button {
+	margin-bottom: 10px;
+	white-space: nowrap;
+}
+
+#venue-view table img {
+	width: inherit;
+	height: inherit;
+}
+
+#venue-view #venue-options .super.button {
+	box-shadow: 0 0 5px yellowgreen;
+}
 /* Slider component */
 .ui.slider.range input[type="range"] {
 	-webkit-appearance: none;
@@ -95,6 +150,8 @@
 	top: -1.5rem;
 	right: 0;
 }
+
+
 
 [type="text/html"],
 [template]{

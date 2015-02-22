@@ -59,6 +59,17 @@ module.exports = {
 			}finally{
 				return results;
 			}
+		},
+		sanitize: function(words){
+			var results;
+			try{
+				results = _.chain(words);
+				results = results.invoke('trim').uniq().map(good).compact().value();
+			}catch(e){
+				results = [];
+			}finally{
+				return results;
+			}
 		}
 	}
 }
