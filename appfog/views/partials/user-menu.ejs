@@ -1,0 +1,37 @@
+<% if(!data.user){ %>
+<div class="right menu" id="header-user-menu">
+    <button class='item' id="facebook-login-button">
+        <i class="icon facebook"></i>
+        Inicio con Facebook
+    </button>
+    <div class="ui dropdown item" id="header-user-options-dropdown">
+        <i class="icon lock"></i>
+        <div class="menu" id="header-user-options-dropdown-menu">
+            <a class="item" id="header-login-button">Iniciar Sesion</a>
+            <a class="item" id="header-signup-button">Crear Cuenta</a>
+        </div>
+    </div>
+    <button class='item' id="header-settings-button">
+        <i class="icon settings"></i>
+    </button>
+</div>
+<% } else { %>
+<div class="right menu" id="header-user-menu">
+    <div class="item" id="">
+        <% if(data.user.avatar) { %>
+        <img src="<%= data.user.avatar %>" class="ui image rounded" />
+        <% }%>
+        Hola <%= data.user.username %>
+    </div>
+    <div class="ui dropdown item" id="header-user-options-dropdown">
+        <i class="icon user"></i>
+        <div class="menu" id="header-user-options-dropdown-menu">
+            <button class="item" id="header-profile-button">Mi Perfil</button>
+            <button class="item" id="header-signout-button">Cerrar Sesion</button>
+        </div>
+    </div>
+    <button class='item' id="header-settings-button">
+        <i class="icon settings"></i>
+    </button>
+</div>
+<% } %>
