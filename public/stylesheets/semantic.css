@@ -1,5 +1,5 @@
 #header {border-bottom: 1px solid rgba(0,0,0,0.3);}
-#header-logo{padding:6px;padding-left:10px; padding-right: 10px;}
+#header-logo, #search-box{padding:6px;padding-left:10px; padding-right: 10px;}
 #header-logo img{width:30px;height:30px}
 #header-logo:hover img {
 	box-shadow: 0 0 5px rgba(0,0,0,0.5);
@@ -13,7 +13,30 @@
 	width: 2em;
 	height: 2em;
 }
-#search-box{padding-left:10px;padding-right:10px}
+#search-box input{
+	padding: 0.4rem;
+	border-radius: 0.2rem;
+	border: 0;
+	width: 350px;
+}
+#search-box .message.empty {
+	display: none;
+}
+#search-box-button {
+	position: absolute;
+	right: 0.7rem;
+	top: 1.1rem;
+	color: black;
+	border: 0;
+	box-shadow: none !important;
+	background: transparent;
+	text-align: center;
+	outline: 0;
+}
+#header-search-category {
+	position: absolute;
+	top: 1rem;
+}
 #category-dropdown-menu{max-height:300px;overflow-y:scroll}
 #category-dropdown-menu .item{text-transform:capitalize}
 #map{position:absolute;top:42px;bottom:36px;background:url(/images/bg.jpg) no-repeat center center;background-size:cover;left:0;right:0}

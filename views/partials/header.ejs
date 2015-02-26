@@ -3,12 +3,18 @@
         <img src="/images/icon-white.png" />
     </a>
     <form class="item" id="search-box">
-        <div class="ui icon input">
-            <input type="text" placeholder="¿Que estas buscando?" id="header-search-text">
-            <i class="search link icon disabled" id="header-search-icon"></i>
+        <div class="ui search">
+            <div class="ui icon input">
+                <input class="prompt" type="text" placeholder="¿Qué estas buscando?" id="search-box-value">
+                <input class="hide" type="text" hidden id="search-box-category" />
+            </div>
+            <div class="results"></div>
         </div>
+        <button type="submit"  id="search-box-button" class="ui button icon">
+            <i class="search icon"></i>
+        </button>
     </form>
-    <div class="ui item search selection dropdown" id="header-category-dropdown-wrapper">
+    <!--div class="ui item search selection dropdown" id="header-category-dropdown-wrapper">
         <input type="hidden" name="header-category-dropdown" id="header-category-dropdown">
         <i class="dropdown icon"></i>
         <div class="default text">Categorias</div>
@@ -16,7 +22,7 @@
             <div class="item" data-value="all">Todo</div>
             <% data.categories.forEach(function(c){ %><div class="item" data-value="<%= c.objectId %>"><%= c.pluralized %></div><% }); %>
         </div>
-    </div>
+    </div-->
 
     <a class='item disabled' id="position-toggle">
         <i class="icon location arrow"></i>

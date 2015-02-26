@@ -10,6 +10,9 @@
 <div id="map-loader"></div>
 </div>
 
+<script>
+var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
+</script>
 <div class="ui small modal" id="login-modal">
     <form class="ui form content">
         <h2 class="ui center aligned icon header">
@@ -127,7 +130,7 @@
 <div type="text/html" id="venue-template">
     <div class="ui card">
         <div class="image">
-            <a href="#" class="ui corner orange label"><i class="close icon"></i></a>
+            <a class="ui corner orange label"><i class="close icon"></i></a>
             <img src="{{ data.logo }}">
             <div class="ui large star rating" data-rating="5" data-max-rating="5"></div>
         </div>

@@ -15,6 +15,7 @@ var MobileDetect = require('mobile-detect');
 var helmet = require('helmet');
 var gmaputil = require('googlemapsutil');
 var memjs = require('memjs');
+var CryptoJS = require('cryptojs');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -123,7 +124,8 @@ var getVenueByPosition = function(req, res){
                     title: 'Jound - ' + v[0].get('name') + ' en ' + v[0].get('locality'),
                     categories: categories.toJSON() || [],
                     position: position,
-                    venue: v.toJSON()
+                    venue: v.toJSON(),
+                    keywords: keywords
                 }
             );
         }else{
@@ -133,7 +135,8 @@ var getVenueByPosition = function(req, res){
                     title: title,
                     categories: categories.toJSON() || [],
                     position: position,
-                    error: {error: 'No position found'}
+                    error: {error: 'No position found'},
+                    keywords: keywords
                 }
             );
         }
@@ -146,7 +149,8 @@ var getVenueByPosition = function(req, res){
                 title: title,
                 categories: categories.toJSON() || [],
                 position: position,
-                error: e
+                error: e,
+                keywords: keywords
             }
         );
     };
@@ -221,7 +225,8 @@ var getVenueById = function(req, res){
                 activeMenuItem: 'home',
                 title: v.get('name') + ', ' + v.get('locality') + ' - Jound',
                 categories: categories.toJSON() || [],
-                venue: v.toJSON()
+                venue: v.toJSON(),
+                keywords: keywords
             }
         );
     };
@@ -231,13 +236,14 @@ var getVenueById = function(req, res){
                 activeMenuItem: 'home',
                 title: title,
                 categories: categories.toJSON() || [],
-                error: e
+                error: e,
+                keywords: keywords
             }
         );
     };
     var onLoad = function(){
-        keywords = categories.toJSON().map(function(c){return {name: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact(), id: c.id}});
-        
+        keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
+
         if(venueQuery){
             venueQuery.get(req.params.id, {success: onVenueLoad, error: onVenueError});
         }else{
@@ -375,9 +381,9 @@ var getAddress = function(req, res){
 
 var home = function(req, res){
     var categories = new Categories();
-    var keywords = [];
+    var keywords = {};
     var onLoad = function(){
-        keywords = categories.toJSON().map(function(c){return {name: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact(), id: c.objectId}});
+        keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
         res.render('home' + getDeviceExtension(req.headers['user-agent']), {
             data: {

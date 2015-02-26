@@ -52,7 +52,7 @@ $(function(){
 			MAPS_WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
 		},
 		FACEBOOK: {
-			APP_ID: '688997761197114'
+			APP_ID: '779644072132482'
 		},
 		MAP: {
 			DEFAULT_OPTIONS: {
@@ -168,7 +168,6 @@ $(function(){
 		dom: {},
 		userMenuTemplate: _.template($('#template-user-menu').html()),
 		events: {
-			'change #header-category-dropdown': 'setCategory',
 			'click #header-logo': 'home',
 			'click #facebook-login-button': 'facebookLogin',
 			'click #header-login-button': 'login',
@@ -177,6 +176,8 @@ $(function(){
 			'click #header-settings-button': 'settings',
 			'click #header-search-icon': 'onSubmit',
 			'click #position-toggle': 'geolocationModeChange',
+			'click #header-search-category .icon': 'clearCategory',
+			'click #search-box-button': 'onSearch',
 			'change #header-search-text': 'onSearchChange',
 			'keyup #header-search-text': 'onSearchChange',
 			'submit': 'submit'
@@ -202,7 +203,50 @@ $(function(){
 		render: function(){
 			this.updateOptions();
 
+			var $search = this.dom.search;
+			var $category = this.dom.categoryHidden;
+			var $input = this.dom.searchInput;
+			var $button = this.dom.searchButton;
+
+			$search.search({
+				source: globalKeywords,
+				searchFields: [
+					'title',
+					'keywords'
+				],
+				onSelect: function(selected){
+					var $label = $search.find('#header-search-category');
+					var text = selected.title;
+					var id = selected.id;
+
+					if($label.length){
+						$label.find('.title').text(text);
+					}else{
+						$label = $('<span class="ui blue label" id="header-search-category"><span class="title">' + selected.title + '</span> <i class="icon close"></i></span>');
+						$search.append($label);
+					}
+
+					$category.val(id);
+					$input.css('padding-left', $label.outerWidth() + 10);
+
+					$search.search('hide results');
+					$search.search('set value', '');
+					$input.attr('placeholder', '').trigger('focus');
+
+					return false;
+				}
+			});
+
 			return this;
+		},
+		clearCategory: function(){
+			var $search = this.dom.search;
+			var $label = $search.find('#header-search-category');
+			var $input = this.dom.searchInput;
+
+			$label.remove();
+			$search.find('input').val('');
+			$input.attr('placeholder', '¿Qué estas buscando?').trigger('focus').removeAttr('style');
 		},
 		onPosition: function(){
 			this.dom.positionToggle.addClass('active').removeClass('disabled');
@@ -238,8 +282,8 @@ $(function(){
 				e.preventDefault();
 			}
 
-			var keywords = _.chain(this.dom.search.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
-			var category = this.dom.dropdown.dropdown('get value');
+			var keywords = _.chain(this.dom.searchInput.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
+			var category = this.dom.categoryHidden.val();
 			var p = this.positionModel.toJSON();
 			var data = {};
 
@@ -304,32 +348,91 @@ $(function(){
 		facebookLogin: function(){
 			$('body').dimmer('show');
 
-			Parse.FacebookUtils.logIn(null, {
-				success: function(user){
-					var isNew = !user.existed();
+			var login = function(data){
+				data = data || {};
 
-					if(!user.setting && !user.get('avatar')){
-						//Get user picture
-						FB.api(
-							'/me/picture',
-							function (response) {
-								$('body').dimmer('hide');
-								if (response && !response.error) {
-									user.set('avatar', response.url)
-										.save()
-										.then(function(){Backbone.trigger('user:profile:photo', response.url)});
-								}
+				Parse.FacebookUtils.logIn('email,public_profile,user_friends', {
+    				success: function(u){
+    					u.set({
+    						firstName: data.first_name || '',
+    						lastName: data.last_name || '',
+    						name: data.name || '',
+    						gender: data.gender || '',
+    						facebook: true
+    					});
+
+    					FB.api('/me/picture', function(response){
+    						console.log(response, 'picture response');
+							if (!response || response.error) {
+								console.log('no picture')
+								u.save()
+									.always(function(){
+										$('body').dimmer('hide');
+										Backbone.trigger('user:login', true);
+									});
+							}else{
+								console.log('avatar', response.data.url);
+								u.set('avatar', response.data.url)
+									.save()
+									.then(function(){
+										Backbone.trigger('user:profile:photo', response.url)
+									}).always(function(){
+										$('body').dimmer('hide');
+										Backbone.trigger('user:login', true);
+									});
 							}
-						);
-					}else{
+						});
+    				},
+    				error: function(){
+    					alert('Ha ocurrido un error al crear tu cuenta, por favor intenta de nuevo');
+    					$('body').dimmer('hide');
+    				}
+    			});
+			};
+			var me = function(){
+				FB.api('/me', function(data){
+					if(!data || data.error){
+						login();
+					} else if(data.verified){
+						if(data.email){
+							var userQuery = new Parse.Query(Parse.User);
+					        userQuery
+					        	.equalTo('email', data.email)
+					        	.count()
+					        	.then(function(count){
+					        		if(count){
+					        			alert('Parece que ese usuario ya esta registrado, por favor usa tu correo electronico y contraseña para iniciar sesion.');
+					        			$('body').dimmer('hide');
+					        		}else{
+					        			login(data);
+					        		}
+					        	})
+					        	.fail(function(){
+					        		login(data);
+					        	});
+						}else{
+							login(data);
+						}
+					}if(!data.verified){
+						alert('Tu cuenta de Facebook parece no estar verificada, por favor verifica tu cuenta de correo con Facebook e intenta de nuevo.');
 						$('body').dimmer('hide');
 					}
+				});
+			};
 
-					Backbone.trigger('user:login', isNew);
-				}.bind(this),
-				error: function(user, error) {
-					$('body').dimmer('hide');
-					alert("No hemos podido enlazar a tu cuenta de Facebook.");
+			FB.getLoginStatus(function(response){
+				if(response && response.status === 'connected'){
+					me();
+				}else{
+					FB.login(function(response){
+						if(response.authResponse){
+							me();
+						} else {
+							alert('No pudimos iniciar sesion con tu cuenta');
+							$('body').dimmer('hide');
+							console.log(response);
+						}
+					});
 				}
 			});
 		},
@@ -365,15 +468,17 @@ $(function(){
 				facebookLogin: this.$el.find('#facebook-login-button'),
 				login: this.$el.find('#login-button'),
 				signup: this.$el.find('#signup-button'),
-				dropdown: this.$el.find('#header-category-dropdown-wrapper'),
 				userDropdown: this.$el.find('#header-user-options-dropdown'),
 				userMenu: this.$el.find('#header-user-menu'),
 				form: this.$el.find('form'),
-				avatar: this.$el.find('#header-avatar img')
+				avatar: this.$el.find('#header-avatar img'),
+				search: this.$el.find('#search-box'),
+				searchInput: this.$el.find('#search-box-value'),
+				categoryHidden: this.$el.find('#search-box-category'),
+				searchButton: this.$el.find('#search-box-button')
 			};
 
 			this.dom.userDropdown.dropdown();
-			this.dom.dropdown.dropdown();
 		}
 	});
 
@@ -649,7 +754,11 @@ $(function(){
 				if(this.model.get('autoFocus')){
 					this.map.fitBounds(this.bounds);
 				}
+
+				var initialModel = this.collection.at(0);
 				
+				Backbone.trigger('venue:info', initialModel.toJSON());
+				Backbone.history.navigate('venue/' + initialModel.id, {trigger: false});
 			}else{
 				alert('No encontramos establecimientos para tu busqueda :(');
 			}
