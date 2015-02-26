@@ -52,7 +52,7 @@ $(function(){
 			MAPS_WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
 		},
 		FACEBOOK: {
-			APP_ID: '779644072132482'
+			APP_ID: '688997761197114'//'779644072132482'
 		},
 		MAP: {
 			DEFAULT_OPTIONS: {
@@ -756,7 +756,7 @@ $(function(){
 				}
 
 				var initialModel = this.collection.at(0);
-				
+
 				Backbone.trigger('venue:info', initialModel.toJSON());
 				Backbone.history.navigate('venue/' + initialModel.id, {trigger: false});
 			}else{
