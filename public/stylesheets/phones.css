@@ -1,0 +1,66 @@
+#header-logo {
+	padding: 0;
+	margin: 0 0 0 10px;
+}
+
+#header-logo img {
+	width: 30px;
+	height: 30px;
+}
+#header #main-menu {
+	border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+#header .submenu {
+	border-top: 1px solid rgba(0,0,0,0.1);
+}
+#search-box {
+	
+}
+#header-category-dropdown-wrapper {
+	padding-left: 0;
+}
+
+#map {
+	width: 100%;
+	top: 81px;
+	bottom: 0;
+	position: absolute;
+}
+
+/* Iphone 5,5s in portrait*/
+@media only screen 
+and (min-device-width : 320px) 
+and (max-device-width : 568px) 
+and (orientation : portrait) {
+
+	#search-box {
+		width: 170px;
+		padding-left: 10px;
+		padding-right: 5px;
+	}
+
+	#header .item:after,
+	#header .item:before {
+		display: none;
+		opacity: 0;
+	}
+
+	#header-category-dropdown-wrapper {
+		padding-left: 5px;
+		padding-right: 5px;
+	}
+
+	#header-category-dropdown {
+		border: 0;
+		padding: 0;
+		margin: 0;
+		background: transparent;
+		width: 80px;
+		text-transform: capitalize;
+	}
+}
+
+[type="text/html"],
+[template]{
+	display: none;
+}

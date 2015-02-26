@@ -1,0 +1,199 @@
+<% layout('./layouts/boilerplate') -%>
+<% script('/javascripts/lodash.min.js') -%>
+<% script('/javascripts/backbone.js') -%>
+<% script('//www.parsecdn.com/js/parse-1.3.4.min.js') -%>
+<% script('//maps.google.com/maps/api/js?v=3&sensor=false&key=AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM&language=es') -%>
+<% script('//crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js') -%>
+<% script('/javascripts/app.js') -%>
+
+<div id="map">
+<div id="map-loader"></div>
+</div>
+
+<div class="ui small modal" id="login-modal">
+    <form class="ui form content">
+        <h2 class="ui center aligned icon header">
+            <i class="circular sign in icon"></i>
+            Iniciar Sesion
+        </h2>
+        <div class="ui padded grid center aligned">
+            <div class="ui row">
+                <div class="twelve wide column">
+                    <div class="field">
+                        <input type="text" id="login-modal-username" name="login-modal-username" placeholder="Correo electronico" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="login-modal-password" name="login-modal-password" placeholder="Contrasena" />
+                    </div>
+                </div>
+            </div>
+            <div class="ui row">
+                <div class="ui red right icon button" id="login-modal-cancel">
+                    Cancelar
+                    <i class="close icon"></i>
+                </div>
+                <div class="ui blue right icon button" id="login-modal-ok">
+                    Dame Jound
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="ui small modal" id="settings-modal">
+    <i class="close icon"></i>
+    <div class="header">Ajustes</div>
+    <form class="ui form content">
+        <div class="ui list">
+            <div class="item">
+                <div class="field">
+                    <div class="ui toggle checkbox" id="settings-modal-auto-search-wrapper">
+                        <input type="radio" id="settings-modal-auto-search" name="settings-modal-auto-search">
+                        <label>Habilitar <b>busqueda automatica</b></label>
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="item">
+                <div class="field">
+                    <div class="ui toggle checkbox" id="settings-modal-auto-focus-wrapper">
+                        <input type="radio" id="settings-modal-auto-focus" name="settings-modal-auto-focus">
+                        <label>Habilitar <b>auto enfoque</b> de resultados</label>
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="item">
+                <label for="fruit">Rango de busqueda:</label>
+                <div class="ui hidden divider"></div>
+                <div class="ui slider range">
+                    <input id="settings-modal-radius" name="settings-modal-radius" type="range" min-label="1km" max-label="10kms" min="1000" max="10000" step="1000" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<% if(data.venue) { %>
+<script>
+    window.initialVenueConfig = <%- JSON.stringify(data.venue) %>
+</script>
+<% } %>
+<div id="venue-view" hidden>
+    
+
+</div>
+<div class="ui small modal" id="signup-modal">
+    <form class="ui form content">
+        <h2 class="ui center aligned icon header">
+            <i class="circular unlock alternate icon"></i>
+            Crear Cuenta
+        </h2>
+        <div class="ui padded grid center aligned">
+            <div class="ui row">
+                <div class="twelve wide column">
+                    <div class="field">
+                        <input type="text" id="signup-modal-username" name="signup-modal-username" placeholder="Correo electronico" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="signup-modal-password" name="signup-modal-password" placeholder="Contrasena" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="signup-modal-password-confirmation" name="signup-modal-password-confirmation" placeholder="Confirma tu contrasena" />
+                    </div>
+                    <div class="field">
+                        <div class="ui slider checkbox">
+                            <input type="checkbox" name="signup-tos-confirmation" id="signup-tos-confirmation">
+                            <label for="signup-tos-confirmation">Accepto los terminos y condiciones</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui row">
+                <div class="ui red right icon button" id="signup-modal-cancel">
+                    Cancelar
+                    <i class="close icon"></i>
+                </div>
+                <div class="ui blue right icon button" id="signup-modal-ok">
+                    Crear
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div type="text/html" id="venue-template">
+    <div class="ui card">
+        <div class="image">
+            <a href="#" class="ui corner orange label"><i class="close icon"></i></a>
+            <img src="{{ data.logo }}">
+            <div class="ui large star rating" data-rating="5" data-max-rating="5"></div>
+        </div>
+
+        <div class="content">
+            <a class="header">{{ data.name }}</a>
+            <div class="meta">
+                <span class="date">{{ data.activity }}</span>
+            </div>
+            <div class="ui divider"></div>
+            <div class="ui divided list">
+                <div class="item">
+                    <div class="header">Direccion</div>
+                    <div class="description" id="venue-card-address"></div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="extra content options">
+                {% if(data.liked){ %}
+                    <button class="ui circular small orange button icon" id="venue-card-like"><i class="like icon"></i></button>
+                {% } else { %}
+                    <button class="ui circular small button icon" id="venue-card-like"><i class="like icon"></i></button>
+                {% } %}
+                
+                <a class="ui circular small button icon" id="venue-card-share"><i class="share icon"></i></a>
+                <a class="ui small button icon" id="venue-card-directions"><i class="road icon"></i> Ruta</a>
+            </div>
+            <div id="directions-panel"></div>
+        </div>
+    </div>
+    <div id="venue-options">
+        {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
+        {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="http://{{data.url}}"><i class="world icon"></i> {{data.url}}</a>{% } %}
+        {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message"><i class="send icon"></i> Enviar mensaje</a>{% } %}
+        {% if(data.page) { %}<a class="ui black button right icon super"><i class="rocket icon"></i> Ver RocketPage</a>{% } %}
+    </div>
+</div>
+
+<div type="text/html" id="venue-message-template">
+    <div class="header">
+        <i class="send icon"></i> Enviar Mensaje
+    </div>
+    <form class="ui form content">
+        <div class="ui field">
+            <label>Nombre</label>
+            <input type="text" placeholder="Nombre completo" name="message-modal-name">
+        </div>
+        <div class="ui field">
+            <label>Email</label>
+            <input type="text" placeholder="Direccion de correo" name="message-modal-email">
+        </div>
+        <div class="ui field">
+            <label>Telefono</label>
+            <input type="text" placeholder="Numero de telefono" name="message-modal-phone">
+        </div>
+        <div class="ui field">
+            <label>Mensaje</label>
+            <textarea placeholder="Mensaje" name="message-modal-message"></textarea>
+        </div>
+        <div class="ui checkbox" id="message-modal-contact-wrapper">
+            <input type="checkbox" name="message-modal-contact">
+            <label>Pueden contactarme por telefono</label>
+        </div>
+    </form>
+    <div class="actions">
+        <div class="ui dark button cancel">Cancelar</div>
+        <div class="ui orange button ok">Enviar</div>
+    </div>
+</div>

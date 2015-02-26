@@ -1,0 +1,7 @@
+{
+  "name": "Jound Web App",
+  "description": "Jound Search Web Client",
+  "repository": "https://github.com/jtanori/alderaan",
+  "logo": "http://www.jound.mx/images/icon-white.png",
+  "keywords": ["jound", "express", "static", "node"]
+}

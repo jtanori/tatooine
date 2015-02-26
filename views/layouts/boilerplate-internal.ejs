@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title><%=data.title||'Jound'%></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta property="og:title" content="<%= data.title %>"/>
+    <meta property="og:image" content="http://www.jound.mx/images/logo-icon.png"/>
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="117">
+    <meta property="og:image:height" content="111">
+    <meta property="og:site_name" content="Jound"/>
+    <meta property="og:description" content="Jound te permite buscar entre mas de 13,000 establecimientos"/>
+    <meta property="fb:app_id" content="688997761197114" />
+    <meta property="og:type" content="website" />
+    <!-- stylesheets -->
+    <link rel="stylesheet" href="/semantic/semantic.min.css">
+    <link rel="stylesheet" href="/stylesheets/semantic.css">
+    <%-stylesheets%>
+    <!-- Core scripts -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+    <script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+    <script src="/semantic/semantic.min.js"></script>
+  </head>
+  <body>
+    <!--[if lt IE 10]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <% include ../partials/menu-internal %>
+    
+    <%-blocks.header%>
+    <%-blocks.left%>
+    <%-body -%>
+    <%-block.right%>
+    <%-blocks.footer%>
+
+    <% include ../partials/footer %>
+    <div id="template-user-menu" template>
+        {% if(!data.user){ %}
+        <div class="right menu" id="header-user-menu">
+            <a class='item' id="facebook-login-button">
+                <i class="icon facebook"></i>
+                Inicio con Facebook
+            </a>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon lock"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-login-button">Iniciar Sesion</a>
+                    <a class="item" id="header-signup-button">Crear Cuenta</a>
+                </div>
+            </div>
+            <a class='item' id="header-settings-button">
+                <i class="icon settings"></i>
+            </a>
+        </div>
+        {% } else { %}
+        <div class="right menu" id="header-user-menu">
+            <div class="item" id="header-avatar">
+                <img src="{{ data.user.avatar }}" class="ui image rounded" />
+            </div>
+            <div class="item" id="">
+                {{ data.user.displayName }}
+            </div>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon user"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-profile-button">Mi Perfil</a>
+                    <a class="item" id="header-signout-button">Cerrar Sesion</a>
+                </div>
+            </div>
+            <a class='item' id="header-settings-button">
+                <i class="icon settings"></i>
+            </a>
+        </div>
+        {% } %}
+    </div>
+
+    <script>
+        (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
+        function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
+        e=o.createElement(i);r=o.getElementsByTagName(i)[0];
+        e.src='//www.google-analytics.com/analytics.js';
+        r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
+        ga('create','UA-59002549-1');ga('send','pageview');
+    </script>
+    <%-scripts%>
+  </body>
+</html>
