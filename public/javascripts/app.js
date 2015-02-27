@@ -507,9 +507,15 @@ $(function(){
 	};
 	var venueMarkerIcon = {
 		url: config.MARKERS.VENUE.url,
-		size: new google.maps.Size(20, 30),
+		size: new google.maps.Size(30, 43),
 		origin: new google.maps.Point(0,0),
-		anchor: new google.maps.Point(10,10)
+		anchor: new google.maps.Point(15,43)
+	};
+	var selectedVenueMarkerIcon = {
+		url: config.MARKERS.VENUE_SELECTED.url,
+		size: new google.maps.Size(30, 43),
+		origin: new google.maps.Point(0,0),
+		anchor: new google.maps.Point(15,43)
 	};
 	var Place = Parse.Object.extend('Location');
 	var PlaceModel = Place.extend({
@@ -612,6 +618,7 @@ $(function(){
 		usingGeolocation: false,
 		directionsService: null,
 		directionsDisplay: null,
+		currentSelectedMarker: null,
 		initialize: function(options){
 			if(options && options.positionModel){
 				this.positionModel = options.positionModel;
@@ -737,6 +744,7 @@ $(function(){
 			var defaultZoom = 10;
 			this.points = [];
 			this.bounds = new google.maps.LatLngBounds();
+			this.currentSelectedMarker = null;
 			//Remove all markers
 			_.each(this.markers, function(m){m.setMap(null); m = null;});
 			//Clear markers
@@ -776,8 +784,8 @@ $(function(){
 				position: p,
 				map: this.map,
 				visible: true,
-				title: model.get('name')/*,
-				icon: geolocatedMarkerIcon*/
+				title: model.get('name'),
+				icon: venueMarkerIcon
 			});
 			
 			this.markers.push(marker);
@@ -786,39 +794,17 @@ $(function(){
 				this.bounds.extend(p);
 			}
 
-			google.maps.event.addListener(marker, 'click', function() {
+			google.maps.event.addListener(marker, 'click', _.bind(function() {
+				if(this.currentSelectedMarker){
+					this.currentSelectedMarker.setIcon(venueMarkerIcon);
+				}
+
+				this.currentSelectedMarker = marker;
+
+				marker.setIcon(selectedVenueMarkerIcon);
 				Backbone.trigger('venue:info', model.toJSON());
 				Backbone.history.navigate('venue/' + model.id, {trigger: false});
-			});
-			/*
-			this.map.addMarker({
-				position: lng,
-				data: {id: model.id},
-				visible: false,
-				markerClick: function(marker){
-					//Reset marker icon only if it is not in the markers object or if there is no routes
-					if(_.size(this.routes) && this.currentMarker){
-						var currentMarkers = _.map(this.routes, function(r){return r.marker.id;});
-
-						if(!_.contains(currentMarkers, this.currentMarker.id)){
-							this.currentMarker.setIcon(config.MARKERS.VENUE);
-						}
-					}else if(this.currentMarker){
-						this.currentMarker.setIcon(config.MARKERS.VENUE);
-					}
-					
-					//Highlight marker
-					this.currentMarker = marker;
-					this.currentModel = this.collection.get(marker.get('data').id);
-					marker.setIcon(config.MARKERS.VENUE_SELECTED);
-					Backbone.trigger('venue:info', marker.get('data').id);
-				}.bind(this)
-			}, function(marker) {
-				marker.setIcon(config.MARKERS.VENUE);
-				marker.setVisible(true);
-				
-			}.bind(this));
-			*/
+			}, this));
 		},
 
 		centerMap: function(){
