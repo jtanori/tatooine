@@ -4,8 +4,8 @@ require('newrelic');
 
 var express = require('express');
 var session = require('express-session');
-var Parse = require('parse').Parse;
 var _ = require('lodash');
+var Parse = require('parse').Parse;
 var s = require("underscore.string");
 var bodyParser = require('body-parser');
 var compression = require('compression');
@@ -20,9 +20,12 @@ var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
 });
+var defaultImage = '/images/jound-square.jpg';
+var defaultImageType = 'image/jpg';
 //Jound utils
 var validations = require('./validations.js');
 var utils = require('./utils.js');
+var Venue = require('./Venue.js');
 //Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
 //Set localstorage
@@ -100,12 +103,12 @@ var getVenueByPosition = function(req, res){
     if (validations.POSITION.test(req.params.position)){
         position = _.map(req.params.position.split(','), function(v){return parseFloat(v.trim());});
         
-        Venue = Parse.Object.extend('Location');
         venueQuery = new Parse.Query(Venue);
         geoObject = new Parse.GeoPoint({latitude: position[0], longitude: position[1]});
 
         venueQuery
             .include('category')
+            .include('logo')
             .equalTo('position', geoObject)
             .select(venueFieldsWhitelist);
     }
@@ -125,7 +128,8 @@ var getVenueByPosition = function(req, res){
                     categories: categories.toJSON() || [],
                     position: position,
                     venue: v.toJSON(),
-                    keywords: keywords
+                    keywords: keywords,
+                    image: venue.logo ? venue.logo : defaultImage
                 }
             );
         }else{
@@ -136,7 +140,8 @@ var getVenueByPosition = function(req, res){
                     categories: categories.toJSON() || [],
                     position: position,
                     error: {error: 'No position found'},
-                    keywords: keywords
+                    keywords: keywords,
+                    image: defaultImage
                 }
             );
         }
@@ -150,7 +155,8 @@ var getVenueByPosition = function(req, res){
                 categories: categories.toJSON() || [],
                 position: position,
                 error: e,
-                keywords: keywords
+                keywords: keywords,
+                image: defaultImage
             }
         );
     };
@@ -165,7 +171,8 @@ var getVenueByPosition = function(req, res){
                     activeMenuItem: 'home',
                     title: title,
                     categories: categories.toJSON() || [],
-                    keywords: keywords
+                    keywords: keywords,
+                    image: defaultImage
                 }
             )
         }
@@ -186,7 +193,6 @@ var getVenueByPosition = function(req, res){
 };
 
 var getVenueById = function(req, res){
-    var Venue = Parse.Object.extend('Location');
     var venueQuery = new Parse.Query(Venue);
     var keywords = [];
 
@@ -220,13 +226,18 @@ var getVenueById = function(req, res){
         v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
         v.set('www', v.get('www').toLowerCase());
 
+        var venue = v.toJSON();
+        venue.logo = v.getLogo();
+
         render(
             {
                 activeMenuItem: 'home',
                 title: v.get('name') + ', ' + v.get('locality') + ' - Jound',
                 categories: categories.toJSON() || [],
-                venue: v.toJSON(),
-                keywords: keywords
+                venue: venue,
+                keywords: keywords,
+                image: venue.logo ? venue.logo : defaultImage,
+                url: '//www.jound.mx/venue/' + v.id
             }
         );
     };
@@ -237,7 +248,9 @@ var getVenueById = function(req, res){
                 title: title,
                 categories: categories.toJSON() || [],
                 error: e,
-                keywords: keywords
+                keywords: keywords,
+                image: defaultImage,
+                url: '//www.jound.mx'
             }
         );
     };
@@ -252,7 +265,9 @@ var getVenueById = function(req, res){
                     activeMenuItem: 'home',
                     title: title,
                     categories: categories.toJSON() || [],
-                    keywords: keywords
+                    keywords: keywords,
+                    image: defaultImage,
+                    url: '//www.jound.mx'
                 }
             )
         }
@@ -292,7 +307,6 @@ var getDirections = function(req, res){
 var like = function(req, res){
     var data = req.body;
     var userQuery = new Parse.Query(Parse.User);
-    var Venue = Parse.Object.extend('Location');
     var venueQuery = new Parse.Query(Venue);
 
     if(_.isString(data.u) && _.isString(data.token) && data.id){
@@ -327,7 +341,6 @@ var like = function(req, res){
 var unlike = function(req, res){
     var data = req.body;
     var userQuery = new Parse.Query(Parse.User);
-    var Venue = Parse.Object.extend('Location');
     var venueQuery = new Parse.Query(Venue);
 
     if(_.isString(data.u) && _.isString(data.token) && data.id){
@@ -390,7 +403,9 @@ var home = function(req, res){
                 activeMenuItem: 'home',
                 title: title,
                 categories: categories.toJSON() || [],
-                keywords: keywords
+                keywords: keywords,
+                image: defaultImage,
+                url: '//www.jound.mx'
             }
         });
     };
@@ -413,7 +428,8 @@ var profile = function(req, res){
     res.render('profile' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             activeMenuItem: 'profile',
-            title: 'Jound - Mi perfil'
+            title: 'Jound - Mi perfil',
+            url: '//www.jound.mx/profile'
         }
     });
 };
@@ -421,12 +437,12 @@ var profile = function(req, res){
 var search = function(req, res){
     var data = req.body || {};
     var isAjax = req.xhr;
-    var Venue = Parse.Object.extend({className: 'Location'});
     var query = new Parse.Query(Venue);
     var category, position, categoryQuery;
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
+            _.each(r, function(r){ r.set('logo', r.getLogo()); });
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
             res.redirect('/');
@@ -483,7 +499,9 @@ var search = function(req, res){
 var about = function(req, res){
     res.render('about' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Acerca de la empresa'
+            title: 'Jound - Acerca de la empresa',
+            image: defaultImage,
+            url: '//www.jound.mx/about'
         }
     });
 };
@@ -491,7 +509,9 @@ var about = function(req, res){
 var privacy = function(req, res){
     res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Politicas de privacidad'
+            title: 'Jound - Politicas de privacidad',
+            image: defaultImage,
+            url: '//www.jound.mx/privacy'
         }
     });
 };
@@ -499,7 +519,9 @@ var privacy = function(req, res){
 var referrals = function(req, res){
     res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Nuestro programa de afiliados (en el laboratorio)'
+            title: 'Jound - Nuestro programa de afiliados (en el laboratorio)',
+            image: defaultImage,
+            url: '//www.jound.mx/referrals'
         }
     });
 };
@@ -507,7 +529,9 @@ var referrals = function(req, res){
 var businessAdd = function(req, res){
     res.render('business-add' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Agrega tu negocio'
+            title: 'Jound - Agrega tu negocio',
+            image: defaultImage,
+            url: '//www.jound.mx/business-add'
         }
     });
 };
@@ -515,7 +539,9 @@ var businessAdd = function(req, res){
 var whatIsJound = function(req, res){
     res.render('what-is-jound' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - ¿Que es Jound?'
+            title: 'Jound - ¿Que es Jound?',
+            image: defaultImage,
+            url: '//www.jound.mx/what-is-jound'
         }
     });
 };
@@ -523,7 +549,9 @@ var whatIsJound = function(req, res){
 var products = function(req, res){
     res.render('products' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - Productos'
+            title: 'Jound - Productos',
+            image: defaultImage,
+            url: '//www.jound.mx/products'
         }
     });
 };
@@ -531,7 +559,9 @@ var products = function(req, res){
 var forgot = function(req, res){
     res.render('forgot' + getDeviceExtension(req.headers['user-agent']), {
         data: {
-            title: 'Jound - ¿Se te olvido el password?'
+            title: 'Jound - ¿Se te olvido el password?',
+            image: defaultImage,
+            url: '//www.jound.mx/forgot'
         }
     });
 };

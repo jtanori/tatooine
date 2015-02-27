@@ -52,7 +52,14 @@ $(function(){
 			MAPS_WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
 		},
 		FACEBOOK: {
-			APP_ID: '688997761197114'//'779644072132482'
+			APP_ID: '688997761197114',//'779644072132482'
+			OGDEFAULT: {
+				ogimagewidth: 117,
+				ogimageheight: 111,
+				ogimagetype: 'image/jpg',
+				ogimage: '/images/jound-square.jpg',
+				ogtitle: 'Jound - Busca y encuentra entre miles de establecimientos' 
+			}
 		},
 		MAP: {
 			DEFAULT_OPTIONS: {
@@ -162,6 +169,17 @@ $(function(){
 
 	Parse.initialize(config.PARSE.KEY, config.PARSE.JSKEY);
 
+	function updateOG(data){
+		if(!data){
+			data = config.FACEBOOK.OGDEFAULT;
+		}
+
+		_.each(data, function(d, k){
+			if($('#' + k).length){
+				$('#' + k).attr('content', d);
+			}
+		});
+	};
 	/********* HEADER **********/
 	var Header = Backbone.View.extend({
 		el: '#header',
@@ -362,16 +380,13 @@ $(function(){
     					});
 
     					FB.api('/me/picture', function(response){
-    						console.log(response, 'picture response');
 							if (!response || response.error) {
-								console.log('no picture')
 								u.save()
 									.always(function(){
 										$('body').dimmer('hide');
 										Backbone.trigger('user:login', true);
 									});
 							}else{
-								console.log('avatar', response.data.url);
 								u.set('avatar', response.data.url)
 									.save()
 									.then(function(){
@@ -430,7 +445,6 @@ $(function(){
 						} else {
 							alert('No pudimos iniciar sesion con tu cuenta');
 							$('body').dimmer('hide');
-							console.log(response);
 						}
 					});
 				}
@@ -603,8 +617,9 @@ $(function(){
 			};
 		}
 	});
-	var Places = Parse.Collection.extend({
-		model: PlaceModel
+	var Places = window.places = Parse.Collection.extend({
+		model: PlaceModel,
+		query: (new Parse.Query(PlaceModel)).include('logo')
 	});
 	var Map = Backbone.View.extend({
 		el: '#map',
@@ -866,7 +881,6 @@ $(function(){
 					break;
 				}	
 			}catch(e){
-				console.log('can not set radius', e.message);
 				this.currentRadius.setRadius(10);
 			}
 			
@@ -979,7 +993,6 @@ $(function(){
 			'submit': 'submit'
 		},
 		initialize: function(){
-			console.log('initialize signup modal');
 			return this.render();
 		},
 		render: function(){
@@ -1145,8 +1158,6 @@ $(function(){
 			this.dom.autoFocus.checkbox(this.model.get('autoFocus') ? 'check' : 'uncheck');
 			this.dom.searchRadius.val(this.model.get('searchRadius'));
 
-			console.log('current settings', this.model.toJSON());
-
 			this.$el.modal();
 
 			return this;
@@ -1178,7 +1189,6 @@ $(function(){
 			}
 		},
 		onAutoFocusChange: function(){
-			console.log('focus', this.dom.autoFocus.checkbox('is checked'));
 			this.model.set('autoFocus', this.dom.autoFocus.checkbox('is checked'));
 			this.model.toLocal();
 
@@ -1235,6 +1245,7 @@ $(function(){
 			var id = this.model.id;
 			var data = this.model.getBasicData();
 			var p = this.model.get('position');
+			var title = data.name + ', ' + this.model.get('locality') + ' - Jound';
 
 			data.liked = false;
 			data.page = this.model.get('page');
@@ -1257,11 +1268,20 @@ $(function(){
 				likeButton: this.$el.find('#venue-card-like'),
 				shareButton: this.$el.find('#venue-card-share'),
 				unlikeButton: this.$el.find('#venue-card-unlike'),
-				address: this.$el.find('#venue-card-address')
+				address: this.$el.find('#venue-card-address'),
+				image: this.$el.find('#venue-card-logo')
 			};
 
 			this.dom.rating.rating();
-			Backbone.trigger('page:set:title', this.model.get('name') + ' - Jound');
+			Backbone.trigger('page:set:title', title);
+
+			var ogData = {
+				ogimage: this.model.getLogo(),
+				ogtitle: title,
+				ogurl: '//www.jound.mx/venue/' + this.model.id
+			};
+
+			updateOG(ogData);
 
 			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
 			/*
@@ -1276,16 +1296,13 @@ $(function(){
 				.fail(_.bind(function(){
 					this.dom.address.text(PlaceModel.prototype.getAddress.call(this.model));
 				}));*/
-
-			console.log(this.model.toJSON());
-
-			
 			return this;
 		},
 		show: function(){
 			if(!this.$el.is(':visible')){
 				this.$el.transition('fade up');
 			}
+
 			return this;
 		},
 		hide: function(){
