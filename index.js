@@ -100,6 +100,7 @@ var Categories = Parse.Collection.extend({
 
 var getVenueByPosition = function(req, res){
     var position = keywords = [], venue, venueQuery, geoObject, Venue;
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     if (validations.POSITION.test(req.params.position)){
         position = _.map(req.params.position.split(','), function(v){return parseFloat(v.trim());});
         
@@ -195,6 +196,7 @@ var getVenueByPosition = function(req, res){
 var getVenueById = function(req, res){
     var venueQuery = new Parse.Query(Venue);
     var keywords = [];
+    var protocol = req.connection.encrypted ? 'https:' : 'http:';
 
     venueQuery
         .include('category')
@@ -237,7 +239,7 @@ var getVenueById = function(req, res){
                 venue: venue,
                 keywords: keywords,
                 image: venue.logo ? venue.logo : defaultImage,
-                url: '//www.jound.mx/venue/' + v.id
+                url: protocol + '//www.jound.mx/venue/' + v.id
             }
         );
     };
@@ -250,7 +252,7 @@ var getVenueById = function(req, res){
                 error: e,
                 keywords: keywords,
                 image: defaultImage,
-                url: '//www.jound.mx'
+                url: protocol + '//www.jound.mx'
             }
         );
     };
@@ -267,7 +269,7 @@ var getVenueById = function(req, res){
                     categories: categories.toJSON() || [],
                     keywords: keywords,
                     image: defaultImage,
-                    url: '//www.jound.mx'
+                    url: protocol + '//www.jound.mx'
                 }
             )
         }
@@ -395,6 +397,7 @@ var getAddress = function(req, res){
 var home = function(req, res){
     var categories = new Categories();
     var keywords = {};
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
@@ -405,7 +408,7 @@ var home = function(req, res){
                 categories: categories.toJSON() || [],
                 keywords: keywords,
                 image: defaultImage,
-                url: '//www.jound.mx'
+                url: protocol + '//www.jound.mx'
             }
         });
     };
@@ -425,11 +428,12 @@ var home = function(req, res){
 };
 
 var profile = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('profile' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             activeMenuItem: 'profile',
             title: 'Jound - Mi perfil',
-            url: '//www.jound.mx/profile'
+            url: protocol + '//www.jound.mx/profile'
         }
     });
 };
@@ -497,71 +501,78 @@ var search = function(req, res){
 };
 
 var about = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('about' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - Acerca de la empresa',
             image: defaultImage,
-            url: '//www.jound.mx/about'
+            url: protocol + '//www.jound.mx/about'
         }
     });
 };
 
 var privacy = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - Politicas de privacidad',
             image: defaultImage,
-            url: '//www.jound.mx/privacy'
+            url: protocol + '//www.jound.mx/privacy'
         }
     });
 };
 
 var referrals = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - Nuestro programa de afiliados (en el laboratorio)',
             image: defaultImage,
-            url: '//www.jound.mx/referrals'
+            url: protocol + '//www.jound.mx/referrals'
         }
     });
 };
 
 var businessAdd = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('business-add' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - Agrega tu negocio',
             image: defaultImage,
-            url: '//www.jound.mx/business-add'
+            url: protocol + '//www.jound.mx/business-add'
         }
     });
 };
 
 var whatIsJound = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('what-is-jound' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - ¿Que es Jound?',
             image: defaultImage,
-            url: '//www.jound.mx/what-is-jound'
+            url: protocol + '//www.jound.mx/what-is-jound'
         }
     });
 };
 
 var products = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('products' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - Productos',
             image: defaultImage,
-            url: '//www.jound.mx/products'
+            url: protocol + '//www.jound.mx/products'
         }
     });
 };
 
 var forgot = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('forgot' + getDeviceExtension(req.headers['user-agent']), {
         data: {
             title: 'Jound - ¿Se te olvido el password?',
             image: defaultImage,
-            url: '//www.jound.mx/forgot'
+            url: protocol + '//www.jound.mx/forgot'
         }
     });
 };
