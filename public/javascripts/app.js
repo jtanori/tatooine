@@ -534,6 +534,9 @@ $(function(){
 	var Place = Parse.Object.extend('Location');
 	var PlaceModel = Place.extend({
 		pageLoaded: false,
+		getURL: function(){
+			return '//www.jound.mx/venue/' + this.id;
+		},
 		getAddress: function(){
 			var address = '';
 			var n = this.get('exterior_number');
@@ -1207,7 +1210,6 @@ $(function(){
 		id: 'ui-card-wrapper',
 		template: _.template($('#venue-template').html()),
 		routeEnabled: false,
-		share: null,
 		events: {
 			'click a.label': 'hide',
 			'click #venue-card-directions': 'getDirecctions',
@@ -1364,7 +1366,12 @@ $(function(){
 			}
 		},
 		share: function(){
-			console.log('share');
+			FB.ui({
+				method: 'share',
+				href: window.location.href,
+			}, function(response){
+				console.log(response, 'shared');
+			});
 		},
 		sendMessage: function(){
 			Backbone.trigger('message:write', this.model.id);
