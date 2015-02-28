@@ -226,7 +226,7 @@ var getVenueById = function(req, res){
         v.set('locality', s(v.get('locality')).titleize().value());
         v.set('municipality', s(v.get('municipality')).titleize().value());
         v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
-        v.set('www', v.get('www').toLowerCase());
+        v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
 
         var venue = v.toJSON();
         venue.logo = v.getLogo();
