@@ -1552,9 +1552,12 @@ $(function(){
 		},
 		hide: function(){
 			this.$el.modal('hide');
-			this.dom.form.form('reset');
+			this.dom.form.form('clear');
 			this.dom.checkbox.checkbox('uncheck');
 			this.model.clear();
+
+			this.model = null;
+			this.model = new MessageModel();
 
 			return this;
 		},
