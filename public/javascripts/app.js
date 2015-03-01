@@ -1109,14 +1109,17 @@ $(function(){
 			}
 
 			var isValid = this.dom.form.form('validate form');
-			var values;
+			var values, user;
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
 				this.dom.buttons.prop('disabled', true);
-				values = this.dom.form.form('get values');
 
-				User
-					.signUp(values['signup-modal-username'], values['signup-modal-password'])
+				values = this.dom.form.form('get values');
+				user = new User();
+
+				user
+					.set({email: values['signup-modal-username'], username: values['signup-modal-username'], password: values['signup-modal-password']})
+					.signUp()
 					.then(_.bind(this.onSuccess, this))
 					.fail(_.bind(this.onError, this))
 					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
@@ -1128,6 +1131,7 @@ $(function(){
 			this.hide();
 		},
 		onError: function(e){
+			console.log('error', arguments);
 			var values = this.dom.form.form('get values');
 			
 			switch(e.code){
