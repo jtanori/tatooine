@@ -180,6 +180,8 @@ $(function(){
 			}
 		});
 	};
+
+
 	/********* HEADER **********/
 	var Header = Backbone.View.extend({
 		el: '#header',
@@ -537,6 +539,11 @@ $(function(){
 		getURL: function(){
 			return '//www.jound.mx/venue/' + this.id;
 		},
+		getWWW: function(){
+			if(this.get('www')){
+				return this.get('www').replace(/^(https?|ftp):\/\//, '');
+			}
+		},
 		getAddress: function(){
 			var address = '';
 			var n = this.get('exterior_number');
@@ -616,7 +623,8 @@ $(function(){
 				url: this.get('www'),
 				activity: this.get('activity_description'),
 				logo: PlaceModel.prototype.getLogo.call(this),
-				email: !!this.get('email_address')
+				email: !!this.get('email_address'),
+				www: this.getWWW()
 			};
 		}
 	});
@@ -892,23 +900,34 @@ $(function(){
 
 	/********* AUTH **********/
 	var LoginModal = Backbone.View.extend({
-		el: '#login-modal',
 		dom: {},
+		id: 'login-modal',
+		className: 'ui small modal',
+		template: _.template($('#login-modal-template').html()),
 		events: {
-			'click #login-modal-ok': 'submit',
-			'click #login-modal-cancel': 'hide',
 			'submit': 'submit'
 		},
 		initialize: function(){
+			$('#login-modal-template').remove();
+
 			return this.render();
 		},
 		render: function(){
+			this.$el.html(this.template()).appendTo('body');
+
+			this.dom = {
+				form: this.$el.find('form'),
+				buttons: this.$el.find('button')
+			}
+
 			this.$el.modal({
-				closable: false
+				closable: false,
+				onApprove: _.bind(function(){
+					this.dom.form.trigger('submit');
+					return false;
+				}, this)
 			});
 
-			this.dom.errorList = this.$el.find('.message .list');
-			this.dom.form = this.$el.find('form');
 			this.dom.form.form({
 				inline: true,
 				on: 'blur',
@@ -962,16 +981,18 @@ $(function(){
 			var values;
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
+				this.dom.buttons.prop('disabled', true);
 				values = this.dom.form.form('get values');
 
 				User
 					.logIn(values['login-modal-username'], values['login-modal-password'])
 					.then(_.bind(this.onSuccess, this))
 					.fail(_.bind(this.onError, this))
-					.always(_.bind(function(){this.dom.form.removeClass('loading');}, this));
+					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
 		onSuccess: function(u){
+			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
 			this.hide();
 		},
@@ -988,23 +1009,34 @@ $(function(){
 		}
 	});
 	var SignupModal = Backbone.View.extend({
-		el: '#signup-modal',
 		dom: {},
+		id: 'signup-modal',
+		className: 'ui small modal',
+		template: _.template($('#signup-modal-template').html()),
 		events: {
-			'click #signup-modal-ok': 'submit',
-			'click #signup-modal-cancel': 'hide',
 			'submit': 'submit'
 		},
 		initialize: function(){
+			$('#signup-modal-template').remove();
+
 			return this.render();
 		},
 		render: function(){
+			this.$el.html(this.template()).appendTo('body');
+
+			this.dom = {
+				form: this.$el.find('form'),
+				buttons: this.$el.find('button')
+			}
+
 			this.$el.modal({
-				closable: false
+				closable: false,
+				onApprove: _.bind(function(){
+					this.dom.form.trigger('submit');
+					return false;
+				}, this)
 			});
 
-			this.dom.errorList = this.$el.find('.message .list');
-			this.dom.form = this.$el.find('form');
 			this.dom.form.form({
 				inline: true,
 				on: 'blur',
@@ -1072,24 +1104,27 @@ $(function(){
 			return this;
 		},
 		submit: function(e){
+
 			if(e && e.preventDefault){
 				e.preventDefault();
 			}
 
 			var isValid = this.dom.form.form('validate form');
-			var values, user;
+			var values;
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
+				this.dom.buttons.prop('disabled', true);
 				values = this.dom.form.form('get values');
 
 				User
 					.signUp(values['signup-modal-username'], values['signup-modal-password'])
 					.then(_.bind(this.onSuccess, this))
 					.fail(_.bind(this.onError, this))
-					.always(_.bind(function(){this.dom.form.removeClass('loading');}, this));
+					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
 		onSuccess: function(u){
+			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
 			this.hide();
 		},
@@ -1136,7 +1171,9 @@ $(function(){
 	});
 
 	var SettingsModal = Backbone.View.extend({
-		el: '#settings-modal',
+		id: 'settings-modal',
+		className: 'ui small modal',
+		template: _.template($('#settings-modal-template').html()),
 		dom: {},
 		events: {
 			'change #settings-modal-radius': 'onRadiusChange',
@@ -1144,12 +1181,15 @@ $(function(){
 			'change #settings-modal-auto-focus': 'onAutoFocusChange'
 		},
 		initialize: function(){
+			$('#settings-modal-template').remove();
 
 			this.model = settingsModel;
 
 			return this.render();
 		},
 		render: function(){
+			this.$el.html(this.template()).appendTo('body');
+
 			this.dom.searchRadius = this.$el.find('#settings-modal-radius');
 			this.dom.autoSearch = this.$el.find('#settings-modal-auto-search-wrapper');
 			this.dom.autoFocus = this.$el.find('#settings-modal-auto-focus-wrapper');
@@ -1219,6 +1259,8 @@ $(function(){
 			'click #venue-options-send-message': 'sendMessage'
 		},
 		initialize: function(options){
+			$('#venue-template').remove();
+			
 			Backbone.on('venue:info', this.update, this);
 			
 			this.positionModel = positionModel;
@@ -1248,6 +1290,8 @@ $(function(){
 			var data = this.model.getBasicData();
 			var p = this.model.get('position');
 			var title = data.name + ', ' + this.model.get('locality') + ' - Jound';
+
+			data.www = this.model.getWWW();
 
 			data.liked = false;
 			data.page = this.model.get('page');
@@ -1402,6 +1446,8 @@ $(function(){
 			'submit': 'submit'
 		},
 		initialize: function(){
+			$('#venue-message-template').remove();
+
 			this.model = new MessageModel();
 
 			return this.render();

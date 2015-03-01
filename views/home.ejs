@@ -12,39 +12,39 @@
 
 <script>
 var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
+
+<% if(data.venue) { %>
+
+    window.initialVenueConfig = <%- JSON.stringify(data.venue) %>
+
+<% } %>
 </script>
-<div class="ui small modal" id="login-modal">
+
+<div id="venue-view" hidden></div>
+
+<div template id="login-modal-template">
+    <div class="header">
+        <i class="sign in icon"></i> Iniciar Sesión
+    </div>
     <form class="ui form content">
-        <h2 class="ui center aligned icon header">
-            <i class="circular sign in icon"></i>
-            Iniciar Sesion
-        </h2>
-        <div class="ui padded grid center aligned">
-            <div class="ui row">
-                <div class="twelve wide column">
-                    <div class="field">
-                        <input type="text" id="login-modal-username" name="login-modal-username" placeholder="Correo electronico" />
-                    </div>
-                    <div class="field">
-                        <input type="password" id="login-modal-password" name="login-modal-password" placeholder="Contrasena" />
-                    </div>
-                </div>
-            </div>
-            <div class="ui row">
-                <div class="ui red right icon button" id="login-modal-cancel">
-                    Cancelar
-                    <i class="close icon"></i>
-                </div>
-                <div class="ui blue right icon button" id="login-modal-ok">
-                    Dame Jound
-                    <i class="checkmark icon"></i>
-                </div>
-            </div>
+        <div class="fields">
+        <div class="eight wide field">
+            <label for="login-modal-username">Correo Electronico</label>
+            <input type="text" id="login-modal-username" name="login-modal-username" placeholder="juan@jound.mx" />
+        </div>
+        <div class="eight wide field">
+            <label for="login-modal-password">Contraseña</label>
+            <input type="password" id="login-modal-password" name="login-modal-password" placeholder="" />
+        </div>
         </div>
     </form>
+    <div class="actions">
+        <button type="reset" class="ui dark button cancel"  id="login-modal-cancel">Cancelar</button>
+        <button type="submit" class="ui orange button ok"  id="login-modal-ok">Entrar</button>
+    </div>
 </div>
 
-<div class="ui small modal" id="settings-modal">
+<div template id="settings-modal-template">
     <i class="close icon"></i>
     <div class="header">Ajustes</div>
     <form class="ui form content">
@@ -78,56 +78,40 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
     </form>
 </div>
 
-<% if(data.venue) { %>
-<script>
-    window.initialVenueConfig = <%- JSON.stringify(data.venue) %>
-</script>
-<% } %>
-<div id="venue-view" hidden>
-    
-
-</div>
-<div class="ui small modal" id="signup-modal">
+<div template id="signup-modal-template">
+    <div class="header">
+        <i class="user icon"></i> Crear Cuenta
+    </div>
     <form class="ui form content">
-        <h2 class="ui center aligned icon header">
-            <i class="circular unlock alternate icon"></i>
-            Crear Cuenta
-        </h2>
-        <div class="ui padded grid center aligned">
-            <div class="ui row">
-                <div class="twelve wide column">
-                    <div class="field">
-                        <input type="text" id="signup-modal-username" name="signup-modal-username" placeholder="Correo electronico" />
-                    </div>
-                    <div class="field">
-                        <input type="password" id="signup-modal-password" name="signup-modal-password" placeholder="Contrasena" />
-                    </div>
-                    <div class="field">
-                        <input type="password" id="signup-modal-password-confirmation" name="signup-modal-password-confirmation" placeholder="Confirma tu contrasena" />
-                    </div>
-                    <div class="field">
-                        <div class="ui slider checkbox">
-                            <input type="checkbox" name="signup-tos-confirmation" id="signup-tos-confirmation">
-                            <label for="signup-tos-confirmation">Accepto los terminos y condiciones</label>
-                        </div>
-                    </div>
-                </div>
+        <div class="field">
+            <label for="signup-modal-username">Correo Electronico</label>
+            <input type="text" id="signup-modal-username" name="signup-modal-username" placeholder="juan@jound.mx" />
+        </div>
+        <div class="two fields">
+            <div class="eight wide field">
+                <label for="signup-modal-password">Contraseña</label>
+                <input type="password" id="signup-modal-password" name="signup-modal-password" />
             </div>
-            <div class="ui row">
-                <div class="ui red right icon button" id="signup-modal-cancel">
-                    Cancelar
-                    <i class="close icon"></i>
-                </div>
-                <div class="ui blue right icon button" id="signup-modal-ok">
-                    Crear
-                    <i class="checkmark icon"></i>
-                </div>
+            <div class="eight wide field">
+                <label for="signup-modal-password-confirmation">Confirmar Contraseña</label>
+                <input type="password" id="signup-modal-password-confirmation" name="signup-modal-password-confirmation" />
+            </div>
+        </div>
+        <div class="ui divider"></div>
+        <div class="field">
+            <div class="ui slider checkbox">
+                <input type="checkbox" name="signup-tos-confirmation" id="signup-tos-confirmation">
+                <label for="signup-tos-confirmation">Accepto los terminos y condiciones</label>
             </div>
         </div>
     </form>
+    <div class="actions">
+        <button type="reset" class="ui dark button cancel"  id="signup-modal-cancel">Cancelar</button>
+        <button type="submit" class="ui orange button ok"  id="signup-modal-ok">¡Dame Jound!</button>
+    </div>
 </div>
 
-<div type="text/html" id="venue-template">
+<div template id="venue-template">
     <div class="ui card">
         <div class="image">
             <a class="ui corner orange label"><i class="close icon"></i></a>
@@ -150,26 +134,26 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             <div class="ui divider"></div>
             <div class="extra content options">
                 {% if(data.liked){ %}
-                    <button class="ui circular small orange button icon" id="venue-card-like"><i class="like icon"></i></button>
+                    <button class="ui circular small orange button icon" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i></button>
                 {% } else { %}
-                    <button class="ui circular small button icon" id="venue-card-like"><i class="like icon"></i></button>
+                    <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
                 {% } %}
                 
-                <a class="ui circular small button icon" id="venue-card-share"><i class="share icon"></i></a>
-                <a class="ui small button icon" id="venue-card-directions"><i class="road icon"></i> Ruta</a>
+                <a class="ui circular small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
+                <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
             </div>
             <div id="directions-panel"></div>
         </div>
     </div>
     <div id="venue-options">
-        {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
-        {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="http://{{data.url}}"><i class="world icon"></i> {{data.url}}</a>{% } %}
-        {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message"><i class="send icon"></i> Enviar mensaje</a>{% } %}
-        {% if(data.page) { %}<a class="ui black button right icon super"><i class="rocket icon"></i> Ver RocketPage</a>{% } %}
+        {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
+        {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}
+        {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message" title="Enviar mensaje a {{ data.name }}"><i class="send icon"></i> Enviar mensaje</a>{% } %}
+        {% if(data.page) { %}<a class="ui black button right icon super" title="Ver la RocketPage de {{ data.name }}"><i class="rocket icon"></i> Ver RocketPage</a>{% } %}
     </div>
 </div>
 
-<div type="text/html" id="venue-message-template">
+<div template id="venue-message-template">
     <div class="header">
         <i class="send icon"></i> Enviar Mensaje
     </div>
