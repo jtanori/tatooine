@@ -327,6 +327,7 @@ $(function(){
 				}).fail(function(){
 					console.log('fail loading', arguments);
 				}).always(function(){
+					$('body').dimmer('hide');
 					Backbone.trigger('search:end');
 				});
 			}
