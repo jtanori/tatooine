@@ -341,7 +341,7 @@ $(function(){
 				e.preventDefault();
 			}
 
-			Backbone.history.navigate('/', {trigger: false});
+			Backbone.history.navigate('/', {trigger: true});
 		},
 		login: function(){
 			if(User.current()){
@@ -633,7 +633,7 @@ $(function(){
 		query: (new Parse.Query(PlaceModel)).include('logo')
 	});
 	var Map = Backbone.View.extend({
-		el: '#map',
+		id: 'map',
 		currentPosition: null,
 		currentPositionMarker: null,
 		currentRadius: null,
@@ -705,9 +705,8 @@ $(function(){
 			google.maps.event.addListener(this.currentPositionMarker, 'dragstart', _.bind(this.onCenterDragStart, this));
 			google.maps.event.addListener(this.currentPositionMarker, 'dragend', _.bind(this.onCenterDragEnd, this));
 
-			//this.getCurrentPosition();
-
 			this.directionsDisplay.setMap(this.map);
+			this.$el.appendTo('body');
 
 			return this;			
 		},
@@ -1246,8 +1245,7 @@ $(function(){
 		model: Backbone.Model.extend()
 	});
 	var Venue = Backbone.View.extend({
-		className: 'venue',
-		id: 'ui-card-wrapper',
+		id: 'venue-view',
 		template: _.template($('#venue-template').html()),
 		routeEnabled: false,
 		events: {
@@ -1260,7 +1258,7 @@ $(function(){
 		},
 		initialize: function(options){
 			$('#venue-template').remove();
-			
+
 			Backbone.on('venue:info', this.update, this);
 			
 			this.positionModel = positionModel;
@@ -1296,6 +1294,10 @@ $(function(){
 			data.liked = false;
 			data.page = this.model.get('page');
 
+			if(data.page){
+				data.page = data.page.toJSON();
+			}
+
 			if(u && _.indexOf(u.get('likedVenues'), id) >= 0){
 				data.liked = true;
 			}else{
@@ -1303,10 +1305,6 @@ $(function(){
 			}
 
 			this.$el.html(this.template({data: data}));
-			
-			if(this.model.get('page') && !this.model.pageLoaded){
-				this.model.get('page').fetch();
-			}
 
 			this.dom = {
 				rating: this.$el.find('.rating'),
@@ -1318,18 +1316,28 @@ $(function(){
 				image: this.$el.find('#venue-card-logo')
 			};
 
-			this.dom.rating.rating();
-			Backbone.trigger('page:set:title', title);
+			if(this.model.get('page')){
+				this.dom.pageButton = this.$el.find('#venue-card-rocket-button');
+			}
 
-			var ogData = {
+			this.dom.rating.rating();
+			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
+
+			updateOG({
 				ogimage: this.model.getLogo(),
 				ogtitle: title,
 				ogurl: '//www.jound.mx/venue/' + this.model.id
-			};
+			});
+			Backbone.trigger('page:set:title', title);
 
-			updateOG(ogData);
+			if(this.model.get('page') && !this.model.pageLoaded){
+				this.model.get('page').fetch().then(_.bind(this.onPage, this)).fail(_.bind(this.onPageError, this));
+			}else if(this.model.pageLoaded){
+				this.dom.pageButton.removeClass('loading');
+			}
 
-			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
+			this.$el.appendTo('body');
+
 			/*
 			$.ajax({url: '/address', type: 'POST', data: {latitude: p.latitude, longitude: p.longitude}})
 				.then(_.bind(function(r){
@@ -1363,10 +1371,13 @@ $(function(){
 			this.show();
 		},
 		onPage: function(){
+			this.model.pageLoaded = true;
+			this.dom.pageButton.removeClass('loading');
 
+			console.log(this.model.get('page').toJSON());
 		},
 		onPageError: function(){
-
+			console.log('on page error');
 		},
 		getDirecctions: function(){
 			this.routeEnabled = true;
@@ -1440,9 +1451,8 @@ $(function(){
 		className: 'ui small modal',
 		template: _.template($('#venue-message-template').html()),
 		dom: {},
+		id: 'venue-message-modal',
 		events: {
-			'click .ok.button': 'onSubmit',
-			'click .cancel.button': 'hide',
 			'submit': 'submit'
 		},
 		initialize: function(){
@@ -1453,18 +1463,22 @@ $(function(){
 			return this.render();
 		},
 		render: function(){
-			this.$el.html(this.template());
-			this.$el.modal({
-				closable: false,
-				onApprove: _.bind(this.onApprove, this),
-                onDeny: _.bind(this.onDeny, this)
-			});
+			this.$el.html(this.template()).appendTo('body');
 
 			this.dom = {
 				form: this.$el.find('form'),
+				buttons: this.$el.find('button'),
 				checkboxWrapper: this.$el.find('#message-modal-contact-wrapper'),
 				checkbox: this.$el.find('input[type=checkbox]')
-			};
+			}
+
+			this.$el.modal({
+				closable: false,
+				onApprove: _.bind(function(){
+					this.dom.form.trigger('submit');
+					return false;
+				}, this)
+			});
 
 			this.dom.checkboxWrapper.checkbox();
 			this.dom.form.form({
@@ -1513,6 +1527,7 @@ $(function(){
 		show: function(venueID){
 			var venue = new Place();
 			var visitor;
+
 			if(venueID){
 				venue.id = venueID;
 				this.model.set('venue', venue);
@@ -1522,10 +1537,10 @@ $(function(){
 
 			if(User.current()){
 				this.model.set('user', User.current());
-			}else{
-				visitor = new Visitor();
-				this.model.set('visitor', visitor);
 			}
+
+			visitor = new Visitor();
+			this.model.set('visitor', visitor);
 
 			this.$el.modal('show');
 
@@ -1539,45 +1554,50 @@ $(function(){
 
 			return this;
 		},
-		onApprove: function(){
-			this.dom.form.trigger('submit');
-
-			return false;
-		},
-		onDeny: function(){
-			this.hide();
-		},
 		submit: function(e){
 			if(e && e.preventDefault){
 				e.preventDefault();
 			}
 
-			this.$el.dimmer('show');
-
 			var values = this.dom.form.form('get values');
-			var visitor;
+			var isValid = this.dom.form.form('validate form');
 
-			var onVisitorSave = _.bind(function(){
-				console.log('visitor saved', arguments);
+			var saveMessage = _.bind(function(){
+				this.model
+					.set({message: _.escape(values['message-modal-message'])})
+					.save()
+					.then(onMessageSave)
+					.fail(onError)
+					.always(onComplete);
 			}, this);
 			var onMessageSave = _.bind(function(){
-				console.log('message saved', arguments);
+				alert('Tu mensaje se ha enviado, gracias por usar Jound.');
+				this.hide();
 			}, this);
-			var onError = function(){
-				console.log('error', arguments);
-			}
 
-			if(this.model.get('visitor')){
+			var onError = _.bind(function(){
+				this.dom.form.removeClass('loading').addClass('error');
+				alert('Ha ocurrido un error al enviar tu mensaje, intenta de nuevo por favor.');
+			}, this);
+
+			var onComplete = _.bind(function(){
+				this.dom.form.removeClass('loading').removeClass('error');
+				this.dom.buttons.removeAttr('disabled');
+			}, this);
+
+			if(isValid){
+				this.dom.form.addClass('loading').removeClass('error');
+				this.dom.buttons.prop('disabled', true);
+
 				visitor = this.model.get('visitor');
 				visitor.set('email', values['message-modal-email']);
 				visitor.set('phone', values['message-modal-phone']);
 				visitor.set('name', values['message-modal-name']);
 				visitor.set('canBeContacted', this.dom.checkboxWrapper.checkbox('is checked'));
 
-				visitor.save().then(onVisitorSave).fail(onError);
-			}else{
-				this.model.save().then(onMessageSave).fail(onError);
+				visitor.save().then(saveMessage).fail(onError);
 			}
+			
 		}
 	});
 	
@@ -1588,7 +1608,7 @@ $(function(){
 	var positionModel = new PositionModel();
 	var header = new Header({positionModel: positionModel});
 	var map = new Map({positionModel: positionModel});
-	var venue = new Venue({venue: window.initialVenueConfig || null, el: '#venue-view'});
+	var venue = new Venue({venue: window.initialVenueConfig || null});
 
 	var Router = Backbone.Router.extend({
 		views: {

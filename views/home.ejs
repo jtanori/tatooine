@@ -20,8 +20,6 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
 <% } %>
 </script>
 
-<div id="venue-view" hidden></div>
-
 <div template id="login-modal-template">
     <div class="header">
         <i class="sign in icon"></i> Iniciar Sesión
@@ -112,44 +110,53 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
 </div>
 
 <div template id="venue-template">
-    <div class="ui card">
-        <div class="image">
-            <a class="ui corner orange label"><i class="close icon"></i></a>
-            <img src="{{ data.logo }}" id="venue-card-logo">
-            <div class="ui large star rating" data-rating="5" data-max-rating="5"></div>
-        </div>
+    <div id="ui-card-wrapper" class="venue">
+        <div class="ui card">
+            <div class="image">
+                <a class="ui corner orange label"><i class="close icon"></i></a>
+                <img src="{{ data.logo }}" id="venue-card-logo">
+                <div class="ui large star rating" data-rating="5" data-max-rating="5"></div>
+            </div>
 
-        <div class="content">
-            <a class="header">{{ data.name }}</a>
-            <div class="meta">
-                <span class="date">{{ data.activity }}</span>
-            </div>
-            <div class="ui divider"></div>
-            <div class="ui divided list">
-                <div class="item">
-                    <div class="header">Direccion</div>
-                    <div class="description" id="venue-card-address"></div>
+            <div class="content">
+                <a class="header">{{ data.name }}</a>
+                <div class="meta">
+                    <span class="date">{{ data.activity }}</span>
                 </div>
+                <div class="ui divider"></div>
+                <div class="ui divided list">
+                    <div class="item">
+                        <div class="header">Direccion</div>
+                        <div class="description" id="venue-card-address"></div>
+                    </div>
+                </div>
+                <div class="ui divider"></div>
+                <div class="extra content options">
+                    {% if(data.liked){ %}
+                        <button class="ui circular small orange button icon" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                    {% } else { %}
+                        <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                    {% } %}
+                    
+                    <a class="ui circular small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
+                    <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
+                </div>
+                <div id="directions-panel"></div>
             </div>
-            <div class="ui divider"></div>
-            <div class="extra content options">
-                {% if(data.liked){ %}
-                    <button class="ui circular small orange button icon" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i></button>
-                {% } else { %}
-                    <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
-                {% } %}
-                
-                <a class="ui circular small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
-                <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
-            </div>
-            <div id="directions-panel"></div>
         </div>
-    </div>
-    <div id="venue-options">
-        {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
-        {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}
-        {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message" title="Enviar mensaje a {{ data.name }}"><i class="send icon"></i> Enviar mensaje</a>{% } %}
-        {% if(data.page) { %}<a class="ui black button right icon super" title="Ver la RocketPage de {{ data.name }}"><i class="rocket icon"></i> Ver RocketPage</a>{% } %}
+        <div id="venue-options">
+            {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
+            {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}
+            {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message" title="Enviar mensaje a {{ data.name }}"><i class="send icon"></i> Enviar mensaje</a>{% } %}
+            {% if(data.page) { %}
+                
+                {% if(data.page.facebook) { %}
+                <a class="ui facebook button" title="Ver perfil de Facebook de {{ data.name }}"><i class="facebook icon"></i> Facebook</a>
+                {% } %}
+
+                <a class="ui black button right icon super loading" title="Ver la RocketPage de {{ data.name }}" id="venue-card-rocket-button"><i class="rocket icon"></i> Ver RocketPage</a>
+            {% } %}
+        </div>
     </div>
 </div>
 
@@ -180,7 +187,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
         </div>
     </form>
     <div class="actions">
-        <div class="ui dark button cancel">Cancelar</div>
-        <div class="ui orange button ok">Enviar</div>
+        <button type="reset" class="ui dark button cancel"  id="venue-message-modal-cancel">Cancelar</button>
+        <button type="submit" class="ui orange button ok"  id="venue-message-modal-ok">Enviar mensaje</button>
     </div>
 </div>
