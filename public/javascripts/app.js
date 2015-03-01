@@ -327,7 +327,6 @@ $(function(){
 				}).fail(function(){
 					console.log('fail loading', arguments);
 				}).always(function(){
-					$('body').dimmer('hide');
 					Backbone.trigger('search:end');
 				});
 			}
@@ -1337,7 +1336,7 @@ $(function(){
 
 			if(this.model.get('page') && !this.model.pageLoaded){
 				this.model.get('page').fetch().then(_.bind(this.onPage, this)).fail(_.bind(this.onPageError, this));
-			}else if(this.model.pageLoaded && this.dom.pageButton.length){
+			}else if(this.model.pageLoaded && this.dom.pageButton && this.dom.pageButton.length){
 				this.dom.pageButton.removeClass('loading');
 			}
 
