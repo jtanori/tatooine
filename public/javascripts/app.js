@@ -49,7 +49,7 @@ $(function(){
 			DEFAULT_ZOOM: 5
 		},
 		GOOGLE: {
-			MAPS_WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
+			WEB_KEY:'AIzaSyDErD0SmoSczDbedVgFhTdamYStKYU1mXM'
 		},
 		FACEBOOK: {
 			APP_ID: '688997761197114',//'779644072132482'
@@ -180,7 +180,6 @@ $(function(){
 			}
 		});
 	};
-
 
 	/********* HEADER **********/
 	var Header = Backbone.View.extend({
@@ -633,7 +632,7 @@ $(function(){
 		query: (new Parse.Query(PlaceModel)).include('logo')
 	});
 	var Map = Backbone.View.extend({
-		id: 'map',
+		el: '#map',
 		currentPosition: null,
 		currentPositionMarker: null,
 		currentRadius: null,
@@ -706,7 +705,7 @@ $(function(){
 			google.maps.event.addListener(this.currentPositionMarker, 'dragend', _.bind(this.onCenterDragEnd, this));
 
 			this.directionsDisplay.setMap(this.map);
-			this.$el.appendTo('body');
+			//this.$el.appendTo('body');
 
 			return this;			
 		},
@@ -1248,6 +1247,79 @@ $(function(){
 	var Directions = Backbone.Collection.extend({
 		model: Backbone.Model.extend()
 	});
+	var PageModel = Backbone.Model.extend({
+		urlRoot: '/page',
+		url: function(){
+			return this.urlRoot + '/' + this.id;
+		}
+	});
+	var Video = Backbone.Model.extend({
+
+	});
+	var Videos = Backbone.Collection.extend({
+		model: Video
+	});
+	var VideoItem = Backbone.View.extend({
+		className: 'ui item',
+		template: _.template('<div>{{ data.snippet.title }}</div>'),
+		initialize: function(options){
+			if(!options || !options.model){
+				this.model = new Video();
+			}
+
+			return this.render();
+		},
+		render: function(){
+			this.$el.html(this.template({data: this.model.toJSON()}));
+
+			return this;
+		}
+	});
+	var VideoCard = Backbone.View.extend({
+		id: 'venue-videos',
+		className: 'ui segment',
+		template: _.template($('#venue-videos-template').html()),
+		views: {},
+		dom: {},
+		initialize: function(){
+			$('#venue-videos-template').remove();
+
+			this.collection = new Videos();
+			this.listenTo(this.collection, 'reset', this.addAll, this);
+			this.listenTo(this.collection, 'error', this.onError, this);
+
+			return this.render();
+		},
+		render: function(){
+			this.$el.html(this.template());
+
+			this.dom = {
+				content: this.$el.find('#venue-videos-list')
+			};
+
+			return this;
+		},
+		show: function(){
+			if(!this.$el.is(':visible')){
+				//.$el.transition('fade up');
+			}
+
+			return this;
+		},
+		hide: function(){
+			console.log('hide');
+		},
+		addAll: function(){
+			this.collection.each(this.addOne, this);
+		},
+		addOne: function(m){
+			var view = new VideoItem({model: m}).render();
+
+			this.views[view.cid] = view;
+
+			this.dom.content.append(view.$el);
+		}
+	});
 	var Venue = Backbone.View.extend({
 		id: 'venue-view',
 		template: _.template($('#venue-template').html()),
@@ -1260,12 +1332,15 @@ $(function(){
 			'click #venue-card-share': 'share',
 			'click #venue-options-send-message': 'sendMessage'
 		},
+		views: {},
+		dom: {},
 		initialize: function(options){
 			$('#venue-template').remove();
 
 			Backbone.on('venue:info', this.update, this);
 			
 			this.positionModel = positionModel;
+			this.pageModel = new PageModel();
 			this.model = new PlaceModel();
 			this.directionsCollection = new Directions();
 
@@ -1273,6 +1348,9 @@ $(function(){
 			this.listenTo(this.directionsCollection, 'request', this.onDirectionsRequest, this);
 			this.listenTo(this.directionsCollection, 'reset', this.onDirections, this);
 			this.listenTo(this.directionsCollection, 'error', this.onDirectionsError, this);
+
+			this.listenTo(this.pageModel, 'sync', this.onPage, this);
+			this.listenTo(this.pageModel, 'error', this.onPageError, this);
 
 			if(options){
 				if(options.venue){
@@ -1298,10 +1376,6 @@ $(function(){
 			data.liked = false;
 			data.page = this.model.get('page');
 
-			if(data.page){
-				data.page = data.page.toJSON();
-			}
-
 			if(u && _.indexOf(u.get('likedVenues'), id) >= 0){
 				data.liked = true;
 			}else{
@@ -1320,7 +1394,8 @@ $(function(){
 				image: this.$el.find('#venue-card-logo')
 			};
 
-			if(this.model.get('page')){
+			if(!_.isEmpty(data.page) && !this.model.pageLoaded){
+				data.page.fetch().then(_.bind(this.onPage, this)).fail(_.bind(this.onPageError, this));
 				this.dom.pageButton = this.$el.find('#venue-card-rocket-button');
 			}
 
@@ -1334,11 +1409,13 @@ $(function(){
 			});
 			Backbone.trigger('page:set:title', title);
 
+
+			/*
 			if(this.model.get('page') && !this.model.pageLoaded){
 				this.model.get('page').fetch().then(_.bind(this.onPage, this)).fail(_.bind(this.onPageError, this));
 			}else if(this.model.pageLoaded && this.dom.pageButton && this.dom.pageButton.length){
 				this.dom.pageButton.removeClass('loading');
-			}
+			}*/
 
 			this.$el.appendTo('body');
 
@@ -1378,7 +1455,78 @@ $(function(){
 			this.model.pageLoaded = true;
 			this.dom.pageButton.removeClass('loading');
 
-			console.log(this.model.get('page').toJSON());
+			console.log('page loaded');
+
+			var data = this.model.get('page').toJSON();
+
+			/*
+			if(data.facebook){
+				console.log('we have facebook');
+			}
+
+			if(data.twitter){
+				$.ajax({
+					url: '/page',
+					data: data.twitter,
+					type: 'GET',
+					dataType: 'json'
+				})
+				.then(function(){
+					console.log(arguments, 'twitter');
+				})
+				.fail(function(){
+					console.log(arguments, 'twitter error');
+				});
+			}
+
+			if(data.videoFeed){
+				console.log('we have video feed');
+			}
+
+			if(data.photoFeed){
+				console.log('we have photo feed');
+			}*/
+
+			if(data.videoFeed){
+				switch(data.videoFeed.type){
+				case 'youtube':
+					if(!this.views.videos){
+						this.views.videos = new VideoCard();
+					}
+
+					var videos = this.views.videos;
+					var $el = this.$el;
+					$.get(
+						"https://www.googleapis.com/youtube/v3/channels",
+						{
+							part : 'contentDetails', 
+							forUsername : data.videoFeed.account,
+							key: config.GOOGLE.WEB_KEY
+						})
+						.then(function(data){
+							if(data.items && data.items.length){
+								var pid = data.items[0].contentDetails.relatedPlaylists.uploads;
+
+								$.get(
+							        "https://www.googleapis.com/youtube/v3/playlistItems",
+							        {
+								        part : 'snippet', 
+								        maxResults : 20,
+								        playlistId : pid,
+								        key: config.GOOGLE.WEB_KEY
+							    	}
+							    ).then(function(data){
+							    	if(data && data.items.length){
+							    		videos.collection.reset(data.items);
+							    		videos.show().$el.appendTo($el);
+							    	}
+							    });
+							}
+						});
+
+					break;
+				}
+			}
 		},
 		onPageError: function(){
 			console.log('on page error');
@@ -1607,7 +1755,7 @@ $(function(){
 			
 		}
 	});
-	
+
 	/********* INITIALIZE OBJECTS (Temporal) **********/
 	var user = User.current();
 	var settings = user && user.get('settings') ? user.get('settings') : {};

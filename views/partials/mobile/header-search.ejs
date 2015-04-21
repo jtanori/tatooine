@@ -11,18 +11,18 @@
         </div>
     </div>
     <div class="submenu">
-        <div class="item" id="search-box">
-            <div class="ui icon input">
-                <input type="text" placeholder="Buscar e.g. comida">
-                <i class="search icon"></i>
+        <form class="item" id="search-box">
+            <div class="ui search">
+                <div class="ui icon input">
+                    <input class="prompt" type="text" placeholder="¿Qué estas buscando?" id="search-box-value">
+                    <input class="hide" type="text" hidden id="search-box-category" />
+                </div>
+                <div class="results"></div>
             </div>
-        </div>
-        <div class="item" id="header-category-dropdown-wrapper">
-            <select name="header-category-dropdown" id="header-category-dropdown">
-                <option value="">Categorias</option>
-                <% data.categories.forEach(function(c){ %><option value="<%= c.id %>"><%= c.name %></option><% }); %>
-            </select>
-        </div>
+            <button type="submit"  id="search-box-button" class="ui button icon">
+                <i class="search icon"></i>
+            </button>
+        </form>
         <div class="right menu">
             <a class='item disabled' id="position-toggle">
                 <i class="icon location arrow"></i>

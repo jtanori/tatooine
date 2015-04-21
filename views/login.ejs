@@ -1,8 +1,8 @@
-<% layout('./layouts/boilerplate') -%>
-<div class="ui three column centered grid">
-    <div class="column">
-        <img id="logo" class="ui small circular image" src="/images/logo-with-bg.jpg" />
+<% layout('layouts/' + LAYOUT) -%>
 
+<div class="ui centered stackable page grid">
+    <div class="six wide column">
+        <h2 class="ui header">Iniciar sesion</h2>
         <form class="ui segment form" id="loginForm">
             <div class="field">
                 <input name="email" type="email" placeholder="Email"/>
@@ -11,9 +11,9 @@
                 <input name="password" type="password" placeholder="Password"/>
             </div>
             
-            <button type="submit" class="ui basic submit icon button"><i class="sign in icon"></i> Login</button>
-
-            <a href="/forgot"><i class="undo icon"></i> Password Recovery</a>
+            <button type="submit" class="ui basic submit icon button"><i class="sign in icon"></i> Entrar</button>
+            <div class="ui hidden divider"></div>
+            <a href="/forgot"><i class="undo icon"></i> ¿Olvidaste tu contraseña?</a>
 
             <div class="ui error message">
                 <ul class="list">

@@ -22,13 +22,15 @@ var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
 });
 var defaultImage = '/images/jound-square.jpg';
 var defaultImageType = 'image/jpg';
+
 //Jound utils
 var validations = require('./validations.js');
 var utils = require('./utils.js');
 var Venue = require('./Venue.js');
+
 //Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
-//Set localstorage
+
 //Initialize Parse
 Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JS_KEY, process.env.PARSE_MASTER_KEY);
 //===============EXPRESS================
@@ -45,6 +47,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(multer());
 app.use(express.static(__dirname + '/public'));
 app.use(helmet());
+app.locals._ = _;
+
+//Main layout
+var LAYOUT = 'main';
+app.locals.LAYOUT = LAYOUT;
 
 //===============ROUTES===============
 var title = 'Jound - Busca y encuentra entre miles de establecimientos';
@@ -54,11 +61,12 @@ var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building',
 var logRequest = function(req, res, next){
     console.log('%s %s %s', req.method, req.url, req.path);
     next();
-}
+};
+
 var getDeviceExtension = function(ua){
     var md = new MobileDetect(ua);
 
-    return md.phone() ? '-phones' : md.tablet() ? '-tablets' : '';
+    return md.phone() ? 'phones' : md.tablet() ? 'tablets' : '';
 };
 
 // a middleware with no mount path; gets executed for every request to the app
@@ -92,6 +100,19 @@ var checkAuth = function (req, res, next) {
     }
 };
 
+var checkEnvironment = function(req, res, next){
+    // Since the session check is performed in all routes we can
+    // also configure the layout
+    var device = getDeviceExtension(req.headers['user-agent']);
+    switch(device){
+    case 'phones': app.locals.LAYOUT = LAYOUT = 'phones'; break;
+    case 'tablets': app.locals.LAYOUT = LAYOUT = 'tablets'; break;
+    default: app.locals.LAYOUT = LAYOUT = 'main'; break;
+    }
+
+    next();
+};
+
 var Category = Parse.Object.extend({className: 'Category'});
 var Categories = Parse.Collection.extend({
     model: Category,
@@ -116,7 +137,7 @@ var getVenueByPosition = function(req, res){
 
     var categories = new Categories();
     var render = function(data){
-        res.render('home' + getDeviceExtension(req.headers['user-agent']), {
+        res.render('home', {
             data: data
         });
     };
@@ -207,7 +228,9 @@ var getVenueById = function(req, res){
     
     var categories = new Categories();
     var render = function(data){
-        res.render('home' + getDeviceExtension(req.headers['user-agent']), {
+        data = _.extend(data, {useSearch: true});
+        
+        res.render('home', {
             data: data
         });
     };
@@ -401,14 +424,15 @@ var home = function(req, res){
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
-        res.render('home' + getDeviceExtension(req.headers['user-agent']), {
+        res.render('home', {
             data: {
                 activeMenuItem: 'home',
                 title: title,
                 categories: categories.toJSON() || [],
                 keywords: keywords,
                 image: defaultImage,
-                url: protocol + '//www.jound.mx'
+                url: protocol + '//www.jound.mx',
+                useSearch: true
             }
         });
     };
@@ -429,7 +453,7 @@ var home = function(req, res){
 
 var profile = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('profile' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('profile', {
         data: {
             activeMenuItem: 'profile',
             title: 'Jound - Mi perfil',
@@ -502,7 +526,7 @@ var search = function(req, res){
 
 var about = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('about' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('about', {
         data: {
             title: 'Jound - Acerca de la empresa',
             image: defaultImage,
@@ -513,7 +537,7 @@ var about = function(req, res){
 
 var privacy = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('referrals', {
         data: {
             title: 'Jound - Politicas de privacidad',
             image: defaultImage,
@@ -524,7 +548,7 @@ var privacy = function(req, res){
 
 var referrals = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('referrals' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('referrals', {
         data: {
             title: 'Jound - Nuestro programa de afiliados (en el laboratorio)',
             image: defaultImage,
@@ -535,7 +559,7 @@ var referrals = function(req, res){
 
 var businessAdd = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('business-add' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('business-add', {
         data: {
             title: 'Jound - Agrega tu negocio',
             image: defaultImage,
@@ -546,7 +570,7 @@ var businessAdd = function(req, res){
 
 var whatIsJound = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('what-is-jound' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('what-is-jound', {
         data: {
             title: 'Jound - ¿Que es Jound?',
             image: defaultImage,
@@ -557,7 +581,7 @@ var whatIsJound = function(req, res){
 
 var products = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('products' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('products', {
         data: {
             title: 'Jound - Productos',
             image: defaultImage,
@@ -566,9 +590,21 @@ var products = function(req, res){
     });
 };
 
+var login = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
+    res.render('login', {
+        data: {
+            title: 'Jound - Crea tu cuenta',
+            image: defaultImage,
+            url: protocol + '//www.jound.mx/login'
+        }
+    });
+};
+
+
 var forgot = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('forgot' + getDeviceExtension(req.headers['user-agent']), {
+    res.render('forgot', {
         data: {
             title: 'Jound - ¿Se te olvido el password?',
             image: defaultImage,
@@ -581,6 +617,7 @@ var forgot = function(req, res){
 var Jound = express.Router();
 
 Jound.use(logRequest);
+Jound.use(checkEnvironment);
 
 Jound.get('/', home);
 Jound.get('/venue/:id', getVenueById);
@@ -594,6 +631,7 @@ Jound.get('/profile', checkAuth, profile);
 Jound.get('/business-add', businessAdd);
 Jound.get('/what-is-jound', whatIsJound);
 Jound.get('/products', products);
+Jound.get('/login', login);
 Jound.get('/forgot', forgot);
 
 Jound.post('/like', like);

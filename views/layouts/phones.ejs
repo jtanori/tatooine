@@ -3,9 +3,16 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><%=data.title||'Jound Mobile'%></title>
-    <meta name="description" content="">
+    <title><%=data.title||'Jound'%></title>
+    <meta name="description" content="Jound te ofrece buscar y comparar entre miles de establecimientos">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta property="og:title" content="<%= data.title %>" id="ogtitle"/>
+    <meta property="og:image" content="<%= data.image %>" id="ogimage" />
+    <meta property="og:url" content="<%= data.url %>" id="ogurl" />
+    <meta property="og:site_name" content="Jound"/>
+    <meta property="og:description" content="Jound te ofrece buscar y comparar entre miles de establecimientos"/>
+    <meta property="fb:app_id" content="688997761197114" />
+    <meta property="og:type" content="website" />
     <!-- stylesheets -->
     <link rel="stylesheet" href="/semantic/semantic.min.css">
     <link rel="stylesheet" href="/stylesheets/phones.css">
@@ -17,16 +24,15 @@
     <script type="text/javascript" async defer src="https://apis.google.com/js/platform.js?publisherid=113374668891538311072"></script>
   </head>
   <body>
-    <!--[if lt IE 10]>
-      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
-    <![endif]-->
-
     <% include ../partials/sidebar-phones %>
     
     <div class="pusher">
+        <% if(data.useSearch){ %>
+        <% include ../partials/mobile/header-search %>
+        <% } else { %>
+        <% include ../partials/mobile/header %>
+        <% } %>
 
-        <% include ../partials/menu-phones %>
-        
         <%-blocks.header%>
         <%-blocks.left%>
         <%-body -%>
