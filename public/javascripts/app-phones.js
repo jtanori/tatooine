@@ -494,6 +494,7 @@ $(function(){
 			};
 
 			FB.getLoginStatus(function(response){
+				console.log(response, 'status');
 				if(response && response.status === 'connected'){
 					me();
 				}else{
