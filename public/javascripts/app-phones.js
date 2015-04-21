@@ -188,7 +188,6 @@ $(function(){
 		userMenuTemplate: _.template($('#template-user-menu').html()),
 		events: {
 			'click #header-logo': 'home',
-			'click #header-settings-button': 'settings',
 			'click #header-search-icon': 'onSubmit',
 			'click #position-toggle': 'geolocationModeChange',
 			'click #header-search-category .icon': 'clearCategory',
@@ -198,7 +197,6 @@ $(function(){
 			'submit': 'submit'
 		},
 		initialize: function(options){
-			console.log('initialize header');
 			if(options && options.positionModel){
 				this.positionModel = options.positionModel;
 			}else{
@@ -364,18 +362,13 @@ $(function(){
 			'click #facebook-login-button': 'facebookLogin',
 			'click #header-login-button': 'login',
 			'click #header-signup-button': 'signup',
-			'click #header-signout-button': 'signout'
+			'click #header-signout-button': 'signout',
+			'click #header-settings-button': 'settings'
 		},
 		initialize: function(){
 			return this.render();
 		},
 		render: function(){
-			this.dom = {
-				facebookLogin: this.$el.find('#facebook-login-button'),
-				login: this.$el.find('#login-button'),
-				signup: this.$el.find('#signup-button')
-			};
-
 			this.$el
 				.sidebar()
 				.sidebar('attach events', '#sidebar-toggle');

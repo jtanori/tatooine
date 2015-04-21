@@ -116,12 +116,6 @@ $(function(){
 			return this.render();
 		},
 		render: function(){
-			this.dom = {
-				facebookLogin: this.$el.find('#facebook-login-button'),
-				login: this.$el.find('#login-button'),
-				signup: this.$el.find('#signup-button')
-			};
-
 			this.$el
 				.sidebar()
 				.sidebar('attach events', '#sidebar-toggle');
@@ -263,24 +257,36 @@ $(function(){
 		}
 	});
 
+	/********* AUTH **********/
 	var LoginModal = Backbone.View.extend({
-		el: '#login-modal',
 		dom: {},
+		id: 'login-modal',
+		className: 'ui small modal',
+		template: _.template($('#login-modal-template').html()),
 		events: {
-			'click #login-modal-ok': 'submit',
-			'click #login-modal-cancel': 'hide',
 			'submit': 'submit'
 		},
 		initialize: function(){
+			$('#login-modal-template').remove();
+
 			return this.render();
 		},
 		render: function(){
+			this.$el.html(this.template()).appendTo('body');
+
+			this.dom = {
+				form: this.$el.find('form'),
+				buttons: this.$el.find('button')
+			}
+
 			this.$el.modal({
-				closable: false
+				closable: false,
+				onApprove: _.bind(function(){
+					this.dom.form.trigger('submit');
+					return false;
+				}, this)
 			});
 
-			this.dom.errorList = this.$el.find('.message .list');
-			this.dom.form = this.$el.find('form');
 			this.dom.form.form({
 				inline: true,
 				on: 'blur',
@@ -334,56 +340,62 @@ $(function(){
 			var values;
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
+				this.dom.buttons.prop('disabled', true);
 				values = this.dom.form.form('get values');
-				$.ajax({
-					url: '/login',
-					dataType: 'json',
-					type: 'POST',
-					data: {username: values['login-modal-username'], password: values['login-modal-password']}
-				})
-				.then(_.bind(this.onSuccess, this))
-				.fail(_.bind(this.onError, this));
+
+				User
+					.logIn(values['login-modal-username'], values['login-modal-password'])
+					.then(_.bind(this.onSuccess, this))
+					.fail(_.bind(this.onError, this))
+					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
-		onBecomeUser: function(){
-			this.dom.form.removeClass('loading');
+		onSuccess: function(u){
+			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
 			this.hide();
 		},
-		onSuccess: function(response){
-			User.become(response.token).then(_.bind(this.onBecomeUser, this)).fail(_.bind(this.onError, this));
-		},
-		onError: function(xhr, e){
-			var data = JSON.parse(xhr.responseText);
-
-			this.dom.form.removeClass('loading').addClass('error');
-			switch(data.code){
-			case 101: data.error = 'Tu correo y contrasena no coinciden, intenta de nuevo.'; break;
+		onError: function(e){
+			var values = this.dom.form.form('get values');
+			
+			switch(e.code){
+			case 101: e.error = 'Tu correo y contraseña no coinciden, intenta de nuevo.'; break;
 			}
 
-			alert(data.error);
+			this.dom.form.addClass('error');
+
+			alert(e.error);
 		}
 	});
-	
 	var SignupModal = Backbone.View.extend({
-		el: '#signup-modal',
 		dom: {},
+		id: 'signup-modal',
+		className: 'ui small modal',
+		template: _.template($('#signup-modal-template').html()),
 		events: {
-			'click #signup-modal-ok': 'submit',
-			'click #signup-modal-cancel': 'hide',
 			'submit': 'submit'
 		},
 		initialize: function(){
-			console.log('initialize signup modal');
+			$('#signup-modal-template').remove();
+
 			return this.render();
 		},
 		render: function(){
+			this.$el.html(this.template()).appendTo('body');
+
+			this.dom = {
+				form: this.$el.find('form'),
+				buttons: this.$el.find('button')
+			}
+
 			this.$el.modal({
-				closable: false
+				closable: false,
+				onApprove: _.bind(function(){
+					this.dom.form.trigger('submit');
+					return false;
+				}, this)
 			});
 
-			this.dom.errorList = this.$el.find('.message .list');
-			this.dom.form = this.$el.find('form');
 			this.dom.form.form({
 				inline: true,
 				on: 'blur',
@@ -451,6 +463,7 @@ $(function(){
 			return this;
 		},
 		submit: function(e){
+
 			if(e && e.preventDefault){
 				e.preventDefault();
 			}
@@ -459,34 +472,34 @@ $(function(){
 			var values, user;
 			if(isValid){
 				this.dom.form.addClass('loading').removeClass('error');
-				values = this.dom.form.form('get values');
+				this.dom.buttons.prop('disabled', true);
 
-				$.ajax({
-					url: '/login',
-					dataType: 'json',
-					type: 'POST',
-					data: {username: values['signup-modal-username'], password: values['signup-modal-password']}
-				})
-				.then(_.bind(this.onSuccess, this))
-				.fail(_.bind(this.onError, this));
+				values = this.dom.form.form('get values');
+				user = new User();
+
+				user
+					.set({email: values['signup-modal-username'], username: values['signup-modal-username'], password: values['signup-modal-password']})
+					.signUp()
+					.then(_.bind(this.onSuccess, this))
+					.fail(_.bind(this.onError, this))
+					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
 		onSuccess: function(u){
-
-			console.log(u, arguments);
-
-			this.dom.form.removeClass('loading');
+			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
 			this.hide();
 		},
-		onError: function(xhr, e){
-			console.log('error', arguments);
-			this.dom.form.removeClass('loading').addClass('error');
+		onError: function(e){
+			var values = this.dom.form.form('get values');
+			
 			switch(e.code){
-			case 101: e.message = 'Tu correo y contrasena no coinciden, intenta de nuevo.'; break;
+			case 202: e.error = 'El usuario ' + values['signup-modal-username'] + ' ya esta registrado.'; break;
 			}
 
-			alert(e.message);
+			this.dom.form.addClass('error');
+
+			alert(e.error);
 		}
 	});
 
@@ -551,7 +564,7 @@ $(function(){
 			this.dom.searchRadius.val(this.model.get('searchRadius'));
 
 			this.$el.modal();
-
+			
 			return this;
 		},
 		show: function(){

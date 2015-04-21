@@ -1456,9 +1456,7 @@ $(function(){
 		onPage: function(){
 			this.model.pageLoaded = true;
 			this.dom.pageButton.removeClass('loading');
-
-			console.log('page loaded');
-
+			
 			var data = this.model.get('page').toJSON();
 
 			/*
