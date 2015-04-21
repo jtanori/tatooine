@@ -301,6 +301,8 @@ $(function(){
 				e.preventDefault();
 			}
 
+			this.dom.search.search('hide results');
+			
 			var keywords = _.chain(this.dom.searchInput.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
 			var category = this.dom.categoryHidden.val();
 			var p = this.positionModel.toJSON();

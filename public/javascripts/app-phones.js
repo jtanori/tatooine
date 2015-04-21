@@ -187,7 +187,6 @@ $(function(){
 		dom: {},
 		userMenuTemplate: _.template($('#template-user-menu').html()),
 		events: {
-			'click #sidebar-toggle': 'sidebar',
 			'click #header-logo': 'home',
 			'click #header-settings-button': 'settings',
 			'click #header-search-icon': 'onSubmit',
@@ -311,6 +310,8 @@ $(function(){
 				e.preventDefault();
 			}
 
+			this.dom.search.search('hide results');
+
 			var keywords = _.chain(this.dom.searchInput.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
 			var category = this.dom.categoryHidden.val();
 			var p = this.positionModel.toJSON();
@@ -344,9 +345,6 @@ $(function(){
 			if(!!this.dom.dropdown.dropdown('get value')){
 				this.dom.searchIcon.removeClass('disabled');
 			}
-		},
-		sidebar: function(e){
-			if(!sidebar.isVisible()){ Backbone.trigger('sidebar:toggle'); }
 		}
 	});
 
@@ -369,8 +367,6 @@ $(function(){
 			'click #header-signout-button': 'signout'
 		},
 		initialize: function(){
-			Backbone.on('sidebar:toggle', this.toggle, this);
-
 			return this.render();
 		},
 		render: function(){
@@ -380,15 +376,9 @@ $(function(){
 				signup: this.$el.find('#signup-button')
 			};
 
-			this.$el.sidebar();
-
-			return this;
-		},
-		toggle: function(){
-			console.log('is visible', this.isVisible(), this.$el.sidebar('is visible'));
-			if(!this.isVisible()){
-				this.show();
-			}
+			this.$el
+				.sidebar()
+				.sidebar('attach events', '#sidebar-toggle');
 
 			return this;
 		},

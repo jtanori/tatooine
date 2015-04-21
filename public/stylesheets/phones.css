@@ -7,9 +7,6 @@
 	width: 30px;
 	height: 30px;
 }
-#header #main-menu {
-	border-bottom: 1px solid rgba(255,255,255,0.05);
-}
 #header .submenu {
 	border-top: 1px solid rgba(0,0,0,0.1);
 }
@@ -17,8 +14,7 @@
 	padding: 6px;
 }
 #search-box .input {
-	width: 100%;
-	min-width: 250px;
+	width: 250px;
 }
 #search-box input{
 	padding: 0.4rem;
@@ -39,6 +35,12 @@
 	text-align: center;
 	outline: 0;
 }
+
+#header-search-category {
+	position: absolute;
+	top: 1rem;
+}
+
 #header-category-dropdown-wrapper {
 	padding-left: 0;
 }
