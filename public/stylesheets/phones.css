@@ -69,6 +69,60 @@
 	position: absolute;
 }
 
+/* Slider component */
+.ui.slider.range input[type="range"] {
+	-webkit-appearance: none;
+	border-radius: 500rem;
+	padding: 3px 5px;
+	width: 100%;
+	outline: none;
+	background: rgba(0,0,0,.05);
+	height:1.5rem;
+	position: relative;
+}
+
+.ui.slider.range input[type="range"]::-moz-range-track {
+	background: none;
+	border: none;
+}
+
+.ui.slider.range input[type="range"]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	background: linear-gradient(transparent,rgba(0,0,0,.05)) #fff;
+	box-shadow: 0 1px 2px 0 rgba(0,0,0,.05),0 0 0 1px rgba(39,41,43,.15) inset;
+	border-radius: 500rem;
+	height: 1.5rem;
+	width: 1.5rem;
+}
+
+.ui.slider.range input[type="range"]::-moz-range-thumb {
+	background: linear-gradient(transparent,rgba(0,0,0,.05)) #fff;
+	box-shadow: 0 1px 2px 0 rgba(0,0,0,.05),0 0 0 1px rgba(39,41,43,.15) inset;
+	border-radius: 500rem;
+	height: 1.5rem;
+	width: 1.5rem;
+}
+.ui.slider.range input[type="range"]:focus,
+.ui.slider.range input[type="range"]:hover {
+	background-color: rgba(0,0,0,.1);
+	border: none;
+}
+
+.ui.slider.range input[type="range"]:before{
+	content: attr(min-label);
+	position:absolute;
+	height: 1.5rem;
+	top: -1.5rem;
+}
+
+.ui.slider.range input[type="range"]:after{
+	content: attr(max-label);
+	position:absolute;
+	height: 1.5rem;
+	top: -1.5rem;
+	right: 0;
+}
+
 /* Iphone 5,5s in portrait*/
 @media only screen 
 and (min-device-width : 320px) 

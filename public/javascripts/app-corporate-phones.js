@@ -89,156 +89,54 @@ $(function(){
 		el: '#header',
 		dom: {},
 		userMenuTemplate: _.template($('#template-user-menu').html()),
+		initialize: function(options){
+			Backbone.on('user:login', this.updateOptions, this);
+			Backbone.on('user:logout', this.updateOptions, this);
+
+			return this.render();
+		},
+
+		render: function(){
+			return this;
+		},
+		updateOptions: function(){}
+	});
+
+	var Sidebar = Backbone.View.extend({
+		el: '#sidebar',
+		dom: {},
 		events: {
-			'click #header-logo': 'home',
 			'click #facebook-login-button': 'facebookLogin',
 			'click #header-login-button': 'login',
 			'click #header-signup-button': 'signup',
 			'click #header-signout-button': 'signout',
-			'click #header-settings-button': 'settings',
-			'click #header-search-icon': 'onSubmit',
-			'click #position-toggle': 'geolocationModeChange',
-			'click #header-search-category .icon': 'clearCategory',
-			'click #search-box-button': 'onSearch',
-			'change #header-search-text': 'onSearchChange',
-			'keyup #header-search-text': 'onSearchChange',
-			'submit': 'submit'
+			'click #header-settings-button': 'settings'
 		},
-		initialize: function(options){
-			if(options && options.positionModel){
-				this.positionModel = options.positionModel;
-			}else{
-				throw new Error('Header requires a shared position Model.');
-			}
-
-			Backbone.on('position:found', this.onPosition, this);
-			Backbone.on('position:notfound', this.onPositionError, this);
-			Backbone.on('map:ready', this.onMapReady, this);
-			Backbone.on('user:profile:photo', this.updateAvatar, this);
-			Backbone.on('user:login', this.updateOptions, this);
-			Backbone.on('user:logout', this.updateOptions, this);
-
-			this.listenTo(this.positionModel, 'change:usingGeolocation', this.onGeolocationModeChange, this);
-
+		initialize: function(){
 			return this.render();
 		},
 		render: function(){
-			this.updateOptions();
+			this.dom = {
+				facebookLogin: this.$el.find('#facebook-login-button'),
+				login: this.$el.find('#login-button'),
+				signup: this.$el.find('#signup-button')
+			};
 
-			var $search = this.dom.search;
-			var $category = this.dom.categoryHidden;
-			var $input = this.dom.searchInput;
-			var $button = this.dom.searchButton;
-
-			$search.search({
-				source: [],
-				searchFields: [
-					'title',
-					'keywords'
-				],
-				onSelect: function(selected){
-					var $label = $search.find('#header-search-category');
-					var text = selected.title;
-					var id = selected.id;
-
-					if($label.length){
-						$label.find('.title').text(text);
-					}else{
-						$label = $('<span class="ui blue label" id="header-search-category"><span class="title">' + selected.title + '</span> <i class="icon close"></i></span>');
-						$search.append($label);
-					}
-
-					$category.val(id);
-					$input.css('padding-left', $label.outerWidth() + 10);
-
-					$search.search('hide results');
-					$search.search('set value', '');
-					$input.attr('placeholder', '').trigger('focus');
-
-					return false;
-				}
-			});
+			this.$el
+				.sidebar()
+				.sidebar('attach events', '#sidebar-toggle');
 
 			return this;
 		},
-		clearCategory: function(){
-			var $search = this.dom.search;
-			var $label = $search.find('#header-search-category');
-			var $input = this.dom.searchInput;
+		show: function(){
+			this.$el.sidebar('show');
 
-			$label.remove();
-			$search.find('input').val('');
-			$input.attr('placeholder', '¿Qué estas buscando?').trigger('focus').removeAttr('style');
+			return this;
 		},
-		onPosition: function(){
-			this.dom.positionToggle.addClass('active').removeClass('disabled');
-		},
-		onPositionError: function(){
-			this.dom.positionToggle.removeClass('active').removeClass('disabled');
-		},
-		onMapReady: function(){
-			if(this.dom.positionToggle.hasClass('disabled')){
-				this.dom.positionToggle.removeClass('disabled');
-			}
-		},
-		geolocationModeChange: function(){
-			this.positionModel.set('usingGeolocation', !this.positionModel.get('usingGeolocation'));
-		},
-		onGeolocationModeChange: function(){
-			switch(this.positionModel.get('usingGeolocation')){
-			case true: this.dom.positionToggle.addClass('active');break;
-			case false: this.dom.positionToggle.removeClass('active');break;
-			}
-		},
-		onSearchChange: function(){
-			switch(this.dom.search.val().length >= 3){
-			case true: this.dom.searchIcon.removeClass('disabled'); break;
-			default: this.dom.searchIcon.addClass('disabled'); break;
-			}
-		},
-		onSubmit: function(){
-			this.dom.form.trigger('submit');
-		},
-		submit: function(e){
-			if(e && e.preventDefault){
-				e.preventDefault();
-			}
+		hide: function(){
+			this.$el.sidebar('hide');
 
-			this.dom.search.search('hide results');
-			
-			var keywords = _.chain(this.dom.searchInput.val().split(' ')).map(function(v){return $.trim(v);}).compact().value();
-			var category = this.dom.categoryHidden.val();
-			var p = this.positionModel.toJSON();
-			var data = {};
-
-			if(keywords.length || !!category){
-				data.q = keywords;
-				data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
-
-				if(category && category !== 'all'){
-					data.c = category;
-				}
-
-				Backbone.trigger('search:start');
-
-				$.ajax({
-					type: 'POST',
-					dataType: 'json',
-					data: data,
-					url: '/search'
-				}).then(function(r){
-					Backbone.trigger('search:results', r.results);
-				}).fail(function(){
-					console.log('fail loading', arguments);
-				}).always(function(){
-					Backbone.trigger('search:end');
-				});
-			}
-		},
-		setCategory: function(){
-			if(!!this.dom.dropdown.dropdown('get value')){
-				this.dom.searchIcon.removeClass('disabled');
-			}
+			return this;
 		},
 		login: function(){
 			if(User.current()){
@@ -362,47 +260,6 @@ $(function(){
 		},
 		updateAvatar: function(url){
 			this.dom.avatar.attr('src', url);
-		},
-		updateOptions: function(){
-			var user = User.current();
-
-			console.log('update options', this.$el.find('#header-user-menu'));
-
-			this.undelegateEvents();
-
-			this.$el.find('#header-user-menu').html(this.userMenuTemplate({data: {user: user ? user.getBasicData() : null}}));
-
-			this._cacheElements();
-			this.delegateEvents();
-		},
-		_cacheElements: function(){
-			this.dom = {
-				search: this.$el.find('[type=text]'),
-				searchIcon: this.$el.find('#header-search-icon'),
-				positionToggle: this.$el.find('#position-toggle'),
-				facebookLogin: this.$el.find('#facebook-login-button'),
-				login: this.$el.find('#login-button'),
-				signup: this.$el.find('#signup-button'),
-				userDropdown: this.$el.find('#header-user-options-dropdown'),
-				userMenu: this.$el.find('#header-user-menu'),
-				form: this.$el.find('form'),
-				avatar: this.$el.find('#header-avatar img'),
-				search: this.$el.find('#search-box'),
-				searchInput: this.$el.find('#search-box-value'),
-				categoryHidden: this.$el.find('#search-box-category'),
-				searchButton: this.$el.find('#search-box-button')
-			};
-
-			this.dom.userDropdown.dropdown();
-		}
-	});
-
-	var PositionModel = Backbone.Model.extend({
-		defaults: {
-			center: null,
-			radius: 1000,
-			usingGeolocation: false,
-			position: null//Geolocation returned value
 		}
 	});
 
@@ -737,8 +594,8 @@ $(function(){
 	var user = User.current();
 	var settings = user && user.get('settings') ? user.get('settings') : {};
 	var settingsModel = new SettingsModel(settings);
-	var positionModel = new PositionModel();
-	var header = new Header({positionModel: positionModel});
+	var header = new Header();
+	var sidebar = new Sidebar();
 	
 	//Load FB
     window.fbAsyncInit = function() {

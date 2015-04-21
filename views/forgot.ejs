@@ -1,34 +1,15 @@
-<% layout('./layouts/boilerplate') -%>
-<div class="ui three column centered grid">
-    <div class="column">
-        <img id="logo" class="ui small circular image" src="/images/logo-with-bg.jpg" />
-        <form class="ui segment form" id="loginForm">
-            <div class="field">
-                <input name="email" type="email" placeholder="Email"/>
-            </div>
+<% layout('./layouts/' + LAYOUT) -%>
+<% script('/javascripts/lodash.min.js') -%>
+<% script('/javascripts/backbone.js') -%>
+<% script('//www.parsecdn.com/js/parse-1.3.4.min.js') -%>
+<% script('//crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js') -%>
+<% script('/javascripts/app-corporate.js') -%>
 
-            <button type="submit" class="ui basic submit icon button"><i class="sign in icon"></i> Send</button>
-
-            <a href="/login"><i class="icon user"></i> Login instead</a>
-
-            <div class="ui error message">
-                <ul class="list">
-
-                </ul>
-            </div>
-        </form>
-
-        <div class="ui icon hidden message info">
-            <i class="empty heart icon"></i>
-            <div class="content">
-                <div class="header">
-                Sorry to hear you're having problems
-                </div>
-                <p>We have sent you a message to the email address you have provided containing instruction on how to recover/reset your Jound password</p>
-            </div>
-        </div>
-    </div>
-</div>
+<% if(LAYOUT === 'phones') { %>
+<% script('/javascripts/app-corporate-phones.js') -%>
+<% } else { %>
+<% script('/javascripts/app-corporate.js') -%>
+<% } %>
 
 <script>
     $(function(){

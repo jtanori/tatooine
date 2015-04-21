@@ -1,0 +1,104 @@
+<div template id="settings-modal-template">
+    <i class="close icon"></i>
+    <div class="header">Ajustes</div>
+    <form class="ui form content">
+        <div class="ui list">
+            <div class="item">
+                <div class="field">
+                    <div class="ui toggle checkbox" id="settings-modal-auto-search-wrapper">
+                        <input type="radio" id="settings-modal-auto-search" name="settings-modal-auto-search">
+                        <label>Habilitar <b>busqueda automatica</b></label>
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="item">
+                <div class="field">
+                    <div class="ui toggle checkbox" id="settings-modal-auto-focus-wrapper">
+                        <input type="radio" id="settings-modal-auto-focus" name="settings-modal-auto-focus">
+                        <label>Habilitar <b>auto enfoque</b> de resultados</label>
+                    </div>
+                </div>
+            </div>
+            <div class="ui divider"></div>
+            <div class="item">
+                <label for="fruit">Rango de busqueda:</label>
+                <div class="ui hidden divider"></div>
+                <div class="ui slider range">
+                    <input id="settings-modal-radius" name="settings-modal-radius" type="range" min-label="1km" max-label="10kms" min="1000" max="10000" step="1000" />
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="ui small modal" id="signup-modal">
+    <form class="ui form content">
+        <h2 class="ui center aligned icon header">
+            <i class="circular unlock alternate icon"></i>
+            Crear Cuenta
+        </h2>
+        <div class="ui padded stackable grid center aligned">
+            <div class="ui row">
+                <div class="twelve wide column">
+                    <div class="field">
+                        <input type="text" id="signup-modal-username" name="signup-modal-username" placeholder="Correo electronico" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="signup-modal-password" name="signup-modal-password" placeholder="Contrasena" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="signup-modal-password-confirmation" name="signup-modal-password-confirmation" placeholder="Confirma tu contrasena" />
+                    </div>
+                    <div class="field">
+                        <div class="ui slider checkbox">
+                            <input type="checkbox" name="signup-tos-confirmation" id="signup-tos-confirmation">
+                            <label for="signup-tos-confirmation">Accepto los terminos y condiciones</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ui row">
+                <div class="ui red right icon button" id="signup-modal-cancel">
+                    Cancelar
+                    <i class="close icon"></i>
+                </div>
+                <div class="ui blue right icon button" id="signup-modal-ok">
+                    Crear
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="ui small modal" id="login-modal">
+    <form class="ui form content">
+        <h2 class="ui center aligned icon header">
+            <i class="circular sign in icon"></i>
+            Iniciar Sesion
+        </h2>
+        <div class="ui padded stackable grid center aligned">
+            <div class="ui row">
+                <div class="twelve wide column">
+                    <div class="field">
+                        <input type="text" id="login-modal-username" name="login-modal-username" placeholder="Correo electronico" />
+                    </div>
+                    <div class="field">
+                        <input type="password" id="login-modal-password" name="login-modal-password" placeholder="Contrasena" />
+                    </div>
+                </div>
+            </div>
+            <div class="ui row">
+                <div class="ui red right icon button" id="login-modal-cancel">
+                    Cancelar
+                    <i class="close icon"></i>
+                </div>
+                <div class="ui blue right icon button" id="login-modal-ok">
+                    Dame Jound
+                    <i class="checkmark icon"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

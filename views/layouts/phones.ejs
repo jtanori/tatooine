@@ -24,7 +24,7 @@
     <script type="text/javascript" async defer src="https://apis.google.com/js/platform.js?publisherid=113374668891538311072"></script>
   </head>
   <body>
-    <% include ../partials/sidebar-phones %>
+    <% include ../partials/mobile/sidebar %>
     
     <div class="pusher">
         <% if(data.useSearch){ %>
@@ -40,6 +40,8 @@
         <%-blocks.footer%>
 
     </div>
+
+    <% include ../partials/commons %>
 
     <script>
         (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
