@@ -162,9 +162,42 @@ $(function(){
 				'visible': false
 			}
 		},
-		VENUE_FIELDS: ['name', 'activity_description', 'block', 'building', 'building_floor', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
-                'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name', 
-                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'logo', 'avatar', 'page']
+		VENUE_DEFAULT_FIELDS: [
+			'name',
+			'activity_description',
+			'block',
+			'building', 
+			'building_floor', 
+			'exterior_letter', 
+			'email_address', 
+			'exterior_number', 
+			'federal_entity', 
+			'internal_letter', 
+			'internal_number', 
+			'keywords', 
+			'locality', 
+			'municipality', 
+			'phone_number', 
+			'position', 
+			'postal_code', 
+			'road_name', 
+			'road_name_1', 
+			'road_name_2', 
+			'road_name_3', 
+			'road_type', 
+			'road_type_1', 
+			'road_type_2', 
+			'road_type_3', 
+			'settling_name', 
+			'settling_type', 
+			'shopping_center_name', 
+			'shopping_center_store_number', 
+			'shopping_center_type', 
+			'www', 
+			'logo', 
+			'avatar', 
+			'page'
+		]
 	};
 
 	Parse.initialize(config.PARSE.KEY, config.PARSE.JSKEY);
@@ -417,6 +450,7 @@ $(function(){
 		facebookLogin: function(){
 			$('body').dimmer('show');
 
+			/*
 			var login = function(data){
 				data = data || {};
 
@@ -500,7 +534,7 @@ $(function(){
 						}
 					});
 				}
-			});
+			});*/
 		},
 		signout: function(){
 			User.logOut();
@@ -1848,20 +1882,6 @@ $(function(){
             xfbml      : true,  // initialize Facebook social plugins on the page
             version    : 'v2.2' // point to the latest Facebook Graph API version
         });
-        Parse.FacebookUtils.logIn(null, {
-	        success: function(user) {
-	            if (!user.existed()) {
-	                alert("User signed up and logged in through Facebook!");
-	            } else {
-	                alert("User logged in through Facebook!");
-	            }
-	        },
-	        error: function(user, error) {
-	            alert("User cancelled the Facebook login or did not fully authorize.");
-	        }
-	    });
-
-        // Run code after the Facebook SDK is loaded.
     };
 
     (function(d, s, id){

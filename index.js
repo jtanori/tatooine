@@ -463,10 +463,11 @@ var profile = function(req, res){
 };
 
 var search = function(req, res){
-    var data = req.body || {};
+    var data = {};
     var isAjax = req.xhr;
     var query = new Parse.Query(Venue);
     var category, position, categoryQuery;
+    
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
@@ -484,6 +485,11 @@ var search = function(req, res){
             res.redirect('/');
         }
     };
+
+    switch(req.method){
+    case 'GET': data = {q: req.query.q, p: {lat: req.query.lat, lng: req.query.lng, radius: req.query.radius}}; break;
+    default: data = req.body;
+    }
 
     if(data.q){
         var q = _.chain(data.q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
@@ -638,6 +644,7 @@ Jound.post('/like', like);
 Jound.post('/unlike', unlike);
 Jound.post('/address', getAddress);
 Jound.post('/search', search);
+Jound.get('/search', search);
 
 app.use('/', Jound);
 /*===============START=================*/

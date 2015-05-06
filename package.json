@@ -31,6 +31,11 @@
   },
   "devDependencies": {
     "install": "^0.1.8",
-    "npm": "^2.4.1"
+    "npm": "^2.4.1",
+    "gulp": "^3.8.11",
+    "gulp-jshint": "^1.10.0",
+    "gulp-uglify": "^1.1.0",
+    "jshint-stylish": "^1.0.1",
+    "watchify": "^2.4.0"
   }
 }
