@@ -567,8 +567,7 @@ $(function(){
 		origin: new google.maps.Point(0,0),
 		anchor: new google.maps.Point(15,43)
 	};
-	var Place = Parse.Object.extend('Location');
-	var PlaceModel = Place.extend({
+	var PlaceModel = Parse.Object.extend('Location', {
 		pageLoaded: false,
 		getURL: function(){
 			return '//www.jound.mx/venue/' + this.id;
@@ -644,19 +643,19 @@ $(function(){
 			}else if(this.get('logo') && this.get('logo').get('file')){
 				return this.get('logo').get('file').url();
 			}else{
-				return '/images/venue_default@2x.jpg';
+				return '//www.jound.mx/images/venue_default@2x.jpg';
 			}
 		},
 		getBasicData: function(){
 			return {
 				name: this.get('name'),
-				address: PlaceModel.prototype.getAddress.call(this),
-				city: PlaceModel.prototype.getCity.call(this),
-				vecinity: PlaceModel.prototype.getVecinity.call(this),
+				address: this.getAddress(),
+				city: this.getCity(),
+				vecinity: this.getVecinity(),
 				phoneNumber: this.get('phone_number'),
 				url: this.get('www'),
 				activity: this.get('activity_description'),
-				logo: PlaceModel.prototype.getLogo.call(this),
+				logo: this.getLogo(),
 				email: !!this.get('email_address'),
 				www: this.getWWW()
 			};
@@ -1434,7 +1433,7 @@ $(function(){
 			}
 
 			this.dom.rating.rating();
-			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
+			this.dom.address.html(this.model.getAddress());
 
 			updateOG({
 				ogimage: this.model.getLogo(),
