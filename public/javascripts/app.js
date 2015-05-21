@@ -643,7 +643,7 @@ $(function(){
 			}else if(this.get('logo') && this.get('logo').get('file')){
 				return this.get('logo').get('file').url();
 			}else{
-				return '//www.jound.mx/images/venue_default@2x.jpg';
+				return 'http://www.jound.mx/images/venue_default@2x.jpg';
 			}
 		},
 		getBasicData: function(){
