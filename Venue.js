@@ -1,9 +1,15 @@
 var _ = require('lodash');
 var Parse = require('parse').Parse;
 
-var Place = Parse.Object.extend('Location');
-var PlaceModel = Place.extend({
-	pageLoaded: false,
+var PlaceModel = Parse.Object.extend('Location', {
+	getURL: function(){
+		return '//www.jound.mx/venue/' + this.id;
+	},
+	getWWW: function(){
+		if(this.get('www')){
+			return this.get('www').replace(/^(https?|ftp):\/\//, '');
+		}
+	},
 	getAddress: function(){
 		var address = '';
 		var n = this.get('exterior_number');
@@ -70,20 +76,21 @@ var PlaceModel = Place.extend({
 		}else if(this.get('logo') && this.get('logo').get('file')){
 			return this.get('logo').get('file').url();
 		}else{
-			return '/images/venue_default@2x.jpg';
+			return '//www.jound.mx/images/venue_default@2x.jpg';
 		}
 	},
 	getBasicData: function(){
 		return {
 			name: this.get('name'),
-			address: PlaceModel.prototype.getAddress.call(this),
-			city: PlaceModel.prototype.getCity.call(this),
-			vecinity: PlaceModel.prototype.getVecinity.call(this),
+			address: this.getAddress(),
+			city: this.getCity(),
+			vecinity: this.getVecinity(),
 			phoneNumber: this.get('phone_number'),
 			url: this.get('www'),
 			activity: this.get('activity_description'),
-			logo: PlaceModel.prototype.getLogo.call(this),
-			email: !!this.get('email_address')
+			logo: this.getLogo(),
+			email: !!this.get('email_address'),
+			www: this.getWWW()
 		};
 	}
 });

@@ -20,7 +20,7 @@ var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
 });
-var defaultImage = '/images/jound-square.jpg';
+var defaultImage = '//www.jound.mx/images/venue_default@2x.jpg';
 var defaultImageType = 'image/jpg';
 
 //Jound utils
@@ -151,7 +151,7 @@ var getVenueByPosition = function(req, res){
                     position: position,
                     venue: v.toJSON(),
                     keywords: keywords,
-                    image: venue.logo ? venue.logo : defaultImage
+                    image: venue.getLogo()
                 }
             );
         }else{
@@ -252,7 +252,6 @@ var getVenueById = function(req, res){
         v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
 
         var venue = v.toJSON();
-        venue.logo = v.getLogo();
 
         render(
             {
@@ -261,7 +260,7 @@ var getVenueById = function(req, res){
                 categories: categories.toJSON() || [],
                 venue: venue,
                 keywords: keywords,
-                image: venue.logo ? venue.logo : defaultImage,
+                image: v.getLogo(),
                 url: protocol + '//www.jound.mx/venue/' + v.id
             }
         );
