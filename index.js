@@ -540,6 +540,17 @@ var about = function(req, res){
     });
 };
 
+var help = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
+    res.render('help', {
+        data: {
+            title: 'Jound - Ayuda para usar Jound',
+            image: defaultImage,
+            url: protocol + '//www.jound.mx/help'
+        }
+    });
+};
+
 var privacy = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('referrals', {
@@ -632,6 +643,7 @@ Jound.get('/about', about);
 Jound.get('/privacy', privacy);
 Jound.get('/referrals', referrals);
 Jound.get('/about', about);
+Jound.get('/help', help);
 Jound.get('/profile', checkAuth, profile);
 Jound.get('/business-add', businessAdd);
 Jound.get('/what-is-jound', whatIsJound);
