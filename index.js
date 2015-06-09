@@ -16,6 +16,7 @@ var helmet = require('helmet');
 var gmaputil = require('googlemapsutil');
 var memjs = require('memjs');
 var CryptoJS = require('cryptojs');
+var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -33,6 +34,14 @@ var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
 
 //Initialize Parse
 Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JS_KEY, process.env.PARSE_MASTER_KEY);
+
+//Initialize mailchimp
+try { 
+    var MailChimpAPIInstance = new MailChimpAPI(process.env.MAILCHIMP_API_KEY, { version : '2.0' });
+} catch (error) {
+    console.log(error.message);
+}
+
 //===============EXPRESS================
 // Configure Express
 var app = express();
@@ -553,7 +562,7 @@ var help = function(req, res){
 
 var privacy = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('referrals', {
+    res.render('privacy', {
         data: {
             title: 'Jound - Politicas de privacidad',
             image: defaultImage,
@@ -629,6 +638,25 @@ var forgot = function(req, res){
     });
 };
 
+
+var newsletterSubscribe = function(req, res){
+    var data = req.body;
+    var email = data.email;
+    var api = MailChimpAPIInstance;
+
+    if(email && api){
+        MailChimpAPIInstance.lists_subscribe({id: process.env.NEWSLETTER_LIST_ID, email: {email: email}}, function(error, data){
+            if(error){
+                res.status(400).json({ status: 'error', error: error});
+            }else{
+                res.status(200).json({ status: 'success'});
+            }
+        });
+    }else{
+        res.status(404).json({ status: 'error', error: 'An error has occurred, please try again', code: 201});
+    }
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -655,6 +683,7 @@ Jound.post('/like', like);
 Jound.post('/unlike', unlike);
 Jound.post('/address', getAddress);
 Jound.post('/search', search);
+Jound.post('/subscribe', newsletterSubscribe);
 Jound.get('/search', search);
 
 app.use('/', Jound);
