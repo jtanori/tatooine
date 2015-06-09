@@ -31,6 +31,8 @@ var Venue = require('./Venue.js');
 
 //Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
+//Main layout
+var LAYOUT = 'main';
 
 //Initialize Parse
 Parse.initialize(process.env.PARSE_APP_ID, process.env.PARSE_JS_KEY, process.env.PARSE_MASTER_KEY);
@@ -56,10 +58,17 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(multer());
 app.use(express.static(__dirname + '/public'));
 app.use(helmet());
-app.locals._ = _;
+//Enable cors
+app.use(function(req, res, next){
+        res.header('Access-Control-Allow-Origin', '*');
+        res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+        next();
+    })
+    .options('*', function(req, res, next){
+        res.end();
+    });
 
-//Main layout
-var LAYOUT = 'main';
+app.locals._ = _;
 app.locals.LAYOUT = LAYOUT;
 
 //===============ROUTES===============
