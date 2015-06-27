@@ -150,6 +150,23 @@ and (orientation : portrait) {
 	}
 }
 
+#venue-view {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10;
+	background: white;
+}
+
+#venue-view .ui.card {
+	width: 100%;
+	border-radius: 0;
+	border: 0;
+	box-shadow: none;
+}
+
 [type="text/html"],
 [template]{
 	display: none;

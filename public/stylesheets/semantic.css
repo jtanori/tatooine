@@ -178,6 +178,10 @@
 	right: 0;
 }
 
+pre {
+	word-break: break-word;
+}
+
 
 
 [type="text/html"],
