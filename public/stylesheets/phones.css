@@ -175,7 +175,8 @@ and (orientation : portrait) {
 	box-shadow: none;
 }
 
-#venue-preview .venue-card-address {
+#venue-preview .venue-card-address,
+#venue-preview .ui.header {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
