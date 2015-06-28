@@ -581,8 +581,7 @@ $(function(){
 		origin: new google.maps.Point(0,0),
 		anchor: new google.maps.Point(15,43)
 	};
-	var Place = Parse.Object.extend('Location');
-	var PlaceModel = Place.extend({
+	var PlaceModel = Parse.Object.extend('Location', {
 		pageLoaded: false,
 		getURL: function(){
 			return '//www.jound.mx/venue/' + this.id;
@@ -1437,7 +1436,7 @@ $(function(){
 				likeButton: this.$el.find('#venue-card-like'),
 				shareButton: this.$el.find('#venue-card-share'),
 				unlikeButton: this.$el.find('#venue-card-unlike'),
-				address: this.$el.find('#venue-card-address'),
+				address: this.$el.find('.venue-card-address'),
 				image: this.$el.find('#venue-card-logo')
 			};
 
@@ -1447,7 +1446,7 @@ $(function(){
 			}
 
 			this.dom.rating.rating();
-			this.dom.address.html(PlaceModel.prototype.getAddress.call(this.model));
+			this.dom.address.html(this.model.getAddress());
 
 			updateOG({
 				ogimage: this.model.getLogo(),
@@ -1722,7 +1721,7 @@ $(function(){
 			return this;
 		},
 		show: function(venueID){
-			var venue = new Place();
+			var venue = new PlaceModel();
 			var visitor;
 
 			if(venueID){

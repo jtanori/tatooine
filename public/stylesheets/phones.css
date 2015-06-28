@@ -152,7 +152,6 @@ and (orientation : portrait) {
 
 #venue-view {
 	position: absolute;
-	top: 0;
 	left: 0;
 	right: 0;
 	bottom: 0;
@@ -165,6 +164,21 @@ and (orientation : portrait) {
 	border-radius: 0;
 	border: 0;
 	box-shadow: none;
+}
+
+#venue-view .venue.hidden {
+	display: none;
+}
+
+#venue-preview .ui.button {
+	border: 0;
+	box-shadow: none;
+}
+
+#venue-preview .venue-card-address {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 [type="text/html"],

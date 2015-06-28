@@ -182,7 +182,9 @@ pre {
 	word-break: break-word;
 }
 
-
+.disable-events {
+	pointer-events: none !important;
+}
 
 [type="text/html"],
 [template]{
