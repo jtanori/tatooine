@@ -155,8 +155,30 @@ and (orientation : portrait) {
 	left: 0;
 	right: 0;
 	bottom: 0;
-	z-index: 10;
+	z-index: 200;
 	background: white;
+	min-height: 150px;
+}
+
+#venue-view.with-details {
+	top: 0;
+	overflow-y: scroll;
+}
+
+#venue-view #venue-card {
+	display: none;
+}
+
+#venue-view.with-details #venue-card {
+	display: block;
+}
+
+#venue-view.with-details #venue-preview {
+	display: none;
+}
+
+#venue-view ~ #map {
+	bottom: 150px;
 }
 
 #venue-view .ui.card {
@@ -164,10 +186,6 @@ and (orientation : portrait) {
 	border-radius: 0;
 	border: 0;
 	box-shadow: none;
-}
-
-#venue-view .venue.hidden {
-	display: none;
 }
 
 #venue-preview .ui.button {
@@ -180,6 +198,10 @@ and (orientation : portrait) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+#venue-preview .ui.image {
+	min-height: 52px;
 }
 
 [type="text/html"],

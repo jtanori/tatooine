@@ -32,6 +32,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             <div class="four wide column">
                 <img src="{{ data.logo }}" class="ui circular bordered tiny image">
             </div>
+            {% if(data.phoneNumber){ %}
             <div class="eight wide column">
                 <h1 class='ui small header'>{{ data.name }}</h1>
                 <p class="venue-card-address"></p>
@@ -39,32 +40,38 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             <div class="four wide column">
                 {% if(data.phoneNumber){ %}<a class="ui green fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i></a>{% } %}
             </div>
+            {% } else { %}
+            <div class="twelve wide column">
+                <h1 class='ui small header'>{{ data.name }}</h1>
+                <p class="venue-card-address"></p>
+            </div>
+            {% } %}
         </div>
         <div class="center aligned centered row">
             <div class="five wide column">
-                <a class="ui basic icon small compact fluid button">
+                <button class="ui basic icon small compact fluid button venue-card-share">
                     <i class="share icon"></i>
                     <div>Compartir</div>
+                </button>
+            </div>
+            <div class="five wide column">
+                <a class="ui basic icon small compact fluid button" href="/venue/{{ data.id }}/details" id="venue-details">
+                    <i class="chevron right icon"></i>
+                    <div>Detalles</div>
                 </a>
             </div>
             <div class="five wide column">
-                <a class="ui basic icon small compact fluid button">
-                    <i class="arrow right icon"></i>
-                    <div>Ver mas</div>
-                </a>
-            </div>
-            <div class="five wide column">
-                <a class="ui basic icon small compact fluid button">
+                <button class="ui basic icon small compact fluid button" id="venue-preview-route">
                     <i class="map icon"></i>
                     <div>Ruta</div>
-                </a>
+                </button>
             </div>
         </div>
     </div>
-    <div id="ui-card-wrapper" class="venue hidden">
+    <div class="venue hidden" id="venue-card">
         <div class="ui card">
+            <a class="ui corner orange label" id="venue-card-hide"><i class="close icon"></i></a>
             <div class="image">
-                <a class="ui corner orange label"><i class="close icon"></i></a>
                 <img src="{{ data.logo }}" id="venue-card-logo">
                 <div class="ui large star rating" data-rating="5" data-max-rating="5"></div>
             </div>
@@ -89,7 +96,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                         <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
                     {% } %}
                     
-                    <a class="ui circular small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
+                    <a class="ui circular small button icon venue-card-share" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
                     <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
                 </div>
                 <div id="directions-panel"></div>

@@ -270,6 +270,9 @@ var getVenueById = function(req, res){
         v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
 
         var venue = v.toJSON();
+        venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
+        venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
+        venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
 
         render(
             {
@@ -674,6 +677,7 @@ Jound.use(checkEnvironment);
 
 Jound.get('/', home);
 Jound.get('/venue/:id', getVenueById);
+Jound.get('/venue/:id/details', getVenueById);
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
 Jound.get('/about', about);

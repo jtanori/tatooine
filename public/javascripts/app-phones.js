@@ -1371,11 +1371,12 @@ $(function(){
 		template: _.template($('#venue-template').html()),
 		routeEnabled: false,
 		events: {
-			'click a.label': 'hide',
+			'click #venue-card-hide': 'hideDetails',
+			'click #venue-details': 'details',
 			'click #venue-card-directions': 'getDirecctions',
 			'click #venue-card-like': 'like',
 			'click #venue-card-unlike': 'unlike',
-			'click #venue-card-share': 'share',
+			'click .venue-card-share': 'share',
 			'click #venue-options-send-message': 'sendMessage'
 		},
 		views: {},
@@ -1418,9 +1419,9 @@ $(function(){
 			var title = data.name + ', ' + this.model.get('locality') + ' - Jound';
 
 			data.www = this.model.getWWW();
-
 			data.liked = false;
 			data.page = this.model.get('page');
+			data.id = id;
 
 			if(u && _.indexOf(u.get('likedVenues'), id) >= 0){
 				data.liked = true;
@@ -1437,7 +1438,8 @@ $(function(){
 				shareButton: this.$el.find('#venue-card-share'),
 				unlikeButton: this.$el.find('#venue-card-unlike'),
 				address: this.$el.find('.venue-card-address'),
-				image: this.$el.find('#venue-card-logo')
+				image: this.$el.find('#venue-card-logo'),
+				card: this.$el.find('#venue-card')
 			};
 
 			if(!_.isEmpty(data.page) && !this.model.pageLoaded){
@@ -1463,7 +1465,7 @@ $(function(){
 				this.dom.pageButton.removeClass('loading');
 			}*/
 
-			this.$el.appendTo('body');
+			this.$el.prependTo('body>.pusher');
 
 			/*
 			$.ajax({url: '/address', type: 'POST', data: {latitude: p.latitude, longitude: p.longitude}})
@@ -1496,6 +1498,21 @@ $(function(){
 		update: function(data){
 			this.model.clear({silent: true}).set(data);
 			this.show();
+		},
+		details: function(e){
+			if(e && e.preventDefault){
+				e.preventDefault();
+			}
+			Backbone.history.navigate('/venue/' + this.model.id + '/details', {trigger: true});
+		},
+		showDetails: function(){
+			this.dom.card.transition('fade up');
+			this.$el.addClass('with-details');
+		},
+		hideDetails: function(){
+			Backbone.history.navigate('/venue/' + this.model.id);
+			this.dom.card.transition('fade down');
+			this.$el.removeClass('with-details');
 		},
 		onPage: function(){
 			this.model.pageLoaded = true;
@@ -1614,6 +1631,8 @@ $(function(){
 						.fail(function(){console.log('unable to like', arguments);})
 						.always(function(){$button.removeClass('loading');});
 				}
+			}else{
+				App.views.sidebar.login();
 			}
 		},
 		share: function(){
@@ -1630,6 +1649,7 @@ $(function(){
 		_requestDirections: function(){
 			if(!this.routeEnabled) return;//Route already been traced
 
+			console.log('position', this.model.toJSON(), this.positionModel);
 			var p = this.model.get('position');
 			var pp = this.positionModel.get('center');
 			var to = p.latitude + ',' + p.longitude;
@@ -1817,6 +1837,7 @@ $(function(){
 			sidebar: sidebar
 		},
 		routes: {
+			'venue/:id/details': 'venueDetails',
 			'venue/:position' : 'venue',
 			'': 'home'
 		},
@@ -1827,14 +1848,13 @@ $(function(){
 		home: function(){
 			positionModel.set('usingGeolocation', true);
 		},
-
 		venue: function(id){
 			var view, p, latln;
 			if(!this.views.venue){
 				this.views.venue = venue;
 			}
 
-			if(this.views.venue.model && window.initialVenueConfig){
+			if(this.views.venue.model && !_.isEmpty(window.initialVenueConfig)){
 				p = this.views.venue.model.toJSON();
 
 				latln = new google.maps.LatLng(p.position.latitude,p.position.longitude);
@@ -1843,14 +1863,16 @@ $(function(){
 				this.views.map.map.setZoom(14);
 				//Show view
 				this.views.venue.show();
-			}else if(this.views.venue.model){
-				console.log('venue model exist in venue view');
 			}
 
 			positionModel.set('center', latln);
 
 			window.initialVenueConfig = null;
-			delete window.initialVenueConfig;
+
+			return this.views.venue;
+		},
+		venueDetails: function(id){
+			this.venue(id).showDetails();
 		}
 	}, {
 		setTitle: function(title){
