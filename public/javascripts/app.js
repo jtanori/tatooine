@@ -340,6 +340,7 @@ $(function(){
 			var category = this.dom.categoryHidden.val();
 			var p = this.positionModel.toJSON();
 			var data = {};
+			var $searchFieldWrapper = this.dom.searchFieldWrapper;
 
 			if(keywords.length || !!category){
 				data.q = keywords;
@@ -350,6 +351,7 @@ $(function(){
 				}
 
 				Backbone.trigger('search:start');
+				$searchFieldWrapper.addClass('loading');
 
 				$.ajax({
 					type: 'POST',
@@ -361,6 +363,7 @@ $(function(){
 				}).fail(function(){
 					console.log('fail loading', arguments);
 				}).always(function(){
+					$searchFieldWrapper.removeClass('loading');
 					Backbone.trigger('search:end');
 				});
 			}
@@ -512,7 +515,6 @@ $(function(){
 		},
 		_cacheElements: function(){
 			this.dom = {
-				search: this.$el.find('[type=text]'),
 				searchIcon: this.$el.find('#header-search-icon'),
 				positionToggle: this.$el.find('#position-toggle'),
 				facebookLogin: this.$el.find('#facebook-login-button'),
@@ -525,7 +527,8 @@ $(function(){
 				search: this.$el.find('#search-box'),
 				searchInput: this.$el.find('#search-box-value'),
 				categoryHidden: this.$el.find('#search-box-category'),
-				searchButton: this.$el.find('#search-box-button')
+				searchButton: this.$el.find('#search-box-button'),
+				searchFieldWrapper: this.$el.find('#search-box .icon.input')
 			};
 
 			this.dom.userDropdown.dropdown();
@@ -788,10 +791,10 @@ $(function(){
 			this._updateRadius(newRadius*1);
 		},
 		onSearchStart: function(){
-			this.$el.dimmer('show');
+			//this.$el.dimmer('show');
 		},
 		onSearchEnd: function(){
-			this.$el.dimmer('hide');
+			//this.$el.dimmer('hide');
 		},
 		/* DATA METHODS */
 		parse: function(results){
@@ -1163,7 +1166,6 @@ $(function(){
 			this.hide();
 		},
 		onError: function(e){
-			console.log('error', arguments);
 			var values = this.dom.form.form('get values');
 			
 			switch(e.code){
@@ -1823,19 +1825,17 @@ $(function(){
 				p = this.views.venue.model.toJSON();
 
 				latln = new google.maps.LatLng(p.position.latitude,p.position.longitude);
+				
+				positionModel.set('center', latln);
+
 				this.views.map.map.setCenter(latln);
 				this.views.map.collection.add(this.views.venue.model);
 				this.views.map.map.setZoom(14);
 				//Show view
 				this.views.venue.show();
-			}else if(this.views.venue.model){
-				console.log('venue model exist in venue view');
 			}
 
-			positionModel.set('center', latln);
-
 			window.initialVenueConfig = null;
-			delete window.initialVenueConfig;
 		}
 	}, {
 		setTitle: function(title){

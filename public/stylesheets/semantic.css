@@ -36,6 +36,7 @@
 	background: transparent;
 	text-align: center;
 	outline: 0;
+	opacity: 0;
 }
 #header-search-category {
 	position: absolute;

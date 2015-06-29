@@ -34,6 +34,7 @@
 	background: transparent;
 	text-align: center;
 	outline: 0;
+	opacity: 0;
 }
 
 #header-search-category {
@@ -173,6 +174,10 @@ and (orientation : portrait) {
 	display: block;
 }
 
+#venue-view #venue-preview {
+	border-top: 1px solid lightgray;
+}
+
 #venue-view.with-details #venue-preview {
 	display: none;
 }
@@ -186,6 +191,17 @@ and (orientation : portrait) {
 	border-radius: 0;
 	border: 0;
 	box-shadow: none;
+}
+
+#venue-view .ui.card .rating {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	text-align: center;
+	background: rgba(0,0,0,0.1);
+	padding: 10px;
+	border-top: 1px solid rgba(0,0,0,0.1);
+	border-bottom: 1px solid rgba(0,0,0,0.2);
 }
 
 #venue-preview .ui.button {

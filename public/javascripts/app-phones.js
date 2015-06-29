@@ -250,7 +250,6 @@ $(function(){
 
 		render: function(){
 			this.dom = {
-				search: this.$el.find('[type=text]'),
 				searchIcon: this.$el.find('#header-search-icon'),
 				positionToggle: this.$el.find('#position-toggle'),
 				form: this.$el.find('form'),
@@ -259,7 +258,8 @@ $(function(){
 				searchInput: this.$el.find('#search-box-value'),
 				categoryHidden: this.$el.find('#search-box-category'),
 				searchButton: this.$el.find('#search-box-button'),
-				dropdown: this.$el.find('#header-category-dropdown')
+				dropdown: this.$el.find('#header-category-dropdown'),
+				searchFieldWrapper: this.$el.find('#search-box .icon.input')
 			};
 
 			var $search = this.dom.search;
@@ -347,6 +347,7 @@ $(function(){
 			var category = this.dom.categoryHidden.val();
 			var p = this.positionModel.toJSON();
 			var data = {};
+			var $searchFieldWrapper = this.dom.searchFieldWrapper;
 
 			if(keywords.length || !!category){
 				data.q = keywords;
@@ -357,6 +358,7 @@ $(function(){
 				}
 
 				Backbone.trigger('search:start');
+				$searchFieldWrapper.addClass('loading');
 
 				$.ajax({
 					type: 'POST',
@@ -368,6 +370,7 @@ $(function(){
 				}).fail(function(){
 					console.log('fail loading', arguments);
 				}).always(function(){
+					$searchFieldWrapper.removeClass('loading');
 					Backbone.trigger('search:end');
 				});
 			}
@@ -663,13 +666,13 @@ $(function(){
 		getBasicData: function(){
 			return {
 				name: this.get('name'),
-				address: PlaceModel.prototype.getAddress.call(this),
-				city: PlaceModel.prototype.getCity.call(this),
-				vecinity: PlaceModel.prototype.getVecinity.call(this),
+				address: this.getAddress(),
+				city: this.getCity(),
+				vecinity: this.getVecinity(),
 				phoneNumber: this.get('phone_number'),
 				url: this.get('www'),
 				activity: this.get('activity_description'),
-				logo: PlaceModel.prototype.getLogo.call(this),
+				logo: this.getLogo(),
 				email: !!this.get('email_address'),
 				www: this.getWWW()
 			};
@@ -745,14 +748,14 @@ $(function(){
 
 			this._updateRadius(this.model.get('searchRadius')*1);
 
-			Backbone.trigger('map:ready');
-
 			google.maps.event.addListener(this.map, 'click', _.bind(this.clearVenue, this));
 			google.maps.event.addListener(this.currentRadius, 'click', _.bind(this.clearVenue, this));
 			google.maps.event.addListener(this.currentPositionMarker, 'dragstart', _.bind(this.onCenterDragStart, this));
 			google.maps.event.addListener(this.currentPositionMarker, 'dragend', _.bind(this.onCenterDragEnd, this));
 
 			this.directionsDisplay.setMap(this.map);
+
+			Backbone.trigger('map:ready');
 
 			return this;			
 		},
@@ -802,10 +805,10 @@ $(function(){
 			this._updateRadius(newRadius*1);
 		},
 		onSearchStart: function(){
-			this.$el.dimmer('show');
+			//this.$el.dimmer('show');
 		},
 		onSearchEnd: function(){
-			this.$el.dimmer('hide');
+			//this.$el.dimmer('hide');
 		},
 		/* DATA METHODS */
 		parse: function(results){
@@ -1353,7 +1356,7 @@ $(function(){
 			return this;
 		},
 		hide: function(){
-			console.log('hide');
+			//console.log('hide');
 		},
 		addAll: function(){
 			this.collection.each(this.addOne, this);
@@ -1373,7 +1376,7 @@ $(function(){
 		events: {
 			'click #venue-card-hide': 'hideDetails',
 			'click #venue-details': 'details',
-			'click #venue-card-directions': 'getDirecctions',
+			'click .venue-card-directions': 'getDirecctions',
 			'click #venue-card-like': 'like',
 			'click #venue-card-unlike': 'unlike',
 			'click .venue-card-share': 'share',
@@ -1506,12 +1509,10 @@ $(function(){
 			Backbone.history.navigate('/venue/' + this.model.id + '/details', {trigger: true});
 		},
 		showDetails: function(){
-			this.dom.card.transition('fade up');
 			this.$el.addClass('with-details');
 		},
 		hideDetails: function(){
 			Backbone.history.navigate('/venue/' + this.model.id);
-			this.dom.card.transition('fade down');
 			this.$el.removeClass('with-details');
 		},
 		onPage: function(){
@@ -1648,8 +1649,7 @@ $(function(){
 		},
 		_requestDirections: function(){
 			if(!this.routeEnabled) return;//Route already been traced
-
-			console.log('position', this.model.toJSON(), this.positionModel);
+			
 			var p = this.model.get('position');
 			var pp = this.positionModel.get('center');
 			var to = p.latitude + ',' + p.longitude;
@@ -1850,6 +1850,7 @@ $(function(){
 		},
 		venue: function(id){
 			var view, p, latln;
+
 			if(!this.views.venue){
 				this.views.venue = venue;
 			}
@@ -1858,21 +1859,27 @@ $(function(){
 				p = this.views.venue.model.toJSON();
 
 				latln = new google.maps.LatLng(p.position.latitude,p.position.longitude);
+
+				positionModel.set('center', latln);
+
 				this.views.map.map.setCenter(latln);
 				this.views.map.collection.add(this.views.venue.model);
 				this.views.map.map.setZoom(14);
+
 				//Show view
 				this.views.venue.show();
 			}
-
-			positionModel.set('center', latln);
 
 			window.initialVenueConfig = null;
 
 			return this.views.venue;
 		},
 		venueDetails: function(id){
-			this.venue(id).showDetails();
+			if(this.views.venue){
+				this.views.venue.showDetails();
+			}else{
+				this.venue(id).showDetails();
+			}
 		}
 	}, {
 		setTitle: function(title){

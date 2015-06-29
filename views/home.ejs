@@ -61,7 +61,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                 </a>
             </div>
             <div class="five wide column">
-                <button class="ui basic icon small compact fluid button" id="venue-preview-route">
+                <button class="ui basic icon small compact fluid button venue-card-directions" id="venue-preview-route">
                     <i class="map icon"></i>
                     <div>Ruta</div>
                 </button>
@@ -97,7 +97,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                     {% } %}
                     
                     <a class="ui circular small button icon venue-card-share" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
-                    <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
+                    <a class="ui small button icon venue-card-directions" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
                 </div>
                 <div id="directions-panel"></div>
             </div>
