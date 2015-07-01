@@ -349,31 +349,29 @@ $(function(){
 			var data = {};
 			var $searchFieldWrapper = this.dom.searchFieldWrapper;
 
-			if(keywords.length || !!category){
-				data.q = keywords;
-				data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
+			data.q = keywords;
+			data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
 
-				if(category && category !== 'all'){
-					data.c = category;
-				}
-
-				Backbone.trigger('search:start');
-				$searchFieldWrapper.addClass('loading');
-
-				$.ajax({
-					type: 'POST',
-					dataType: 'json',
-					data: data,
-					url: '/search'
-				}).then(function(r){
-					Backbone.trigger('search:results', r.results);
-				}).fail(function(){
-					console.log('fail loading', arguments);
-				}).always(function(){
-					$searchFieldWrapper.removeClass('loading');
-					Backbone.trigger('search:end');
-				});
+			if(category && category !== 'all'){
+				data.c = category;
 			}
+
+			Backbone.trigger('search:start');
+			$searchFieldWrapper.addClass('loading');
+
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				data: data,
+				url: '/search'
+			}).then(function(r){
+				Backbone.trigger('search:results', r.results);
+			}).fail(function(){
+				console.log('fail loading', arguments);
+			}).always(function(){
+				$searchFieldWrapper.removeClass('loading');
+				Backbone.trigger('search:end');
+			});
 		},
 		setCategory: function(){
 			if(!!this.dom.dropdown.dropdown('get value')){
