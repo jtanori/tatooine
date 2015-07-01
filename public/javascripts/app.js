@@ -342,31 +342,29 @@ $(function(){
 			var data = {};
 			var $searchFieldWrapper = this.dom.searchFieldWrapper;
 
-			if(keywords.length || !!category){
-				data.q = keywords;
-				data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
+			data.q = keywords;
+			data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
 
-				if(category && category !== 'all'){
-					data.c = category;
-				}
-
-				Backbone.trigger('search:start');
-				$searchFieldWrapper.addClass('loading');
-
-				$.ajax({
-					type: 'POST',
-					dataType: 'json',
-					data: data,
-					url: '/search'
-				}).then(function(r){
-					Backbone.trigger('search:results', r.results);
-				}).fail(function(){
-					console.log('fail loading', arguments);
-				}).always(function(){
-					$searchFieldWrapper.removeClass('loading');
-					Backbone.trigger('search:end');
-				});
+			if(category && category !== 'all'){
+				data.c = category;
 			}
+
+			Backbone.trigger('search:start');
+			$searchFieldWrapper.addClass('loading');
+
+			$.ajax({
+				type: 'POST',
+				dataType: 'json',
+				data: data,
+				url: '/search'
+			}).then(function(r){
+				Backbone.trigger('search:results', r.results);
+			}).fail(function(){
+				console.log('fail loading', arguments);
+			}).always(function(){
+				$searchFieldWrapper.removeClass('loading');
+				Backbone.trigger('search:end');
+			});
 		},
 		setCategory: function(){
 			if(!!this.dom.dropdown.dropdown('get value')){
@@ -403,7 +401,7 @@ $(function(){
 			this.signupModal.show();
 		},
 		facebookLogin: function(){
-			$('body').dimmer('show');
+			var $loader = this.dom.facebookLoginLoader.addClass('active');
 
 			var login = function(data){
 				data = data || {};
@@ -422,7 +420,7 @@ $(function(){
 							if (!response || response.error) {
 								u.save()
 									.always(function(){
-										$('body').dimmer('hide');
+										$loader.removeClass('active');
 										Backbone.trigger('user:login', true);
 									});
 							}else{
@@ -431,7 +429,7 @@ $(function(){
 									.then(function(){
 										Backbone.trigger('user:profile:photo', response.url)
 									}).always(function(){
-										$('body').dimmer('hide');
+										$loader.removeClass('active');
 										Backbone.trigger('user:login', true);
 									});
 							}
@@ -439,7 +437,7 @@ $(function(){
     				},
     				error: function(){
     					alert('Ha ocurrido un error al crear tu cuenta, por favor intenta de nuevo');
-    					$('body').dimmer('hide');
+    					$loader.removeClass('active');
     				}
     			});
 			};
@@ -456,7 +454,7 @@ $(function(){
 					        	.then(function(count){
 					        		if(count){
 					        			alert('Parece que ese usuario ya esta registrado, por favor usa tu correo electronico y contraseña para iniciar sesion.');
-					        			$('body').dimmer('hide');
+					        			$loader.removeClass('active');
 					        		}else{
 					        			login(data);
 					        		}
@@ -469,7 +467,7 @@ $(function(){
 						}
 					}if(!data.verified){
 						alert('Tu cuenta de Facebook parece no estar verificada, por favor verifica tu cuenta de correo con Facebook e intenta de nuevo.');
-						$('body').dimmer('hide');
+						$loader.removeClass('active');
 					}
 				});
 			};
@@ -483,7 +481,7 @@ $(function(){
 							me();
 						} else {
 							alert('No pudimos iniciar sesion con tu cuenta');
-							$('body').dimmer('hide');
+							$loader.removeClass('active');
 						}
 					});
 				}
@@ -518,6 +516,7 @@ $(function(){
 				searchIcon: this.$el.find('#header-search-icon'),
 				positionToggle: this.$el.find('#position-toggle'),
 				facebookLogin: this.$el.find('#facebook-login-button'),
+				facebookLoginLoader: this.$el.find('#facebook-login-button .loader'),
 				login: this.$el.find('#login-button'),
 				signup: this.$el.find('#signup-button'),
 				userDropdown: this.$el.find('#header-user-options-dropdown'),
@@ -939,7 +938,9 @@ $(function(){
 		className: 'ui small modal',
 		template: _.template($('#login-modal-template').html()),
 		events: {
-			'submit': 'submit'
+			'submit': 'submit',
+			'click #login-modal-signup': 'signup',
+			'click #login-modal-facebook': 'facebook'
 		},
 		initialize: function(){
 			$('#login-modal-template').remove();
@@ -956,6 +957,7 @@ $(function(){
 
 			this.$el.modal({
 				closable: false,
+				allowMultiple: true,
 				onApprove: _.bind(function(){
 					this.dom.form.trigger('submit');
 					return false;
@@ -1025,6 +1027,18 @@ $(function(){
 					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
+		signup: function(e){
+			if(e && e.preventDefault()){
+				e.preventDefault();
+			}
+
+			this.hide();
+			App.views.header.signup();
+		},
+		facebook: function(){
+			this.hide();
+			App.views.header.facebookLogin();
+		},
 		onSuccess: function(u){
 			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
@@ -1048,7 +1062,9 @@ $(function(){
 		className: 'ui small modal',
 		template: _.template($('#signup-modal-template').html()),
 		events: {
-			'submit': 'submit'
+			'submit': 'submit',
+			'click #signup-modal-login': 'login',
+			'click #signup-modal-facebook': 'facebook'
 		},
 		initialize: function(){
 			$('#signup-modal-template').remove();
@@ -1065,6 +1081,7 @@ $(function(){
 
 			this.$el.modal({
 				closable: false,
+				allowMultiple: true,
 				onApprove: _.bind(function(){
 					this.dom.form.trigger('submit');
 					return false;
@@ -1159,6 +1176,18 @@ $(function(){
 					.fail(_.bind(this.onError, this))
 					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
+		},
+		login: function(e){
+			if(e && e.preventDefault()){
+				e.preventDefault();
+			}
+
+			this.hide();
+			App.views.header.login();
+		},
+		facebook: function(){
+			this.hide();
+			App.views.header.facebookLogin();
 		},
 		onSuccess: function(u){
 			this.dom.form.form('reset');
@@ -1603,6 +1632,8 @@ $(function(){
 						.fail(function(){console.log('unable to like', arguments);})
 						.always(function(){$button.removeClass('loading');});
 				}
+			}else{
+				App.views.header.login();
 			}
 		},
 		share: function(){

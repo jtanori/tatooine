@@ -80,7 +80,10 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                 <a class="header">{{ data.name }}</a>
                 <div class="meta">
                     <span class="date">{{ data.activity }}</span>
+                    <div>{% if(data.url){ %}<a target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}</div>
                 </div>
+                <div class="ui hidden divider"></div>
+                {% if(data.phoneNumber){ %}<a class="ui green centered compact fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
                 <div class="ui divider"></div>
                 <div class="ui divided list">
                     <div class="item">
@@ -103,7 +106,6 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             </div>
         </div>
         <div id="venue-options">
-            {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
             {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}
             {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message" title="Enviar mensaje a {{ data.name }}"><i class="send icon"></i> Enviar mensaje</a>{% } %}
             {% if(data.page) { %}
@@ -131,7 +133,10 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                 <a class="header">{{ data.name }}</a>
                 <div class="meta">
                     <span class="date">{{ data.activity }}</span>
+                    <div>{% if(data.url){ %}<a target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}</div>
                 </div>
+                <div class="ui hidden divider"></div>
+                {% if(data.phoneNumber){ %}<a class="ui green huge centered compact fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
                 <div class="ui divider"></div>
                 <div class="ui divided list">
                     <div class="item">
@@ -154,8 +159,6 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             </div>
         </div>
         <div id="venue-options">
-            {% if(data.phoneNumber){ %}<a class="ui orange tiny button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
-            {% if(data.url){ %}<a class="ui orange tiny button right icon" target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}
             {% if(data.email){ %}<a class="ui orange tiny button right icon" id="venue-options-send-message" title="Enviar mensaje a {{ data.name }}"><i class="send icon"></i> Enviar mensaje</a>{% } %}
             {% if(data.page) { %}
                 

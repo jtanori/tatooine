@@ -530,11 +530,8 @@ var search = function(req, res){
     if(data.p){
         position = new Parse.GeoPoint({latitude: parseFloat(data.p.lat,10), longitude: parseFloat(data.p.lng,10)});
         query.near('position', position);
-        query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10));
-    }
+        query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10) || 1);
 
-    //If keywords or category, and position
-    if((data.q || data.c) && data.p){
         Parse.Cloud.useMasterKey();
         query
             .select(venueFieldsWhitelist)
@@ -546,7 +543,7 @@ var search = function(req, res){
                 error: onError
             });
     }else{
-        res.status(404).json({ status: 'error', error: 'Invalid parameters', code: 601});
+        res.status(404).json({ status: 'error', error: 'Location is a required value', code: 601});
     }
 };
 

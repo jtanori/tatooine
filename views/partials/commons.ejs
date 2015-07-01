@@ -3,16 +3,21 @@
         <i class="sign in icon"></i> Iniciar Sesión
     </div>
     <form class="ui form content">
-        <div class="fields">
-        <div class="eight wide field">
-            <label for="login-modal-username">Correo Electronico</label>
-            <input type="text" id="login-modal-username" name="login-modal-username" placeholder="juan@jound.mx" />
+        <div class="two fields">
+            <div class="field">
+                <label for="login-modal-username">Correo Electronico</label>
+                <input type="text" id="login-modal-username" name="login-modal-username" placeholder="juan@jound.mx" />
+            </div>
+            <div class="field">
+                <label for="login-modal-password">Contraseña</label>
+                <input type="password" id="login-modal-password" name="login-modal-password" placeholder="" />
+            </div>
         </div>
-        <div class="eight wide field">
-            <label for="login-modal-password">Contraseña</label>
-            <input type="password" id="login-modal-password" name="login-modal-password" placeholder="" />
+        <div>
+            <a href="#" id="login-modal-signup"><i class="user icon"></i> Crear cuenta</a>
         </div>
-        </div>
+        <div class="ui divider"></div>
+        <button type="button" class="ui large fluid facebook button" id="login-modal-facebook"><i class="facebook icon"></i> Entrar con Facebook</button>
     </form>
     <div class="actions">
         <button type="reset" class="ui dark button cancel"  id="login-modal-cancel">Cancelar</button>
@@ -80,9 +85,19 @@
                 <label for="signup-tos-confirmation">Accepto los terminos y condiciones</label>
             </div>
         </div>
+        <div class="ui divider"></div>
+        <div>
+            <span>¿Ya tienes una cuenta? Ir <a href="#" id="signup-modal-login">iniciar sesion</a>
+        </div>
+        <div class="ui divider"></div>
+        <button type="button" class="ui large fluid facebook button" id="signup-modal-facebook"><i class="facebook icon"></i> Entrar con Facebook</button>
     </form>
     <div class="actions">
         <button type="reset" class="ui dark button cancel"  id="signup-modal-cancel">Cancelar</button>
         <button type="submit" class="ui orange button ok"  id="signup-modal-ok">Crear</button>
     </div>
+</div>
+
+<div class="ui inverted dimmer">
+    <div class="ui medium text loader">Cargando</div>
 </div>

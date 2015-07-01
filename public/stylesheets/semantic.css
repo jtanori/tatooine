@@ -44,6 +44,7 @@
 }
 #category-dropdown-menu{max-height:300px;overflow-y:scroll}
 #category-dropdown-menu .item{text-transform:capitalize}
+#facebook-login-button .loader {font-size: 0.6rem;}
 #map{position:absolute;top:42px;bottom:36px;background:url(/images/bg.jpg) no-repeat center center;background-size:cover;left:0;right:0}
 
 #header-search-text {
