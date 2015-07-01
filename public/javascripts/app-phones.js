@@ -760,7 +760,9 @@ $(function(){
 			return this;			
 		},
 		clearVenue: function(e){
-			Backbone.trigger('venue:info:hide');
+			if(App.views.venue){
+				App.views.venue.hide();
+			}
 		},
 		onCenterDragStart: function(){
 			this.currentRadius.setVisible(false);
@@ -1404,7 +1406,7 @@ $(function(){
 		template: _.template($('#venue-template').html()),
 		routeEnabled: false,
 		events: {
-			'click #venue-card-hide': 'hideDetails',
+			'click #venue-card-hide': 'hideCard',
 			'click #venue-details': 'details',
 			'click .venue-card-directions': 'getDirecctions',
 			'click #venue-card-like': 'like',
@@ -1545,7 +1547,7 @@ $(function(){
 		showDetails: function(){
 			this.$el.addClass('with-details');
 		},
-		hideDetails: function(){
+		hideCard: function(){
 			Backbone.history.navigate('/venue/' + this.model.id);
 			this.$el.removeClass('with-details');
 		},
@@ -1868,12 +1870,14 @@ $(function(){
 		views: {
 			map: map,
 			header: header,
-			sidebar: sidebar
+			sidebar: sidebar,
+			venue: venue
 		},
 		routes: {
-			'venue/:position' : 'venue',
-			'search'          : 'search',
-			''                : 'home'
+			'venue/:id'         : 'venue',
+			'venue/:id/details' : 'venueDetails',
+			'search'            : 'search',
+			''                  : 'home'
 		},
 		initialize: function(){
 			Backbone.on('page:set:title', this.constructor.setTitle);

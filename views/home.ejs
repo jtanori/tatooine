@@ -44,7 +44,7 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
                 <p class="venue-card-address"></p>
             </div>
             <div class="four wide column">
-                {% if(data.phoneNumber){ %}<a class="ui green fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i></a>{% } %}
+                {% if(data.phoneNumber){ %}<a class="ui blue fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i></a>{% } %}
             </div>
             {% } else { %}
             <div class="twelve wide column">
@@ -83,29 +83,30 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             </div>
 
             <div class="content">
-                <a class="header">{{ data.name }}</a>
+                <h1 class="header">{{ data.name }}</h1>
                 <div class="meta">
                     <span class="date">{{ data.activity }}</span>
                     <div>{% if(data.url){ %}<a target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}</div>
                 </div>
                 <div class="ui hidden divider"></div>
-                {% if(data.phoneNumber){ %}<a class="ui green centered compact fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
+                {% if(data.phoneNumber){ %}<a class="ui blue centered compact fluid button right icon selectable" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> <span class="selectable">{{data.phoneNumber}}</span></a>{% } %}
                 <div class="ui divider"></div>
                 <div class="ui divided list">
                     <div class="item">
                         <div class="header">Direccion</div>
                         <div class="description venue-card-address" id="venue-card-address"></div>
+                        {% if(data.phoneNumber){ %}<h4 class="ui small header selectable">Telefono: {{data.phoneNumber}}</h4>{% } %}
                     </div>
                 </div>
                 <div class="ui divider"></div>
                 <div class="extra content options">
                     {% if(data.liked){ %}
-                        <button class="ui circular small orange button icon" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                        <button class="ui small button icon orange" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i> Me gusta</button>
                     {% } else { %}
-                        <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                        <button class="ui small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i> Me gusta</button>
                     {% } %}
                     
-                    <a class="ui circular small button icon venue-card-share" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
+                    <a class="ui small button icon venue-card-share" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i> Compartir</a>
                     <a class="ui small button icon venue-card-directions" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
                 </div>
                 <div id="directions-panel"></div>
@@ -136,29 +137,30 @@ var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
             </div>
 
             <div class="content">
-                <a class="header">{{ data.name }}</a>
+                <h1 class="header">{{ data.name }}</h1>
                 <div class="meta">
                     <span class="date">{{ data.activity }}</span>
                     <div>{% if(data.url){ %}<a target="_blank" href="//{{data.www}}" title="Ir al sitio de {{ data.name }}"><i class="world icon"></i> {{data.www}}</a>{% } %}</div>
                 </div>
                 <div class="ui hidden divider"></div>
-                {% if(data.phoneNumber){ %}<a class="ui green huge centered compact fluid button right icon" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> {{data.phoneNumber}}</a>{% } %}
+                {% if(data.phoneNumber){ %}<a class="ui blue huge centered compact fluid button right icon selectable" href="tel:{{ data.phone_number }}" title="Llamar a {{ data.name }}"><i class="call icon"></i> <span class="selectable">{{data.phoneNumber}}</span></a>{% } %}
                 <div class="ui divider"></div>
                 <div class="ui divided list">
                     <div class="item">
                         <div class="header">Direccion</div>
                         <div class="description venue-card-address" id="venue-card-address"></div>
+                        {% if(data.phoneNumber){ %}<h4 class="ui small header selectable">Telefono: {{data.phoneNumber}}</h4>{% } %}
                     </div>
                 </div>
                 <div class="ui divider"></div>
                 <div class="extra content options">
                     {% if(data.liked){ %}
-                        <button class="ui circular small orange button icon" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                        <button class="ui small button icon orange" id="venue-card-like" title="Ya no Me Gusta {{ data.name }}"><i class="like icon"></i> Me gusta</button>
                     {% } else { %}
-                        <button class="ui circular small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i></button>
+                        <button class="ui small button icon" id="venue-card-like" title="Hacer Me Gusta {{ data.name }}"><i class="like icon"></i> Me gusta</button>
                     {% } %}
                     
-                    <a class="ui circular small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i></a>
+                    <a class="ui small button icon" id="venue-card-share" title="Compartir la tarjeta de {{ data.name }}"><i class="share icon"></i> Compartir</a>
                     <a class="ui small button icon" id="venue-card-directions" title="Como llegar a {{ data.name }} desde el punto de origen"><i class="road icon"></i> Ruta</a>
                 </div>
                 <div id="directions-panel"></div>

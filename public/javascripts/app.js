@@ -750,6 +750,7 @@ $(function(){
 			return this;			
 		},
 		clearVenue: function(e){
+			console.log('clear venue');
 			Backbone.trigger('venue:info:hide');
 		},
 		onCenterDragStart: function(){
@@ -1844,9 +1845,9 @@ $(function(){
 			header: header
 		},
 		routes: {
-			'venue/:position' : 'venue',
-			'search'          : 'search',
-			''                : 'home'
+			'venue/:id' : 'venue',
+			'search'    : 'search',
+			''          : 'home'
 		},
 		initialize: function(){
 			Backbone.on('page:set:title', this.constructor.setTitle);
