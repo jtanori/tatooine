@@ -348,14 +348,19 @@ $(function(){
 			var p = this.positionModel.toJSON();
 			var data = {};
 			var $searchFieldWrapper = this.dom.searchFieldWrapper;
+			var queryString = '?';
 
 			data.q = keywords;
 			data.p = {lat: p.center.lat(), lng: p.center.lng(), radius: p.radius};
 
+			queryString += 'q=' + data.q + '&lat=' + data.p.lat + '&lng=' + data.p.lng + '&radius=' + data.p.radius;
+
 			if(category && category !== 'all'){
 				data.c = category;
+				queryString += '&category=' + category;
 			}
 
+			Backbone.history.navigate('/search' + queryString);
 			Backbone.trigger('search:start');
 			$searchFieldWrapper.addClass('loading');
 
@@ -1835,9 +1840,9 @@ $(function(){
 			sidebar: sidebar
 		},
 		routes: {
-			'venue/:id/details': 'venueDetails',
 			'venue/:position' : 'venue',
-			'': 'home'
+			'search'          : 'home',
+			''                : 'home'
 		},
 		initialize: function(){
 			Backbone.on('page:set:title', this.constructor.setTitle);
@@ -1845,6 +1850,11 @@ $(function(){
 		},
 		home: function(){
 			positionModel.set('usingGeolocation', true);
+
+			if(window.initialVenues){
+				this.views.map.collection.reset(window.initialVenues);
+				window.initialVenues = null;
+			}
 		},
 		venue: function(id){
 			var view, p, latln;

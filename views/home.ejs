@@ -19,9 +19,15 @@
 var globalKeywords = <%- JSON.stringify(data.keywords) %> || [];
 
 <% if(data.venue) { %>
-
     window.initialVenueConfig = <%- JSON.stringify(data.venue) %>
+<% } %>
 
+<% if(data.category) { %>
+    window.initialCategory = <%- JSON.stringify(data.category) %>
+<% } %>
+
+<% if(data.venues) { %>
+    window.initialVenues = <%- JSON.stringify(data.venues) %>
 <% } %>
 </script>
 

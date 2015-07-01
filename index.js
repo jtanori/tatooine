@@ -522,9 +522,7 @@ var search = function(req, res){
     }
 
     if(data.c && data.c !== 'all'){
-        category = new Category();
-        category.id = data.c;
-        query.equalTo('category', category);
+        query.equalTo('category', new Category({id: data.c}));
     }
 
     if(data.p){
@@ -545,6 +543,116 @@ var search = function(req, res){
     }else{
         res.status(404).json({ status: 'error', error: 'Location is a required value', code: 601});
     }
+};
+
+var searchByGET = function(req, res){
+    var data = {q: req.query.q, p: {lat: req.query.lat, lng: req.query.lng, radius: req.query.radius}, c: req.query.category};
+    var isAjax = req.xhr;
+    var query = new Parse.Query(Venue);
+    var category, position, categoryQuery, q;
+    var categories = new Categories();
+    var keywords = {};
+    var protocol = req.connection.encrypted ? 'https' : 'http';
+    var venues = [];
+    var title = title;
+    var onLoad = function(){
+        keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
+
+        if(data.q){
+            data.q = !_.isEmpty(data.q) ? decodeURIComponent(data.q) : '';
+            q = _.chain(data.q.split(' ')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+
+            console.log(q);
+
+            if(data.q.length === 1){
+                query.equalTo('keywords', q[0].toLowerCase());
+            }else{
+                query.containsAll('keywords', utils.strings.sanitize(q));
+            }
+        }
+
+        if(data.c && data.c !== 'all'){
+            query.equalTo('category', new Category({id: data.c}));
+        }
+
+        console.log('data', data);
+
+        if(data.p){
+            position = new Parse.GeoPoint({latitude: parseFloat(data.p.lat,10), longitude: parseFloat(data.p.lng,10)});
+            query.near('position', position);
+            query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10) || 1);
+
+            Parse.Cloud.useMasterKey();
+            query
+                .select(venueFieldsWhitelist)
+                .include('logo')
+                .include('page')
+                .limit(200)
+                .find({
+                    success: onSuccess,
+                    error: onError
+                });
+        }else{
+            if(isAjax){
+                res.setHeader('Content-Type', 'application/json');
+                res.status(404).json({ status: 'error', error: 'Location is a required value', code: 601});
+            }else{
+                //Render home page with error message
+                render();
+            }
+        }
+    };
+    
+    var render = function(){
+        res.render('home', {
+            data: {
+                activeMenuItem: 'home',
+                title: title,
+                categories: categories.toJSON() || [],
+                keywords: keywords,
+                image: defaultImage,
+                url: protocol + '//www.jound.mx',
+                useSearch: true,
+                category: category,
+                venues: venues
+            }
+        });
+    };
+    var onSuccess = function(r){
+        if(isAjax){
+            res.setHeader('Content-Type', 'application/json');
+            _.each(r, function(r){ r.set('logo', r.getLogo()); });
+            res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
+        }else{
+            //Render home page
+            _.each(r, function(r){ r.set('logo', r.getLogo()); });
+            venues = r;
+            render();
+        }
+    };
+    var onError = function(e){
+        if(isAjax){
+            res.setHeader('Content-Type', 'application/json');
+            res.status(404).json({ status: 'error', error: e.message, code: e.code });
+        }else{
+            //Render home page with error message
+            render();
+        }
+    };
+
+    //Try getting those damm categories
+    client.get("categories", function (err, value, key) {
+        if (!_.isEmpty(value)) {
+            categories.reset(JSON.parse(value));
+            onLoad();
+        }else{
+            //Try getting those damm categories
+            categories.fetch({
+                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
+                error: onLoad
+            });
+        }
+    });
 };
 
 var about = function(req, res){
@@ -694,7 +802,7 @@ Jound.post('/unlike', unlike);
 Jound.post('/address', getAddress);
 Jound.post('/search', search);
 Jound.post('/subscribe', newsletterSubscribe);
-Jound.get('/search', search);
+Jound.get('/search', searchByGET);
 
 app.use('/', Jound);
 /*===============START=================*/
