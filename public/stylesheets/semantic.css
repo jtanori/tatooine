@@ -199,3 +199,12 @@ pre {
 [template]{
 	display: none;
 }
+
+
+
+/* Adjust for tablets here*/
+@media all and (device-width: 768px) and (orientation:portrait) {
+	#search-box input {
+		width: 300px;
+	}
+}
