@@ -24,7 +24,7 @@
     <script type="text/javascript" async defer src="https://apis.google.com/js/platform.js?publisherid=113374668891538311072"></script>
   </head>
   <body>
-    <% include ../partials/menu %>
+    <% include ../partials/header %>
     
     <%-blocks.header%>
     <%-blocks.left%>
@@ -34,6 +34,47 @@
 
     <% include ../partials/footer %>
     <% include ../partials/commons %>
+
+    <div id="template-user-menu" template>
+        {% if(!data.user){ %}
+        <div class="right menu" id="header-user-menu">
+            <a class='item' id="facebook-login-button">
+                <div class="ui mini inverted inline loader"></div>
+                <i class="icon facebook"></i>
+                Inicio con Facebook
+            </a>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon lock"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-login-button">Iniciar Sesion</a>
+                    <a class="item" id="header-signup-button">Crear Cuenta</a>
+                </div>
+            </div>
+            <a class='item' id="header-settings-button">
+                <i class="icon settings"></i>
+            </a>
+        </div>
+        {% } else { %}
+        <div class="right menu" id="header-user-menu">
+            <div class="item" id="header-avatar">
+                <img src="{{ data.user.avatar }}" class="ui image rounded" />
+            </div>
+            <div class="item" id="">
+                {{ data.user.displayName }}
+            </div>
+            <div class="ui dropdown item" id="header-user-options-dropdown">
+                <i class="icon user"></i>
+                <div class="menu" id="header-user-options-dropdown-menu">
+                    <a class="item" id="header-profile-button">Mi Perfil</a>
+                    <a class="item" id="header-signout-button">Cerrar Sesion</a>
+                </div>
+            </div>
+            <a class='item' id="header-settings-button">
+                <i class="icon settings"></i>
+            </a>
+        </div>
+        {% } %}
+    </div>
     
     <script>
         (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=

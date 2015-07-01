@@ -7,7 +7,7 @@
 
 <% if(LAYOUT === 'phones') { %>
 <% script('/javascripts/app-phones.js') -%>
-<% } else { %>
+<% } else if(LAYOUT === 'tablets' || LAYOUT === 'main'){ %>
 <% script('/javascripts/app.js') -%>
 <% } %>
 
