@@ -738,14 +738,14 @@ $(function(){
 
 			this._updateRadius(this.model.get('searchRadius')*1);
 
-			Backbone.trigger('map:ready');
-
 			google.maps.event.addListener(this.map, 'click', _.bind(this.clearVenue, this));
 			google.maps.event.addListener(this.currentRadius, 'click', _.bind(this.clearVenue, this));
 			google.maps.event.addListener(this.currentPositionMarker, 'dragstart', _.bind(this.onCenterDragStart, this));
 			google.maps.event.addListener(this.currentPositionMarker, 'dragend', _.bind(this.onCenterDragEnd, this));
 
 			this.directionsDisplay.setMap(this.map);
+
+			Backbone.trigger('map:ready');
 			
 			return this;			
 		},
@@ -1750,7 +1750,7 @@ $(function(){
 			return this;
 		},
 		show: function(venueID){
-			var venue = new Place();
+			var venue = new PlaceModel();
 			var visitor;
 
 			if(venueID){
@@ -1845,7 +1845,7 @@ $(function(){
 		},
 		routes: {
 			'venue/:position' : 'venue',
-			'search'          : 'home',
+			'search'          : 'search',
 			''                : 'home'
 		},
 		initialize: function(){
@@ -1855,19 +1855,36 @@ $(function(){
 		home: function(){
 			positionModel.set('usingGeolocation', true);
 
-			if(window.initialVenues){
+			if(!_.isEmpty(window.initialVenues)){
 				this.views.map.collection.reset(window.initialVenues);
 				window.initialVenues = null;
 			}
 		},
+		search: function(){
+			var vars = {};
+			var latln;
 
+			_.each(window.location.search.replace('?', '').split('&'), function(x){x = x.split('='); vars[x[0]] = x[1];});
+
+			if(vars.lat && vars.lng && /^([-+]?\d{1,2}[.]\d+),\s*([-+]?\d{1,3}[.]\d+)$/.test(vars.lat + ',' + vars.lng)){
+				latln = new google.maps.LatLng(vars.lat,vars.lng);
+				positionModel.set({center: latln, position: {coords: {latitude: vars.lat, longitude: vars.lng}}});
+
+				if(!_.isEmpty(window.initialVenues)){
+					this.views.map.collection.reset(window.initialVenues);
+					window.initialVenues = null;
+				}
+			}else{
+				this.home();
+			}
+		},
 		venue: function(id){
 			var view, p, latln;
 			if(!this.views.venue){
 				this.views.venue = venue;
 			}
 
-			if(this.views.venue.model && window.initialVenueConfig){
+			if(this.views.venue.model && !_.isEmpty(window.initialVenueConfig)){
 				p = this.views.venue.model.toJSON();
 
 				latln = new google.maps.LatLng(p.position.latitude,p.position.longitude);
@@ -1879,9 +1896,9 @@ $(function(){
 				this.views.map.map.setZoom(14);
 				//Show view
 				this.views.venue.show();
-			}
 
-			window.initialVenueConfig = null;
+				window.initialVenueConfig = null;
+			}
 		}
 	}, {
 		setTitle: function(title){
@@ -1912,8 +1929,6 @@ $(function(){
             xfbml      : true,  // initialize Facebook social plugins on the page
             version    : 'v2.2' // point to the latest Facebook Graph API version
         });
-
-        // Run code after the Facebook SDK is loaded.
     };
 
     (function(d, s, id){

@@ -247,7 +247,6 @@ $(function(){
 
 			return this.render();
 		},
-
 		render: function(){
 			this.dom = {
 				searchIcon: this.$el.find('#header-search-icon'),
@@ -456,7 +455,6 @@ $(function(){
 		facebookLogin: function(){
 			$('body').dimmer('show');
 
-			/*
 			var login = function(data){
 				data = data || {};
 
@@ -474,7 +472,7 @@ $(function(){
 							if (!response || response.error) {
 								u.save()
 									.always(function(){
-										$('body').dimmer('hide');
+										$('body').dimmer('show');
 										Backbone.trigger('user:login', true);
 									});
 							}else{
@@ -483,7 +481,7 @@ $(function(){
 									.then(function(){
 										Backbone.trigger('user:profile:photo', response.url)
 									}).always(function(){
-										$('body').dimmer('hide');
+										$('body').dimmer('show');
 										Backbone.trigger('user:login', true);
 									});
 							}
@@ -491,7 +489,7 @@ $(function(){
     				},
     				error: function(){
     					alert('Ha ocurrido un error al crear tu cuenta, por favor intenta de nuevo');
-    					$('body').dimmer('hide');
+    					$('body').dimmer('show');
     				}
     			});
 			};
@@ -508,7 +506,7 @@ $(function(){
 					        	.then(function(count){
 					        		if(count){
 					        			alert('Parece que ese usuario ya esta registrado, por favor usa tu correo electronico y contraseña para iniciar sesion.');
-					        			$('body').dimmer('hide');
+					        			$('body').dimmer('show');
 					        		}else{
 					        			login(data);
 					        		}
@@ -521,13 +519,12 @@ $(function(){
 						}
 					}if(!data.verified){
 						alert('Tu cuenta de Facebook parece no estar verificada, por favor verifica tu cuenta de correo con Facebook e intenta de nuevo.');
-						$('body').dimmer('hide');
+						$('body').dimmer('show');
 					}
 				});
 			};
 
 			FB.getLoginStatus(function(response){
-				console.log(response, 'status');
 				if(response && response.status === 'connected'){
 					me();
 				}else{
@@ -536,11 +533,11 @@ $(function(){
 							me();
 						} else {
 							alert('No pudimos iniciar sesion con tu cuenta');
-							$('body').dimmer('hide');
+							$('body').dimmer('show');
 						}
 					});
 				}
-			});*/
+			});
 		},
 		signout: function(){
 			User.logOut();
@@ -956,7 +953,9 @@ $(function(){
 		className: 'ui small modal',
 		template: _.template($('#login-modal-template').html()),
 		events: {
-			'submit': 'submit'
+			'submit': 'submit',
+			'click #login-modal-signup': 'signup',
+			'click #login-modal-facebook': 'facebook'
 		},
 		initialize: function(){
 			$('#login-modal-template').remove();
@@ -973,6 +972,7 @@ $(function(){
 
 			this.$el.modal({
 				closable: false,
+				allowMultiple: true,
 				onApprove: _.bind(function(){
 					this.dom.form.trigger('submit');
 					return false;
@@ -1042,6 +1042,18 @@ $(function(){
 					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
 		},
+		signup: function(e){
+			if(e && e.preventDefault()){
+				e.preventDefault();
+			}
+
+			this.hide();
+			App.views.sidebar.signup();
+		},
+		facebook: function(){
+			this.hide();
+			App.views.sidebar.facebookLogin();
+		},
 		onSuccess: function(u){
 			this.dom.form.form('reset');
 			Backbone.trigger('user:login');
@@ -1065,7 +1077,9 @@ $(function(){
 		className: 'ui small modal',
 		template: _.template($('#signup-modal-template').html()),
 		events: {
-			'submit': 'submit'
+			'submit': 'submit',
+			'click #signup-modal-login': 'login',
+			'click #signup-modal-facebook': 'facebook'
 		},
 		initialize: function(){
 			$('#signup-modal-template').remove();
@@ -1082,6 +1096,7 @@ $(function(){
 
 			this.$el.modal({
 				closable: false,
+				allowMultiple: true,
 				onApprove: _.bind(function(){
 					this.dom.form.trigger('submit');
 					return false;
@@ -1176,6 +1191,18 @@ $(function(){
 					.fail(_.bind(this.onError, this))
 					.always(_.bind(function(){this.dom.form.removeClass('loading'); this.dom.buttons.removeAttr('disabled');}, this));
 			}
+		},
+		login: function(e){
+			if(e && e.preventDefault()){
+				e.preventDefault();
+			}
+
+			this.hide();
+			App.views.sidebar.login();
+		},
+		facebook: function(){
+			this.hide();
+			App.views.sidebar.facebookLogin();
 		},
 		onSuccess: function(u){
 			this.dom.form.form('reset');
@@ -1492,6 +1519,10 @@ $(function(){
 				this.$el.transition('fade up');
 			}
 
+			if(this.positionModel.get('usingGeolocation')){
+				this.getDirecctions();
+			}
+
 			return this;
 		},
 		hide: function(){
@@ -1652,7 +1683,7 @@ $(function(){
 		},
 		_requestDirections: function(){
 			if(!this.routeEnabled) return;//Route already been traced
-			
+
 			var p = this.model.get('position');
 			var pp = this.positionModel.get('center');
 			var to = p.latitude + ',' + p.longitude;
@@ -1841,7 +1872,7 @@ $(function(){
 		},
 		routes: {
 			'venue/:position' : 'venue',
-			'search'          : 'home',
+			'search'          : 'search',
 			''                : 'home'
 		},
 		initialize: function(){
@@ -1854,6 +1885,24 @@ $(function(){
 			if(window.initialVenues){
 				this.views.map.collection.reset(window.initialVenues);
 				window.initialVenues = null;
+			}
+		},
+		search: function(){
+			var vars = {};
+			var latln;
+
+			_.each(window.location.search.replace('?', '').split('&'), function(x){x = x.split('='); vars[x[0]] = x[1];});
+
+			if(vars.lat && vars.lng && /^([-+]?\d{1,2}[.]\d+),\s*([-+]?\d{1,3}[.]\d+)$/.test(vars.lat + ',' + vars.lng)){
+				latln = new google.maps.LatLng(vars.lat,vars.lng);
+				positionModel.set({center: latln, position: {coords: {latitude: vars.lat, longitude: vars.lng}}});
+
+				if(!_.isEmpty(window.initialVenues)){
+					this.views.map.collection.reset(window.initialVenues);
+					window.initialVenues = null;
+				}
+			}else{
+				this.home();
 			}
 		},
 		venue: function(id){
@@ -1876,9 +1925,9 @@ $(function(){
 
 				//Show view
 				this.views.venue.show();
-			}
 
-			window.initialVenueConfig = null;
+				window.initialVenueConfig = null;
+			}
 
 			return this.views.venue;
 		},
@@ -1924,7 +1973,7 @@ $(function(){
     var js, fjs = d.getElementsByTagName(s)[0];
     if (d.getElementById(id)) {return;}
     js = d.createElement(s); js.id = id;
-    js.src = "//connect.facebook.net/en_US/sdk/debug.js";
+    js.src = "//connect.facebook.net/en_US/sdk.js";
     fjs.parentNode.insertBefore(js, fjs);
     }(document, 'script', 'facebook-jssdk'));
 });

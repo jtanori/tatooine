@@ -575,9 +575,7 @@ var searchByGET = function(req, res){
             query.equalTo('category', new Category({id: data.c}));
         }
 
-        console.log('data', data);
-
-        if(data.p){
+        if(data.p && validations.POSITION.test(data.p.lat + ',' + data.p.lng)){
             position = new Parse.GeoPoint({latitude: parseFloat(data.p.lat,10), longitude: parseFloat(data.p.lng,10)});
             query.near('position', position);
             query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10) || 1);
