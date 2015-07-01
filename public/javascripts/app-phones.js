@@ -840,10 +840,10 @@ $(function(){
 					this.map.fitBounds(this.bounds);
 				}
 
-				var initialModel = this.collection.at(0);
+				//var initialModel = this.collection.at(0);
 
-				Backbone.trigger('venue:info', initialModel.toJSON());
-				Backbone.history.navigate('venue/' + initialModel.id, {trigger: false});
+				//Backbone.trigger('venue:info', initialModel.toJSON());
+				//Backbone.history.navigate('venue/' + initialModel.id, {trigger: false});
 			}else{
 				alert('No encontramos establecimientos para tu busqueda :(');
 			}
