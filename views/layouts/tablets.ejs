@@ -24,7 +24,11 @@
     <script type="text/javascript" async defer src="https://apis.google.com/js/platform.js?publisherid=113374668891538311072"></script>
   </head>
   <body>
+    <% if(data.useSearch){ %>
     <% include ../partials/header %>
+    <% } else { %>
+    <% include ../partials/header-simple %>
+    <% } %>
     
     <%-blocks.header%>
     <%-blocks.left%>

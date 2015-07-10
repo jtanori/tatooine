@@ -772,6 +772,17 @@ var newsletterSubscribe = function(req, res){
     }
 };
 
+var notFound = function(req, res){
+    var protocol = req.connection.encrypted ? 'https' : 'http';
+    res.render('404', {
+        data: {
+            title: 'Jound - Pagina no encontrada :(',
+            image: defaultImage,
+            url: protocol + '//www.jound.mx/404'
+        }
+    });
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -783,15 +794,17 @@ Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/details', getVenueById);
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
-Jound.get('/about', about);
-Jound.get('/privacy', privacy);
-Jound.get('/referrals', referrals);
-Jound.get('/about', about);
-Jound.get('/help', help);
+Jound.get('/privacy', function(req, res){res.redirect(301, '/privacidad')});
+Jound.get('/privacidad', privacy);
+Jound.get('/about', function(req, res){res.redirect(301, 'http://app.jound.mx')});
+Jound.get('/help', function(req, res){res.redirect(301, '/ayuda')});
+Jound.get('/ayuda', help);
 Jound.get('/profile', checkAuth, profile);
-Jound.get('/business-add', businessAdd);
+Jound.get('/business-add', function(req, res){res.redirect(301, '/agregar-negocio')});
+Jound.get('/agregar-negocio', businessAdd);
 Jound.get('/what-is-jound', whatIsJound);
-Jound.get('/products', products);
+Jound.get('/products', function(req, res){res.redirect(301, '/productos')});
+Jound.get('/productos', products);
 Jound.get('/login', login);
 Jound.get('/forgot', forgot);
 
@@ -801,8 +814,10 @@ Jound.post('/address', getAddress);
 Jound.post('/search', search);
 Jound.post('/subscribe', newsletterSubscribe);
 Jound.get('/search', searchByGET);
+Jound.get('404.html', notFound);
 
 app.use('/', Jound);
+app.use(notFound);
 /*===============START=================*/
 app.listen(app.get('port'), function() {
   console.log("Node app is running at localhost:" + app.get('port'));

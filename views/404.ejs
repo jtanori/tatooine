@@ -1,0 +1,19 @@
+<% layout('./layouts/' + LAYOUT) -%>
+<% script('/javascripts/lodash.min.js') -%>
+<% script('/javascripts/backbone.js') -%>
+<% script('//www.parsecdn.com/js/parse-1.3.4.min.js') -%>
+<% script('//crypto-js.googlecode.com/svn/tags/3.0.2/build/rollups/md5.js') -%>
+
+<% if(LAYOUT === 'phones') { %>
+<% script('/javascripts/app-corporate-phones.js') -%>
+<% } else { %>
+<% script('/javascripts/app-corporate.js') -%>
+<% } %>
+
+<div class="ui center aligned page grid">
+	<div class="eight wide column">
+		<img src="/images/perro.png" class="ui medium image centered" alt="Jound 404 dog" />
+		<h1>¿Woof? Pagina no encontrada</h1>
+		<p>Lo siento pero he olfateado por todo el data center y no he logrado encontrar ni un hueso de lo que me has pedido, eso es lo que se, puedes intentar ir al <a href="/" title="Jound - Pagina de inicio">Inicio</a></p>
+	</div>
+</div>
