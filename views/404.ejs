@@ -12,7 +12,11 @@
 
 <div class="ui center aligned page doubling stackable grid">
 	<div class="eight wide column">
+		<% if(LAYOUT === 'phones') { %>
+		<img src="/images/perro.png" class="ui small image centered" alt="Jound 404 dog" />
+		<% } else { %>
 		<img src="/images/perro.png" class="ui medium image centered" alt="Jound 404 dog" />
+		<% } %>
 		<h1>¿Woof? Pagina no encontrada</h1>
 		<p>Lo siento pero he olfateado por todo el data center y no he logrado encontrar ni un hueso de lo que me has pedido, eso es lo que se, puedes intentar ir al <a href="/" title="Jound - Pagina de inicio">Inicio</a></p>
 	</div>
