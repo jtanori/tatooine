@@ -635,13 +635,13 @@ var searchByGET = function(req, res){
             cities = _.unique(cities);
 
             if(cities.length > 2){
-                title = (r.length + ' encontrados en ' + cities.join(', ') + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound').replace(/,([^,]*)$/, ' y $1');
+                title = (r.length + ' encontrados en ' + cities.join(', ') + ' para "' + (data.q.split(',').join(' ')) + '" | Jound').replace(/,([^,]*)$/, ' y $1');
             }else if(cities.length === 2){
-                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound'; 
+                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + ' para "' + (data.q.split(',').join(' ')) + '" | Jound'; 
             } else {
-                title = r.length + ' resultados encontrados en ' + cities[0] + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound';
+                title = r.length + ' resultados encontrados en ' + cities[0] + ' para "' + (data.q.split(',').join(' ')) + '" | Jound';
             }
-            
+
             venues = r;
             render();
         }
