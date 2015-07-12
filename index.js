@@ -554,7 +554,8 @@ var searchByGET = function(req, res){
     var keywords = {};
     var protocol = req.connection.encrypted ? 'https' : 'http';
     var venues = [];
-    var title = title;
+    var cities = [];
+    var citiesTrack = {};
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
@@ -600,7 +601,7 @@ var searchByGET = function(req, res){
             }
         }
     };
-    
+
     var render = function(){
         res.render('home', {
             data: {
@@ -623,7 +624,24 @@ var searchByGET = function(req, res){
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
             //Render home page
-            _.each(r, function(r){ r.set('logo', r.getLogo()); });
+            _.each(r, function(r){ 
+                if(!citiesTrack[r.get('locality')]){
+                    cities.push(r.get('locality'));
+                }
+
+                r.set('logo', r.getLogo());
+            });
+
+            cities = _.unique(cities);
+
+            if(cities.length > 2){
+                title = (r.length + ' encontrados en ' + cities.join(', ') + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound').replace(/,([^,]*)$/, ' y $1');
+            }else if(cities.length === 2){
+                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound'; 
+            } else {
+                title = r.length + ' resultados encontrados en ' + cities[0] + ' para "' + (data.q.split(',').join(' / ')) + '" | Jound';
+            }
+            
             venues = r;
             render();
         }
