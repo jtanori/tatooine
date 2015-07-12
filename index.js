@@ -486,7 +486,7 @@ var search = function(req, res){
     var data = {};
     var isAjax = req.xhr;
     var query = new Parse.Query(Venue);
-    var category, position, categoryQuery;
+    var category, position, categoryQuery, q;
     
     var onSuccess = function(r){
         if(isAjax){
@@ -512,12 +512,12 @@ var search = function(req, res){
     }
 
     if(data.q){
-        var q = _.chain(data.q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+        q = _.chain(data.q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
 
         if(data.q.length === 1){
             query.equalTo('keywords', q[0].toLowerCase());
         }else{
-            query.containsAll('keywords', utils.strings.sanitize(q));
+            query.containedIn('keywords', utils.strings.sanitize(q));
         }
     }
 
@@ -560,14 +560,14 @@ var searchByGET = function(req, res){
 
         if(data.q){
             data.q = !_.isEmpty(data.q) ? decodeURIComponent(data.q) : '';
-            q = _.chain(data.q.split(' ')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+            q = _.chain(data.q.split(',')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
 
             console.log(q);
 
             if(data.q.length === 1){
                 query.equalTo('keywords', q[0].toLowerCase());
             }else{
-                query.containsAll('keywords', utils.strings.sanitize(q));
+                query.containedIn('keywords', utils.strings.sanitize(q));
             }
         }
 
