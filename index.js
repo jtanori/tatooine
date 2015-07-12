@@ -72,7 +72,7 @@ app.locals._ = _;
 app.locals.LAYOUT = LAYOUT;
 
 //===============ROUTES===============
-var title = 'Jound - Busca y encuentra entre miles de establecimientos';
+var title = process.env.DEFAULT_PAGE_TITLE;
 var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building', 'building_floor', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
                 'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name',
                 'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'page', 'logo', 'category', 'slug'];
@@ -277,7 +277,7 @@ var getVenueById = function(req, res){
         render(
             {
                 activeMenuItem: 'home',
-                title: v.get('name') + ', ' + v.get('locality') + ' - Jound',
+                title: v.get('name') + ', ' + v.get('locality') + ' | Jound',
                 categories: categories.toJSON() || [],
                 venue: venue,
                 keywords: keywords,
@@ -476,7 +476,7 @@ var profile = function(req, res){
     res.render('profile', {
         data: {
             activeMenuItem: 'profile',
-            title: 'Jound - Mi perfil',
+            title: 'Mi perfil de Jound | Jound',
             url: protocol + '//www.jound.mx/profile'
         }
     });
@@ -657,7 +657,7 @@ var about = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('about', {
         data: {
-            title: 'Jound - Acerca de la empresa',
+            title: 'Acerca de Jound | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/about'
         }
@@ -668,7 +668,7 @@ var help = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('help', {
         data: {
-            title: 'Jound - Ayuda para usar Jound',
+            title: 'Centro de Ayuda Jound | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/help'
         }
@@ -679,7 +679,7 @@ var privacy = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('privacy', {
         data: {
-            title: 'Jound - Politicas de privacidad',
+            title: 'Politicas de privacidad | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/privacy'
         }
@@ -690,7 +690,7 @@ var referrals = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('referrals', {
         data: {
-            title: 'Jound - Nuestro programa de afiliados (en el laboratorio)',
+            title: 'Nuestro programa de afiliados (en el laboratorio) | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/referrals'
         }
@@ -701,7 +701,7 @@ var businessAdd = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('business-add', {
         data: {
-            title: 'Jound - Agrega tu negocio',
+            title: 'Agregar un negocio | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/business-add'
         }
@@ -712,7 +712,7 @@ var whatIsJound = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('what-is-jound', {
         data: {
-            title: 'Jound - ¿Que es Jound?',
+            title: '¿Que es Jound? | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/what-is-jound'
         }
@@ -723,7 +723,7 @@ var products = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('products', {
         data: {
-            title: 'Jound - Productos',
+            title: 'Nuestros productos y servicios | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/products'
         }
@@ -734,7 +734,7 @@ var login = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('login', {
         data: {
-            title: 'Jound - Crea tu cuenta',
+            title: 'Crea tu cuenta | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/login'
         }
@@ -746,7 +746,7 @@ var forgot = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('forgot', {
         data: {
-            title: 'Jound - ¿Se te olvido el password?',
+            title: '¿Se te olvido el password? | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/forgot'
         }
@@ -776,7 +776,7 @@ var notFound = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('404', {
         data: {
-            title: 'Jound - Pagina no encontrada :(',
+            title: 'Pagina no encontrada :( | Jound',
             image: defaultImage,
             url: protocol + '//www.jound.mx/404'
         }
