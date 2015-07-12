@@ -10,10 +10,112 @@
 <% script('/javascripts/app-corporate.js') -%>
 <% } %>
 
+<div id="help-page" class="page">
+	<div id="help-hero">
+		<div class="ui page grid">
+			<div class="sixteen wide center aligned column">
+				<h1 hidden>Ayuda y preguntas frecuentes</h1>
+				<p hidden>Informacion relevante sobre como usar nuestros productos.</p>
+			</div>
+		</div>
+	</div>
+	<div class="ui page stackable padded grid">
+		<div class="ui sixteen wide column">
+			<div class="ui header center aligned">Guia rapida para nuestras applicaciones.</div>
+		</div>
+		<div class="ui three column center aligned row" id="help-tuts">
+			<div class="column">
+				<div class="ui icon huge button">
+					<i class="mobile icon"></i>
+					<div>Movil Nativo</div>
+				</div>
+			</div>
+			<div class="column">
+				<div class="ui icon huge button">
+					<i class="globe icon"></i>
+					<div>Movil Web</div>
+				</div>
+			</div>
+			<div class="column">
+				<div class="ui icon huge button">
+					<i class="browser icon"></i>
+					<div>Web</div>
+				</div>
+			</div>
+		</div>
+		<div class="ui grid divider"></div>
+		<div class="ui sixteen wide column">
+			<h2 class="ui header">Preguntas Frecuentes</h2>
+			<div class="ui styled fluid accordion" id="faq-accordion">
+				<div class="active title">
+					<i class="dropdown icon"></i> ¿Qué es Jound?
+				</div>
+				<div class="active content">
+					<p>Jound es un conjunto de aplicaciones multiplataformas cuyo objetivo es proveer detalles específicos sobre puntos geográficos de interés común usando tecnologia de GPS y búsquedas basadas en ubicación.</p>
+				</div>
 
-<div class="ui page grid">
-	<div class="sixteen wide column">
-		<h1>Ayuda y preguntas frecuentes</h1>
-		
+				<div class="title"><i class="dropdown icon"></i> ¿Para qué sirve jound?</div>
+				<div class="content"><p>Jound es tu guía de ciudad, puedes descubrir una gran cantidad de negocios y puntos de interés a tu alrededor o en el punto geográfico que tu desees. ¿No sabes qué comer? Busca en la categoría de “comida” en Jound y descubre los mejores lugares para satisfacer tu apetito.</p><p>Jound es la mejor compañía de un turista o un nuevo chico en el pueblo pues con nuestras soluciones puedes descubrir establecimientos con los cuales suplir tus necesidades más básicas de una manera fácil y divertida. Puedes encontrar la vía de llegada más cerca y comparar distancias entre múltiples establecimientos para que no pierdas tu tiempo.</p></div>
+
+				<div class="title"><i class="dropdown icon"></i> ¿A quién está dirigido Jound?</div>
+				<div class="content"><p>Jound es para cualquier persona, no importa tu edad, ocupacion o profesion , todos pueden sacarle jugo al sistema que Jound ofrece.<br />Aquí algunos ejemplos de cómo Jound te puede ayudar:</p>
+					<ul class="ui list">
+						<li class="item">
+							<strong>Estudiantes:</strong> Puedes exprimir a Jound y aun asi no te lo acabas. Encuentra comida economica cerca de ti y de tu escuela, papelerias,centros de copiado, librerías, cibercafés y hasta bares para celebrar después de tus exámenes.
+						</li>
+						<li class="item">
+							<strong>Ingenieros y Arquitectos:</strong> Puedes localizar nuevos proveedores de materiales cuando más lo necesiten y cotizar de una manera más rápida y eficiente. 
+						</li>
+						<li class="item">
+							<strong>Marketing y ventas:</strong> Jound es una herramienta poderosa para los mercadólogos y vendedores, ya que puedes prospectar negocios y futuros clientes por zonas geográficas y categorías en diferentes giros comerciales.
+						</li>
+						<li class="item">
+							<strong>Ama de casa:</strong> Cualquier imprevisto en casa puede ser resuelto inmediatamente, si necesitas algun negocio especializado en repostería, si está cerrada tu tiendita más cercana a la hora de la comida o necesitas localizar una lavanderia o tintoreria lo más cerca de ti rápidamente, Jound es tu mejor opción.
+						</li>
+						<li class="item">
+							 <strong>Turista y visitantes:</strong> No te vuelvas a sentir perdido en la ciudad, con Jound encuentra todo lo necesario para turistear y sentirte como en casa. Centrales de transporte, taxis, restaurantes,hoteles, museos, centros nocturnos, bares, etc. Tenemos mas de 70 categorías de negocios para cualquier necesidad que tengas.
+						</li>
+						<li class="item">
+							<strong>Propietarios de negocios:</strong> Con Jound puedes crear tu propio espacio, personalizarlo y darte a conocer en las redes sociales compartiendo tu espacio en Jound, lo mejor ¡es gratis!
+						</li>
+					</ul>
+				</div>
+
+				<div class="title"><i class="dropdown icon"></i> ¿Puedo compartir lo que encuentre en Jound en mis redes sociales?</div>
+				<div class="content"><p>¡Claro que si! Esa es una de las principales ideas detrás de Jound, lograr que los pequeños negocios puedan competir con las grandes empresas sin tener que gastar un solo peso para poder ser virales. Jound como tal es una herramienta completamente social, puedes compartir todo lo que encuentres en tu cuenta de Facebook, Twitter, Instagram y demás. No te limites con las funciones que Jound te ofrece.</p>
+				</div>
+
+				<div class="title"><i class="dropdown icon"></i> ¿Puedo agregar mi negocio para que pueda ser encontrado por Jound?</div>
+				<div class="content">
+					<p>!Si! y mejor aun, es muy fácil totalmente gratis. Para registrarte como negocio o simplemente reportar la ubicación de un establecimiento puedes usar cualquiera de nuestras aplicaciones y buscar por la opción de “Agregar negocio”, llenas los datos del establecimiento en juego y listo. Todo establecimiento está sujeto a nuestras políticas de aprobación.</p>
+					<p>Quiero agregar mi negocio ¡ya! <a href="http://www.jound.mx/agregar-negocio" title="Agregar mi negocio en Jound">Click aqui para ir a agregar negocio</a>.</p>
+				</div>
+
+				<div class="title"><i class="dropdown icon"></i> ¿Qué sucede cuando agrego mi negocio?</div>
+				<div class="content">
+					<p>Por lo general la aprobación de un negocio o establecimiento es transparente, aun asi hay varias cosas que debemos tomar en cuenta:</p>
+					<ul class="ui list">
+						<li class="item">Verificar si el registrante es el dueño de dicho negocio.</li>
+						<li class="item">Debemos verificar la autenticidad de los datos del negocio o establecimiento así como que su ubicación sea correcta.</li>
+						<li class="item">Lo usuarios pueden reportar negocios fraudulentos, inexistentes o con datos equívocos y nuestro equipo se encarga de tomar las medidas correctivas necesarias.</li>
+					</ul>
+				</div>
+
+				<div class="title"><i class="dropdown icon"></i> ¿Pueden eliminar mi negocio de su plataforma?</div>
+				<div class="content"><p>Un negocio o establecimiento puede perder los privilegios que tiene con Jound debido a múltiples factores, entre estos factores encontramos:</p>
+				<ul class="ui list">
+					<li class="item">Mala reputación ante usuarios</li>
+					<li class="item">El dueño ha pedido no aparecer en nuestro sistema</li>
+					<li class="item">Faltas a los códigos de conducta de Jound</li>
+				</ul>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
+
+<script>
+$(function(){
+	$('#faq-accordion').accordion();
+});
+</script>

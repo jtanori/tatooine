@@ -1,3 +1,8 @@
+#header.ui.fixed.menu+.page {
+	padding-top: 4rem;
+	padding-bottom: 2.60rem;
+}
+
 #header-logo {
 	padding: 0;
 	margin: 0 0 0 10px;
@@ -222,6 +227,28 @@ and (orientation : portrait) {
 
 #venue-preview .ui.image {
 	min-height: 52px;
+}
+
+pre {
+	word-break: break-word;
+}
+
+.disable-events {
+	pointer-events: none !important;
+}
+
+/* HELP Page */
+#help-page #help-hero {
+	background: url('/images/help.jpg') no-repeat center;
+	background-size: cover;
+	min-height: 250px;
+	color: black;
+	border-bottom: 1px solid rgba(0,0,0,0.8);
+}
+
+#help-page #help-hero .ui.header {
+	margin-top: 1rem;
+	color: black;
 }
 
 .selectable{
