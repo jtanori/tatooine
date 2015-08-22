@@ -342,9 +342,9 @@ var getDirections = function(req, res){
             if(e){
                 res.status(404).json({ status: 'error', error: e, code: 404 });
             }else{
-                r = JSON.parse(r);
+                var rr = JSON.parse(r);
 
-                r.routes[0].legs[0].steps.forEach(function(s){
+                rr.routes[0].legs[0].steps.forEach(function(s){
                     var p = polyline.decode(s.polyline.points);
                     var o = [s.start_location.lat, s.start_location.lng];
                     var d = [s.end_location.lat, s.end_location.lng];
@@ -354,6 +354,8 @@ var getDirections = function(req, res){
 
                     s.decoded_polyline = p;
                 });
+
+                console.log(rr);
 
                 res.status(200).json({ status: 'success', message: 'Drive safetly!', results: r});
             }
