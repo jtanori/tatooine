@@ -1,5 +1,5 @@
 {
-  "name": "jound-manager",
+  "name": "jound-web",
   "version": "0.0.1",
   "dependencies": {
     "MD5": "^1.2.1",
@@ -26,6 +26,7 @@
     "newrelic": "^1.16.4",
     "node-localstorage": "^0.3.6",
     "parse": "^1.3.4",
+    "polyline": "^0.2.0",
     "twitter": "^1.2.1",
     "underscore.string": "^3.0.2",
     "youtube-api": "^0.3.2"
