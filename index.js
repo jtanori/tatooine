@@ -18,6 +18,9 @@ var memjs = require('memjs');
 var CryptoJS = require('cryptojs');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var http = require('http');
+var gmAPI = require('googlemaps');
+var polyline = require('polyline');
+var request = require('request');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -44,6 +47,9 @@ try {
 } catch (error) {
     console.log(error.message);
 }
+
+
+gmAPI.config('key', process.env.GOOGLE_SERVER_API_KEY);
 
 //===============EXPRESS================
 // Configure Express
@@ -336,15 +342,33 @@ var getVenueById = function(req, res){
 var getDirections = function(req, res){
     var from = req.params.from;
     var to = req.params.to;
+    var points = [];
+    var url;
+    var lang = 'es';
 
     if(validations.POSITION.test(from) && validations.POSITION.test(to)){
-        gmaputil.directions(from, to, null, function(e, r){
-            if(e){
-                res.status(404).json({ status: 'error', error: e, code: 404 });
+        url = 'https://maps.googleapis.com/maps/api/directions/json?origin=' + from + '&destination=' + to + '&key=' + process.env.GOOGLE_SERVER_API_KEY + '&language=' + lang;
+
+        request(url, function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                body = JSON.parse(body);
+
+                body.routes[0].legs[0].steps.forEach(function(s){
+                    var p = polyline.decode(s.polyline.points);
+                    var o = [s.start_location.lat, s.start_location.lng];
+                    var d = [s.end_location.lat, s.end_location.lng];
+
+                    p.unshift(o);
+                    p.push(d);
+
+                    s.decoded_polyline = p;
+                });
+
+                res.status(200).json(JSON.parse(JSON.stringify(body)));
             }else{
-                res.status(200).json({ status: 'success', message: 'Drive safetly!', results: JSON.parse(r)});
+                res.status(404).json(error);
             }
-        });
+        })
     }else{
         res.status(404).json({ status: 'error', error: 'Invalid data input', code: 404 });
     }
