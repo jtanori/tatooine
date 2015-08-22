@@ -345,14 +345,7 @@ var getDirections = function(req, res){
                 r = JSON.parse(r);
 
                 r.routes[0].legs[0].steps.forEach(function(s){
-                    var p = polyline.decode(s.polyline.points);
-                    var o = [s.start_location.lat, s.start_location.lng];
-                    var d = [s.end_location.lat, s.end_location.lng];
-
-                    //p.unshift(o);
-                    p.push(d);
-
-                    s.decoded_polyline = p;
+                    s.decoded_polyline = polyline.decode(s.polyline.points);
                 });
 
                 console.log(r);
