@@ -18,6 +18,7 @@ var memjs = require('memjs');
 var CryptoJS = require('cryptojs');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var http = require('http');
+var polyline = require('polyline');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -342,7 +343,20 @@ var getDirections = function(req, res){
             if(e){
                 res.status(404).json({ status: 'error', error: e, code: 404 });
             }else{
-                res.status(200).json({ status: 'success', message: 'Drive safetly!', results: JSON.parse(r)});
+                r = JSON.parse(r);
+
+                r.routes[0].legs[0].steps.forEach(function(s){
+                    var p = polyline.decode(s.polyline.points);
+                    var o = [s.start_location.lat, s.start_location.lng];
+                    var d = [s.end_location.lat, s.end_location.lng];
+
+                    p.unshift(o);
+                    p.push(d);
+
+                    s.decoded_polyline = p;
+                });
+
+                res.status(200).json({ status: 'success', message: 'Drive safetly!', results: r});
             }
         });
     }else{
