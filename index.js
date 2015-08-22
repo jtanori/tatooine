@@ -349,7 +349,7 @@ var getDirections = function(req, res){
                     var o = [s.start_location.lat, s.start_location.lng];
                     var d = [s.end_location.lat, s.end_location.lng];
 
-                    p.unshift(o);
+                    //p.unshift(o);
                     p.push(d);
 
                     s.decoded_polyline = p;
