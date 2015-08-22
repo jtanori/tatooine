@@ -17,6 +17,7 @@ var gmaputil = require('googlemapsutil');
 var memjs = require('memjs');
 var CryptoJS = require('cryptojs');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
+var http = require('http');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -671,6 +672,19 @@ var searchByGET = function(req, res){
     });
 };
 
+var getDirections = function(req, res){
+    var from = req.body.from;
+    var to = req.body.to;
+    var lang = req.body.lang || 'en';//Defaults to spanish
+    var url = 'https://maps.googleapis.com/maps/api/directions/json?origin=' + from + '&destination=' + to + '&key=' + process.env.GOOGLE_SERVER_API_KEY + '&language=' + lang;
+
+    http.get(url, function(r) {
+        res.status(200).json(r);
+    }).on('error', function(e) {
+        res.status(400).json(e);
+    });
+};
+
 var about = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('about', {
@@ -826,6 +840,7 @@ Jound.get('/productos', products);
 Jound.get('/login', login);
 Jound.get('/forgot', forgot);
 
+Jound.post('/directions', getDirections);
 Jound.post('/like', like);
 Jound.post('/unlike', unlike);
 Jound.post('/address', getAddress);
