@@ -347,9 +347,7 @@ var getDirections = function(req, res){
                 r.routes[0].legs[0].steps.forEach(function(s){
                     s.decoded_polyline = polyline.decode(s.polyline.points);
                 });
-
-                console.log(r);
-
+                
                 res.status(200).json({ status: 'success', message: 'Drive safetly!', results: r});
             }
         });
