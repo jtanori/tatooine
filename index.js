@@ -139,7 +139,9 @@ var Categories = Parse.Collection.extend({
 });
 
 var getVenueByPosition = function(req, res){
-    var position = keywords = [], venue, venueQuery, geoObject, Venue;
+    var position = [];
+    var keywords = [];
+    var venue, venueQuery, geoObject, Venue;
     var protocol = req.connection.encrypted ? 'https' : 'http';
     if (validations.POSITION.test(req.params.position)){
         position = _.map(req.params.position.split(','), function(v){return parseFloat(v.trim());});
@@ -446,7 +448,7 @@ var getAddress = function(req, res){
 
 var home = function(req, res){
     var categories = new Categories();
-    var keywords = {};
+    var keywords = [];
     var protocol = req.connection.encrypted ? 'https' : 'http';
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
