@@ -3,6 +3,7 @@
 require('newrelic');
 
 var express = require('express');
+var rollbar = require('rollbar');
 var session = require('express-session');
 var _ = require('lodash');
 var Parse = require('parse').Parse;
@@ -50,6 +51,7 @@ try {
 var app = express();
 app.set('port', (process.env.PORT || 4000));
 app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
+app.use(rollbar.errorHandler('485b224ab6eb401da0855f742dac0c85'));
 app.engine('ejs', ejs);
 app.set('views', __dirname + '/views');  // Specify the folder to find templates
 app.set('view engine', 'ejs');    // Set the template engine
