@@ -141,7 +141,7 @@ var Categories = Parse.Collection.extend({
 var getVenueByPosition = function(req, res){
     var position = [];
     var keywords = [];
-    var venue, venueQuery, geoObject, Venue;
+    var venue, venueQuery, geoObject;
     var protocol = req.connection.encrypted ? 'https' : 'http';
     if (validations.POSITION.test(req.params.position)){
         position = _.map(req.params.position.split(','), function(v){return parseFloat(v.trim());});
@@ -163,16 +163,16 @@ var getVenueByPosition = function(req, res){
         });
     };
     var onVenueLoad = function(v){
-        if(v){
+        if(!_.isEmpty(v)){
             render(
                 {
                     activeMenuItem: 'home',
-                    title: 'Jound - ' + v[0].get('name') + ' en ' + v[0].get('locality'),
+                    title: 'Jound - ' + v.get('name') + ' en ' + v.get('locality'),
                     categories: categories.toJSON() || [],
                     position: position,
                     venue: v.toJSON(),
                     keywords: keywords,
-                    image: venue.getLogo()
+                    image: v.getLogo()
                 }
             );
         }else{
