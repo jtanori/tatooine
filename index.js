@@ -134,7 +134,7 @@ var checkEnvironment = function(req, res, next){
     next();
 };
 
-var Category = Parse.Object.extend({className: 'Category'});
+var Category = Parse.Object.extend('Category');
 var Categories = Parse.Collection.extend({
     model: Category,
     query: (new Parse.Query(Category)).ascending('pluralized').equalTo('active', true).equalTo('primary', true)
