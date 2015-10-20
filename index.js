@@ -1,6 +1,6 @@
 'use strict'; 
 
-require('newrelic');
+//require('newrelic');
 
 var express = require('express');
 var rollbar = require('rollbar');
@@ -19,6 +19,7 @@ var memjs = require('memjs');
 var CryptoJS = require('cryptojs');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var polyline = require('polyline');
+var https = require('https');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -812,6 +813,53 @@ var notFound = function(req, res){
     });
 };
 
+var getChannelForVenue = function(req, res){
+    var data = req.body;
+    var url;
+
+    switch(data.type){
+    case 'youtube':
+        url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + data.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
+        if(data.page){
+            url += '&pageToken=' + data.page;
+        }
+        
+        break;
+    }
+
+    https.get(url, function(r) {
+        var body = "";
+
+        r.on('data', function (chunk) {
+            body += chunk;
+        });
+
+        r.on('end', function () {
+            var parsed = JSON.parse(body);
+            var items;
+
+            if(parsed.error){
+                res.status(parsed.error.code).json({status: 'error', error: parsed.error.errors});
+            }else{
+                //Get relevant data
+                items = parsed.items.map(function(i){
+                    return {
+                        id: i.id.videoId,
+                        description: i.snippet.description,
+                        title: i.snippet.title,
+                        thumbnails: i.snippet.thumbnails
+                    }
+                });
+
+                res.status(200).json({status: 'success', data: {items: items, nextPageToken: parsed.nextPageToken, info: parsed.pageInfo}});
+            }
+        });
+
+    }).on('error', function(e) {
+        res.status(400).json({status: 'error', error: e});
+    });
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -842,6 +890,7 @@ Jound.post('/unlike', unlike);
 Jound.post('/address', getAddress);
 Jound.post('/search', search);
 Jound.post('/subscribe', newsletterSubscribe);
+Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
