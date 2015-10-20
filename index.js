@@ -827,6 +827,9 @@ var getChannelForVenue = function(req, res){
         break;
     }
 
+    console.log(url, 'url');
+    console.log(data, 'data');
+
     https.get(url, function(r) {
         var body = "";
 
@@ -856,7 +859,7 @@ var getChannelForVenue = function(req, res){
         });
 
     }).on('error', function(e) {
-        console.log('error getting channel', e, url);
+        console.log('error getting channel', e);
         res.status(400).json({status: 'error', error: e});
     });
 };
