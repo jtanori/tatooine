@@ -820,8 +820,8 @@ var getChannelForVenue = function(req, res){
     switch(data.type){
     case 'youtube':
         url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + data.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
-        if(data.page){
-            url += '&pageToken=' + data.page;
+        if(data.pageToken){
+            url += '&pageToken=' + data.pageToken;
         }
 
         break;
