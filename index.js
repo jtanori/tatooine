@@ -856,6 +856,7 @@ var getChannelForVenue = function(req, res){
         });
 
     }).on('error', function(e) {
+        console.log('error getting channel', e, url);
         res.status(400).json({status: 'error', error: e});
     });
 };
