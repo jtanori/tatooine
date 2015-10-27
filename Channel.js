@@ -61,6 +61,7 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 					retweeted: t.retweeted,
 					retweetCount: t.retweet_count,
 					favoriteCount: t.favorite_count,
+					tags: t.hashtags,
 					urls: t.entities.urls.map(function(u){
 						return {url: u.url, expandedUrl: u.expanded_url, displayUrl: u.display_url};
 					}),
