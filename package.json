@@ -2,7 +2,6 @@
   "name": "jound-web",
   "version": "0.0.1",
   "dependencies": {
-    "md5": "2.*",
     "applinks-metatag": "0.0.2",
     "bcryptjs": "^0.7.12",
     "body-parser": "^1.9.0",
@@ -16,9 +15,10 @@
     "googlemaps": "^0.1.20",
     "googlemapsutil": "^0.1.7",
     "helmet": "^0.6.0",
-    "instagram-node": "^0.5.6",
+    "instagram-node": "^0.5.8",
     "lodash": "^3.0.1",
     "mailchimp": "^1.1.0",
+    "md5": "2.*",
     "memjs": "^0.8.5",
     "method-override": "^2.2.0",
     "mobile-detect": "^0.4.3",
@@ -28,7 +28,7 @@
     "parse": "1.5.*",
     "polyline": "^0.2.0",
     "rollbar": "^0.5.8",
-    "twitter": "^1.2.1",
+    "twitter": "^1.2.5",
     "underscore.string": "^3.0.2",
     "youtube-api": "^0.3.2"
   },

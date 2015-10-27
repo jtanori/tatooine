@@ -31,6 +31,7 @@ var defaultImageType = 'image/jpg';
 var validations = require('./validations.js');
 var utils = require('./utils.js');
 var Venue = require('./Venue.js');
+var Channel = require('./Channel');
 
 //Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
@@ -238,10 +239,12 @@ var getVenueByPosition = function(req, res){
     });
 };
 
+//TODO: Fix this shit
 var getVenueById = function(req, res){
     var venueQuery = new Parse.Query(Venue);
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https:' : 'http:';
+    var isAjax = req.xhr;
 
     venueQuery
         .include('category')
@@ -280,30 +283,42 @@ var getVenueById = function(req, res){
         venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
         venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
 
-        render(
-            {
-                activeMenuItem: 'home',
-                title: v.get('name') + ', ' + v.get('locality') + ' | Jound',
-                categories: categories.toJSON() || [],
-                venue: venue,
-                keywords: keywords,
-                image: v.getLogo(),
-                url: protocol + '//www.jound.mx/venue/' + v.id
-            }
-        );
+        console.log('is ajax', isAjax);
+        
+
+        if(isAjax){
+            res.status(200).json({ status: 'success', venue: venue});
+        }else{
+            render(
+                {
+                    activeMenuItem: 'home',
+                    title: v.get('name') + ', ' + v.get('locality') + ' | Jound',
+                    categories: categories.toJSON() || [],
+                    venue: venue,
+                    keywords: keywords,
+                    image: v.getLogo(),
+                    url: protocol + '//www.jound.mx/venue/' + v.id
+                }
+            );
+        }
     };
+
     var onVenueError = function(e){
-        render(
-            {
-                activeMenuItem: 'home',
-                title: title,
-                categories: categories.toJSON() || [],
-                error: e,
-                keywords: keywords,
-                image: defaultImage,
-                url: protocol + '//www.jound.mx'
-            }
-        );
+        if(isAjax){
+            res.status(404).json({ status: 'error', error: e.message, code: e.code });
+        }else{
+            render(
+                {
+                    activeMenuItem: 'home',
+                    title: title,
+                    categories: categories.toJSON() || [],
+                    error: e,
+                    keywords: keywords,
+                    image: defaultImage,
+                    url: protocol + '//www.jound.mx'
+                }
+            );
+        }
     };
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
@@ -324,18 +339,22 @@ var getVenueById = function(req, res){
         }
     };
     
-    client.get("categories", function (err, value, key) {
-        if (!_.isEmpty(value)) {
-            categories.reset(JSON.parse(value));
-            onLoad();
-        }else{
-            //Try getting those damm categories
-            categories.fetch({
-                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
-                error: onLoad
-            });
-        }
-    });
+    if(isAjax){
+        venueQuery.get(req.params.id, {success: onVenueLoad, error: onVenueError});
+    }else{
+        client.get("categories", function (err, value, key) {
+            if (!_.isEmpty(value)) {
+                categories.reset(JSON.parse(value));
+                onLoad();
+            }else{
+                //Try getting those damm categories
+                categories.fetch({
+                    success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();}, 
+                    error: onLoad
+                });
+            }
+        });
+    }
 };
 
 var getDirections = function(req, res){
@@ -771,7 +790,6 @@ var login = function(req, res){
     });
 };
 
-
 var forgot = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
     res.render('forgot', {
@@ -782,7 +800,6 @@ var forgot = function(req, res){
         }
     });
 };
-
 
 var newsletterSubscribe = function(req, res){
     var data = req.body;
@@ -814,54 +831,53 @@ var notFound = function(req, res){
 };
 
 var getChannelForVenue = function(req, res){
-    var data = req.body;
+    var body = req.body;
     var url;
 
-    switch(data.type){
+    console.log(body, 'body');
+
+    switch(body.type){
     case 'youtube':
-        url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + data.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
-        if(data.pageToken){
-            url += '&pageToken=' + data.pageToken;
+        url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + body.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
+        if(body.pageToken){
+            url += '&pageToken=' + body.pageToken;
         }
+
+        Channel
+            .youtube(url)
+            .then(function(data){
+                res.status(200).json({status: 'success', data: data});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+        break;
+    case 'twitter':
+
+        Channel
+            .twitter
+            .getTimeline(body.account, body.minId, body.maxId)
+            .then(function(data){
+                res.status(200).json({status: 'success', data: data});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+        break;
+
+    case 'instagram':
+
+        Channel
+            .instagram(body.account, body.id, body.minId, body.maxId)
+            .then(function(data){
+                res.status(200).json({status: 'success', results: data.results, id: data.id});
+            }, function(e){
+                console.log(e, 'error');
+                res.status(400).json({status: 'error', error: e});
+            });
 
         break;
     }
-
-    console.log(url, 'url');
-    console.log(data, 'data');
-
-    https.get(url, function(r) {
-        var body = "";
-
-        r.on('data', function (chunk) {
-            body += chunk;
-        });
-
-        r.on('end', function () {
-            var parsed = JSON.parse(body);
-            var items;
-
-            if(parsed.error){
-                res.status(parsed.error.code).json({status: 'error', error: parsed.error.errors});
-            }else{
-                //Get relevant data
-                items = parsed.items.map(function(i){
-                    return {
-                        id: i.id.videoId,
-                        description: i.snippet.description,
-                        title: i.snippet.title,
-                        thumbnails: i.snippet.thumbnails
-                    }
-                });
-
-                res.status(200).json({status: 'success', data: {items: items, nextPageToken: parsed.nextPageToken, info: parsed.pageInfo}});
-            }
-        });
-
-    }).on('error', function(e) {
-        console.log('error getting channel', e);
-        res.status(400).json({status: 'error', error: e});
-    });
 };
 
 //Main router
