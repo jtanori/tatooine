@@ -176,7 +176,8 @@ var _parseInstagramResult = function(r){
 		type: r.type,
 		id: r.id,
 		user: r.user,
-		link: r.link
+		link: r.link,
+		mediaHash: _.chain(r.link).split('/').compact().last().value()
 	}
 };
 
