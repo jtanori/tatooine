@@ -28,6 +28,7 @@
     "parse": "1.5.*",
     "polyline": "^0.2.0",
     "rollbar": "^0.5.8",
+    "sanitize-html": "^1.11.1",
     "twitter": "^1.2.5",
     "underscore.string": "^3.0.2",
     "youtube-api": "^0.3.2"

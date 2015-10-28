@@ -20,6 +20,7 @@ var CryptoJS = require('cryptojs');
 var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var polyline = require('polyline');
 var https = require('https');
+var sanitizeHtml = require('sanitize-html');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -284,7 +285,12 @@ var getVenueById = function(req, res){
         venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
 
         console.log('is ajax', isAjax);
-        
+
+        if(venue.page && venue.page.about){
+            venue.page.about = sanitizeHtml(venue.page.about, {
+                allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
+            });
+        }
 
         if(isAjax){
             res.status(200).json({ status: 'success', venue: venue});
