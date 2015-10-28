@@ -895,7 +895,10 @@ var getProductsForVenue = function(req, res){
     if(body.id){
         venue.id = body.id;
 
-        query.equalTo('client', venue);
+        query
+            .equalTo('client', venue)
+            .equalTo('available', true)
+            .descending('name');
 
         if(body.skip && _.isNumber(body.skip*1)){
             query.skip(body.skip);
@@ -951,7 +954,8 @@ var getReviewsForVenue = function(req, res){
     if(body.id){
         venue.id = body.id;
 
-        query.equalTo('venue', venue);
+        query
+            .equalTo('venue', venue);
 
         if(body.skip && _.isNumber(body.skip*1)){
             query.skip(body.skip);
