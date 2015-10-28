@@ -840,8 +840,6 @@ var getChannelForVenue = function(req, res){
     var body = req.body;
     var url;
 
-    console.log(body, 'body');
-
     switch(body.type){
     case 'youtube':
         url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + body.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
@@ -883,6 +881,92 @@ var getChannelForVenue = function(req, res){
             });
 
         break;
+    default:
+        res.status(404).json({status: 'error', error: {message: 'No supported channel found'}});
+    }
+};
+
+var getProductsForVenue = function(req, res){
+    var body = req.body;
+    var Product = Parse.Object.extend('Product');
+    var query = new Parse.Query(Product);
+    var venue = new Venue();
+
+    if(body.id){
+        venue.id = body.id;
+
+        query.equalTo('client', venue);
+
+        if(body.skip && _.isNumber(body.skip*1)){
+            query.skip(body.skip);
+        }
+
+        query
+            .find()
+            .then(function(products){
+                res.status(200).json({status: 'success', results: products});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getDealsForVenue = function(req, res){
+    var body = req.body;
+    var Deal = Parse.Object.extend('Promo');
+    var query = new Parse.Query(Deal);
+    var venue = new Venue();
+
+    if(body.id){
+        venue.id = body.id;
+
+        query.equalTo('venue', venue);
+
+        if(body.skip && _.isNumber(body.skip*1)){
+            query.skip(body.skip);
+        }
+
+        query
+            .find()
+            .then(function(deals){
+                res.status(200).json({status: 'success', results: deals});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getReviewsForVenue = function(req, res){
+    var body = req.body;
+    var Review = Parse.Object.extend('Review');
+    var query = new Parse.Query(Review);
+    var venue = new Venue();
+
+    if(body.id){
+        venue.id = body.id;
+
+        query.equalTo('venue', venue);
+
+        if(body.skip && _.isNumber(body.skip*1)){
+            query.skip(body.skip);
+        }
+
+        query
+            .find()
+            .then(function(reviews){
+                res.status(200).json({status: 'success', results: reviews});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
 
@@ -917,6 +1001,9 @@ Jound.post('/address', getAddress);
 Jound.post('/search', search);
 Jound.post('/subscribe', newsletterSubscribe);
 Jound.post('/getChannelForVenue', getChannelForVenue);
+Jound.post('/getProductsForVenue', getProductsForVenue);
+Jound.post('/getDealsForVenue', getDealsForVenue);
+Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
