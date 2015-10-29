@@ -21,6 +21,7 @@ var MailChimpAPI = require('mailchimp').MailChimpAPI;
 var polyline = require('polyline');
 var https = require('https');
 var sanitizeHtml = require('sanitize-html');
+var md5 = require('md5');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -246,7 +247,7 @@ var getVenueById = function(req, res){
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https:' : 'http:';
     var isAjax = req.xhr;
-
+    
     venueQuery
         .include('category')
         .include('logo')
@@ -898,6 +899,7 @@ var getProductsForVenue = function(req, res){
         query
             .equalTo('client', venue)
             .equalTo('available', true)
+            .limit(body.pageSize || 20)
             .descending('name');
 
         if(body.skip && _.isNumber(body.skip*1)){
@@ -955,15 +957,43 @@ var getReviewsForVenue = function(req, res){
         venue.id = body.id;
 
         query
-            .equalTo('venue', venue);
+            .include(['author'])
+            .equalTo('venue', venue)
+            .descending('createdAt')
+            .limit(body.pageSize || 20);
 
         if(body.skip && _.isNumber(body.skip*1)){
             query.skip(body.skip);
         }
 
+        if(body.maxDate){
+            query.lessThan('createdAt', body.maxDate);
+        }else if(body.sinceDate){
+            query.greaterThan('createdAt', body.sinceDate);
+        }
+
         query
             .find()
             .then(function(reviews){
+                reviews = _.map(reviews, function(r){
+                    var u = r.get('author').toJSON();
+                    var v = r.get('venue').toJSON();
+                    var a = u.avatar;
+
+                    if(_.isEmpty(a) || !_.isString(a)){
+                        u.avatar = 'http://www.gravatar.com/avatar/' + md5(u.email);
+                    }
+
+                    return {
+                        comments: r.get('comments'),
+                        rating: r.get('rating'),
+                        createdAt: r.get('createdAt'),
+                        updatedAt: r.get('updatedAt'),
+                        id: r.id,
+                        venue: v,
+                        author: u
+                    };
+                });
                 res.status(200).json({status: 'success', results: reviews});
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
@@ -973,6 +1003,37 @@ var getReviewsForVenue = function(req, res){
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
+
+var saveReviewForVenue = function(req, res){
+    var body = req.body;
+    var Review = Parse.Object.extend('Review');
+    var User = Parse.Object.extend('_User');
+    var venue = new Venue();
+    var user = new User();
+    var review = new Review();
+
+    if(body.id && body.userId && body.text && body.text.length){
+        body.rating = body.rating || 0;
+
+        venue.id = body.id;
+        user.id = body.userId;
+
+        review
+            .save({
+                author: user,
+                venue: venue,
+                rating: body.rating,
+                comments: body.text
+            })
+            .then(function(r){
+                res.status(200).json({status: 'success', results: r});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+}
 
 //Main router
 var Jound = express.Router();
@@ -1008,6 +1069,7 @@ Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.post('/getProductsForVenue', getProductsForVenue);
 Jound.post('/getDealsForVenue', getDealsForVenue);
 Jound.post('/getReviewsForVenue', getReviewsForVenue);
+Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
