@@ -246,8 +246,8 @@ var getVenueById = function(req, res){
     var venueQuery = new Parse.Query(Venue);
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https:' : 'http:';
-    var isAjax = req.xhr;
-    
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+
     venueQuery
         .include('category')
         .include('logo')
@@ -522,7 +522,7 @@ var profile = function(req, res){
 
 var search = function(req, res){
     var data = {};
-    var isAjax = req.xhr;
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
     var query = new Parse.Query(Venue);
     var category, position, categoryQuery, q;
     
@@ -585,7 +585,7 @@ var search = function(req, res){
 
 var searchByGET = function(req, res){
     var data = {q: req.query.q, p: {lat: req.query.lat, lng: req.query.lng, radius: req.query.radius}, c: req.query.category};
-    var isAjax = req.xhr;
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
     var query = new Parse.Query(Venue);
     var category, position, categoryQuery, q;
     var categories = new Categories();
