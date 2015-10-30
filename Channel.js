@@ -3,9 +3,9 @@ var Twitter = require('twitter');
 var https = require('https');
 var ig = require('instagram-node').instagram();
 var _ = require('lodash');
+var Autolinker = require('autolinker');
 
 //Configure instagram
-console.log(process.env.INSTAGRAM_CLIENT_ID, process.env.INSTAGRAM_CLIENT_SECRET);
 ig.use({ client_id: process.env.INSTAGRAM_CLIENT_ID, client_secret: process.env.INSTAGRAM_CLIENT_SECRET });
 
 //Create factory
@@ -48,9 +48,12 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 
 			items = tweets.map(function(t){
 
+				console.log(t.entities.hashtags, 'hashtags');
+
 				return {
 					id: t.id_str,
-					text: t.text,
+					text: _replaceLinks(t.text, 'twitter'),
+					safeText: t.text,
 					user: {
 						id: t.user.id_str,
 						screenName: t.user.screen_name,
@@ -61,7 +64,7 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 					retweeted: t.retweeted,
 					retweetCount: t.retweet_count,
 					favoriteCount: t.favorite_count,
-					tags: t.hashtags,
+					tags: t.entities.hashtags,
 					urls: t.entities.urls.map(function(u){
 						return {url: u.url, expandedUrl: u.expanded_url, displayUrl: u.display_url};
 					}),
@@ -132,7 +135,8 @@ var youtube = function(url){
                 items = parsed.items.map(function(i){
                     return {
                         id: i.id.videoId,
-                        description: i.snippet.description,
+                        description: _replaceLinks(i.snippet.description, 'youtube'),
+                        safeText: i.snippet.description,
                         title: i.snippet.title,
                         thumbnails: i.snippet.thumbnails
                     }
@@ -149,6 +153,53 @@ var youtube = function(url){
     return promise;
 };
 
+var _replaceLinks = function(text, type){
+
+	var linkedText = Autolinker.link( text, {
+	    replaceFn : function( autolinker, match ) {
+	        switch( match.getType() ) {
+	            case 'url' :
+
+                    return '<a ng-click="openUrl(\'' + match.getAnchorHref() + '\')">' + match.getAnchorText() + '</a>';
+
+	            case 'twitter' :
+	                var twitterHandle = match.getTwitterHandle();
+	                var url;
+
+	                if(type === 'twitter'){
+	                	url = '<a ng-click="openExternalApp(\'twitter\', \'' + twitterHandle + '\')">' + twitterHandle + '</a>';
+	                } else if(type === 'instagram'){
+	                	url = '<a ng-click="openExternalApp(\'twitter\', \'' + twitterHandle + '\')">' + twitterHandle + '</a>';
+	                } else if(type === 'pinterest'){
+	                	url = '<a ng-click="openExternalApp(\'pinterest\', \'' + twitterHandle + '\')">' + twitterHandle + '</a>';
+	                } else if(type === 'youtube'){
+	                	url = '<a ng-click="openExternalApp(\'youtube\', \'' + twitterHandle + '\')">' + twitterHandle + '</a>';
+	                }
+	                
+	                return url;
+
+	            case 'hashtag' :
+	                var hashtag = match.getHashtag();
+	                var url;
+	                
+	                if(type === 'twitter'){
+	                	url = '<a ng-click="openExternalApp(\'twitter:hashtag\', \'' + hashtag + '\')">' + hashtag + '</a>';
+	                } else if(type === 'instagram'){
+	                	url = '<a ng-click="openExternalApp(\'twitter:hashtag\', \'' + hashtag + '\')">' + hashtag + '</a>';
+	                } else if(type === 'pinterest'){
+	                	url = '<a ng-click="openExternalApp(\'pinterest:hashtag\', \'' + hashtag + '\')">' + hashtag + '</a>';
+	                } else if(type === 'youtube'){
+	                	url = '<a ng-click="openExternalApp(\'youtube:hashtag\', \'' + hashtag + '\')">' + hashtag + '</a>';
+	                }
+
+	                return url;
+	        }
+	    }
+	} );
+
+	return linkedText;
+
+};
 
 var _parseInstagramResult = function(r){
 	return {
@@ -172,7 +223,8 @@ var _parseInstagramResult = function(r){
 			lowBand: r.images.thumbnail.url,
 			standard: r.images.standard_resolution.url
 		} : {},
-		text: r.caption.text,
+		text: _replaceLinks(r.caption.text, 'instagram'),
+		safeText: r.caption.text,
 		type: r.type,
 		id: r.id,
 		user: r.user,

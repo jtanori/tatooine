@@ -84,6 +84,7 @@ var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building',
                 'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name',
                 'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'page', 'logo', 'category', 'slug'];
 var logRequest = function(req, res, next){
+    console.log(req.body);
     console.log('%s %s %s', req.method, req.url, req.path);
     next();
 };
@@ -312,7 +313,7 @@ var getVenueById = function(req, res){
 
     var onVenueError = function(e){
         if(isAjax){
-            res.status(404).json({ status: 'error', error: e.message, code: e.code });
+            res.status(404).json({ status: 'error', error: e });
         }else{
             render(
                 {
@@ -984,11 +985,13 @@ var getReviewsForVenue = function(req, res){
                         u.avatar = 'http://www.gravatar.com/avatar/' + md5(u.email);
                     }
 
+                    console.log(r.createdAt, r.updatedAt, 'created and updated');
+
                     return {
                         comments: r.get('comments'),
                         rating: r.get('rating'),
-                        createdAt: r.get('createdAt'),
-                        updatedAt: r.get('updatedAt'),
+                        createdAt: r.createdAt,
+                        updatedAt: r.updatedAt,
                         id: r.id,
                         venue: v,
                         author: u
@@ -1035,6 +1038,68 @@ var saveReviewForVenue = function(req, res){
     }
 }
 
+var checkIn = function(req, res){
+    var body = req.body;
+    var User = Parse.Object.extend('_User');
+    var Checkin = Parse.Object.extend('Checkin');
+    var venue = new Venue();
+    var user, c;
+
+    if(body.id && body.userId){
+        venue.id = body.id;
+        user = new User({id: body.userId});
+        c = new Checkin({venue: venue, user: user});
+
+        Parse.Cloud.useMasterKey();
+
+        c
+            .save()
+            .then(function(){
+                return user.increment('checkinCount').save();   
+            })
+            .then(function(){
+                return venue.increment('checkinCount').save();
+            })
+            .then(function(){
+                res.status(200).json({status: 'success', results: c});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var checkUserCheckIn = function(req, res){
+    var body = req.body;
+    var User = Parse.Object.extend('_User');
+    var venue = new Venue();
+    var query = new Parse.Query('Checkin');
+    var user, date;
+    var sixteenHours = 16*60*60*1000;
+
+    if(body.id && body.userId){
+        venue.id = body.id;
+        user = new User({id: body.userId});
+        date = (((new Date())*1)-sixteenHours);
+
+        query
+            .equalTo('user', user)
+            .equalTo('venue', venue)
+            //.greaterThan('createdAt', (new Date(date)).toUTCString())
+            .first(function(c){
+                console.log('check user checkin', c);
+                res.status(200).json({status: 'success', results: c});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -1070,6 +1135,8 @@ Jound.post('/getProductsForVenue', getProductsForVenue);
 Jound.post('/getDealsForVenue', getDealsForVenue);
 Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
+Jound.post('/checkIn', checkIn);
+Jound.post('/checkUserCheckIn', checkUserCheckIn);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
