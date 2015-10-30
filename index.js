@@ -1100,6 +1100,27 @@ var checkUserCheckIn = function(req, res){
     }
 };
 
+var updatePage = function(req, res){
+    var body = req.body;
+    var Page = Parse.Object.extend('Page');
+    var page;
+
+    body.val = body.val || undefined;
+
+    if(body.id && body.attr){
+        page = new Page({id: id});
+        page
+            .save(body.attr, body.val)
+            .first(function(result){
+                res.status(200).json({status: 'success', results: result});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -1137,6 +1158,7 @@ Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
 Jound.post('/checkUserCheckIn', checkUserCheckIn);
+Jound.post('/updatePage', updatePage);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
