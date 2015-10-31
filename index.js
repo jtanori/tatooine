@@ -1125,6 +1125,45 @@ var updatePage = function(req, res){
     }
 };
 
+var claimVenue = function(req, res){
+    var body = req.body;
+    var venue = new Venue();
+    var User = Parse.Object.extend('_User');
+    var user;
+    if(body.id && body.userId && body.details){
+        venue.id = body.id;
+        user = new User({id: userId});
+
+        venue
+            .fetch()
+            .then(function(v){
+                if(v){
+                    if(!v.get('claimed_by')){
+                        return user.fetch();
+                    }else{
+                        return Parse.Promise.error("Venue is claimed already");
+                    }
+                }else{
+                    return Parse.Promise.error("No venue found for the given id");
+                }
+            })
+            .then(function(u){
+                if(u){
+                    Parse.Cloud.useMasterKey();
+                    return venue.save('claimed_by', u);
+                }else{
+                    return Parse.Promise.error("No user found for the given id");
+                }
+            }).then(function(v){
+                res.status(200).json({status: 'success', results: v});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+}
+
 //Main router
 var Jound = express.Router();
 
@@ -1162,6 +1201,7 @@ Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
 Jound.post('/checkUserCheckIn', checkUserCheckIn);
+Jound.post('/claimVenue', claimVenue);
 Jound.post('/updatePage', updatePage);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
