@@ -80,7 +80,7 @@ app.locals.LAYOUT = LAYOUT;
 
 //===============ROUTES===============
 var title = process.env.DEFAULT_PAGE_TITLE;
-var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building', 'building_floor', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
+var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building', 'building_floor', 'claimed_by', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
                 'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name',
                 'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'page', 'logo', 'category', 'slug'];
 var logRequest = function(req, res, next){
@@ -159,6 +159,7 @@ var getVenueByPosition = function(req, res){
         venueQuery
             .include('category')
             .include('logo')
+            .include('claimed_by')
             .equalTo('position', geoObject)
             .select(venueFieldsWhitelist);
     }
@@ -253,6 +254,7 @@ var getVenueById = function(req, res){
         .include('category')
         .include('logo')
         .include('page')
+        .include('claimed_by')
         .select(venueFieldsWhitelist);
 
     
@@ -574,6 +576,7 @@ var search = function(req, res){
             .select(venueFieldsWhitelist)
             .include('logo')
             .include('page')
+            .include('claimed_by')
             .limit(200)
             .find({
                 success: onSuccess,
@@ -625,6 +628,7 @@ var searchByGET = function(req, res){
                 .select(venueFieldsWhitelist)
                 .include('logo')
                 .include('page')
+                .include('claimed_by')
                 .limit(200)
                 .find({
                     success: onSuccess,
