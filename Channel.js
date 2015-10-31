@@ -223,8 +223,8 @@ var _parseInstagramResult = function(r){
 			lowBand: r.images.thumbnail.url,
 			standard: r.images.standard_resolution.url
 		} : {},
-		text: _replaceLinks(r.caption.text, 'instagram'),
-		safeText: r.caption.text,
+		text: r.caption && r.caption.text ? _replaceLinks(r.caption.text, 'instagram') : '',
+		safeText: r.caption && r.caption.text ? r.caption.text : '',
 		type: r.type,
 		id: r.id,
 		user: r.user,
