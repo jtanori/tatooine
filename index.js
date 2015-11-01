@@ -254,7 +254,6 @@ var getVenueById = function(req, res){
         .include('category')
         .include('logo')
         .include('page')
-        .include('claimed_by')
         .select(venueFieldsWhitelist);
 
     
@@ -287,8 +286,6 @@ var getVenueById = function(req, res){
         venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
         venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
         venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
-
-        console.log('is ajax', isAjax);
 
         if(venue.page && venue.page.about){
             venue.page.about = sanitizeHtml(venue.page.about, {
@@ -1127,35 +1124,34 @@ var updatePage = function(req, res){
 
 var claimVenue = function(req, res){
     var body = req.body;
-    var venue = new Venue();
     var User = Parse.Object.extend('_User');
-    var user;
-    if(body.id && body.userId && body.details){
-        venue.id = body.id;
-        user = new User({id: userId});
+    var Claim = Parse.Object.extend('LocationClaim');
+    var claimQuery = new Parse.Query(Claim);
+    var user, venue;
 
-        venue
-            .fetch()
-            .then(function(v){
-                if(v){
-                    if(!v.get('claimed_by')){
-                        return user.fetch();
-                    }else{
-                        return Parse.Promise.error("Venue is claimed already");
-                    }
+    if(body.id && body.userId && body.details){
+        venue = new Venue({id: body.id});
+        user = new User({id: body.userId});
+
+        claimQuery
+            .equalTo('by', user)
+            .equalTo('venue', venue)
+            .find()
+            .then(function(claims){
+                if(claims){
+                    return Parse.Promise.error("That venue is claimed already");
                 }else{
-                    return Parse.Promise.error("No venue found for the given id");
+                    return new Claim({
+                        by: user,
+                        venue: venue,
+                        details: body.details,
+                        pending: true,
+                        approved: false
+                    }).save();
                 }
             })
-            .then(function(u){
-                if(u){
-                    Parse.Cloud.useMasterKey();
-                    return venue.save('claimed_by', u);
-                }else{
-                    return Parse.Promise.error("No user found for the given id");
-                }
-            }).then(function(v){
-                res.status(200).json({status: 'success', results: v});
+            .then(function(c){
+                res.status(200).json({status: 'success', results: c});
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
             });
@@ -1163,6 +1159,32 @@ var claimVenue = function(req, res){
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 }
+
+var venueIsClaimed = function(req, res){
+    var body = req.body;
+    var Claim = Parse.Object.extend('LocationClaim');
+    var claimQuery = new Parse.Query(Claim);
+    var venue;
+
+    if(body.id && body.userId && body.details){
+        venue = new Venue({id: body.id});
+
+        claimQuery
+            .equalTo('venue', venue)
+            .find()
+            .then(function(claims){
+                if(claims){
+                    res.status(200);
+                }else{
+                    res.status(400);
+                }
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
 
 //Main router
 var Jound = express.Router();
