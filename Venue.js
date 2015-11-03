@@ -114,6 +114,7 @@ var fieldsWhiteList = [
     'phone_number',
     'position',
     'postal_code',
+    'rating',
     'road_name',
     'road_name_1',
     'road_name_2',
