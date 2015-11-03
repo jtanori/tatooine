@@ -32,7 +32,8 @@ var defaultImageType = 'image/jpg';
 //Jound utils
 var validations = require('./validations.js');
 var utils = require('./utils.js');
-var Venue = require('./Venue.js');
+var VenueModule = require('./Venue.js');
+var Venue = VenueModule.Venue;
 var Channel = require('./Channel');
 
 //Device type
@@ -80,9 +81,6 @@ app.locals.LAYOUT = LAYOUT;
 
 //===============ROUTES===============
 var title = process.env.DEFAULT_PAGE_TITLE;
-var venueFieldsWhitelist = ['name', 'activity_description', 'block', 'building', 'building_floor', 'claimed_by', 'exterior_letter', 'email_address', 'exterior_number', 'federal_entity', 
-                'internal_letter', 'internal_number', 'keywords', 'locality', 'municipality', 'phone_number', 'position', 'postal_code', 'road_name',
-                'road_name_1', 'road_name_2', 'road_name_3', 'road_type', 'road_type_1', 'road_type_2', 'road_type_3', 'settling_name', 'settling_type', 'shopping_center_name', 'shopping_center_store_number', 'shopping_center_type', 'www', 'page', 'logo', 'category', 'slug'];
 var logRequest = function(req, res, next){
     console.log(req.body);
     console.log('%s %s %s', req.method, req.url, req.path);
@@ -161,7 +159,7 @@ var getVenueByPosition = function(req, res){
             .include('logo')
             .include('claimed_by')
             .equalTo('position', geoObject)
-            .select(venueFieldsWhitelist);
+            .select(VenueModule.fields);
     }
 
     var categories = new Categories();
@@ -254,7 +252,7 @@ var getVenueById = function(req, res){
         .include('category')
         .include('logo')
         .include('page')
-        .select(venueFieldsWhitelist);
+        .select(VenueModule.fields);
 
     
     var categories = new Categories();
@@ -367,17 +365,31 @@ var getVenueById = function(req, res){
 var getDirections = function(req, res){
     var from = req.params.from;
     var to = req.params.to;
+    var options = {};
 
     if(validations.POSITION.test(from) && validations.POSITION.test(to)){
-        gmaputil.directions(from, to, null, function(e, r){
+        switch(req.params.mode){
+            case 'bicycling':
+                options.mode = 'bicycling';
+                break;
+            case 'walking':
+                options.mode = 'walking';
+                break;
+        }
+        gmaputil.directions(from, to, options, function(e, r){
             if(e){
                 res.status(404).json({ status: 'error', error: e, code: 404 });
             }else{
                 r = JSON.parse(r);
 
-                r.routes[0].legs[0].steps.forEach(function(s){
-                    s.decoded_polyline = polyline.decode(s.polyline.points);
-                });
+                try{
+                    r.routes[0].legs[0].steps.forEach(function(s){
+                        s.decoded_polyline = polyline.decode(s.polyline.points);
+                    });
+                }catch(e){
+                    console.log(e);
+                    console.log('error decoding polylines');
+                }             
                 
                 res.status(200).json({ status: 'success', message: 'Drive safetly!', results: r});
             }
@@ -570,7 +582,7 @@ var search = function(req, res){
 
         Parse.Cloud.useMasterKey();
         query
-            .select(venueFieldsWhitelist)
+            .select(VenueModule.fields)
             .include('logo')
             .include('page')
             .include('claimed_by')
@@ -622,7 +634,7 @@ var searchByGET = function(req, res){
 
             Parse.Cloud.useMasterKey();
             query
-                .select(venueFieldsWhitelist)
+                .select(VenueModule.fields)
                 .include('logo')
                 .include('page')
                 .include('claimed_by')
@@ -1138,8 +1150,8 @@ var claimVenue = function(req, res){
             .equalTo('venue', venue)
             .find()
             .then(function(claims){
-                if(claims){
-                    return Parse.Promise.error("That venue is claimed already");
+                if(!_.isEmpty(claims)){
+                    return Parse.Promise.error({code: 405, message: "That venue is claimed already"});
                 }else{
                     return new Claim({
                         by: user,
@@ -1166,17 +1178,18 @@ var venueIsClaimed = function(req, res){
     var claimQuery = new Parse.Query(Claim);
     var venue;
 
-    if(body.id && body.userId && body.details){
+    if(body.id){
         venue = new Venue({id: body.id});
 
         claimQuery
             .equalTo('venue', venue)
+            .select(['approved', 'pending'])
             .find()
             .then(function(claims){
                 if(claims){
-                    res.status(200);
+                    res.status(200).json({status: 'success', results: claims});
                 }else{
-                    res.status(400);
+                    res.status(200).json({status: 'success', results: []});;
                 }
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
@@ -1185,6 +1198,42 @@ var venueIsClaimed = function(req, res){
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
+
+var report = function(req, res){
+    var body = req.body;
+    var Ticket = Parse.Object.extend('Ticket');
+    var User = Parse.Object.extend('_User');
+    var venue, user, ticket;
+
+    if(body.id && body.userId && body.details && body.problemType){
+        venue = new Venue({id: body.id});
+        user = new User({id: body.userId});
+
+        ticket = new Ticket({
+            reporter: user,
+            venue: venue,
+            story: body.details,
+            problemType: body.problemType,
+            platformDetails: {
+                device: body.device,
+                cordova: body.cordova,
+                model: body.model,
+                platform: body.platform
+            },
+            parseVersion: body.parseVersion,
+            uuid: body.uuid,
+            cordovaVersion: body.version
+        })
+        .save()
+        .then(function(r){
+                res.status(200).json({status: 'success', results: r});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }    
+}
 
 //Main router
 var Jound = express.Router();
@@ -1197,6 +1246,7 @@ Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/details', getVenueById);
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
+Jound.get('/directions/:from/:to/:mode', getDirections);
 Jound.get('/privacy', function(req, res){res.redirect(301, '/privacidad')});
 Jound.get('/privacidad', privacy);
 Jound.get('/about', function(req, res){res.redirect(301, 'http://app.jound.mx')});
@@ -1224,7 +1274,9 @@ Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
 Jound.post('/checkUserCheckIn', checkUserCheckIn);
 Jound.post('/claimVenue', claimVenue);
+Jound.post('/venueIsClaimed', venueIsClaimed);
 Jound.post('/updatePage', updatePage);
+Jound.post('/report', report);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 

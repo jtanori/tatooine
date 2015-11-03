@@ -95,4 +95,44 @@ var PlaceModel = Parse.Object.extend('Location', {
 	}
 });
 
-module.exports = PlaceModel;
+var fieldsWhiteList = [
+	'name',
+    'activity_description',
+    'block',
+    'building',
+    'building_floor',
+    'claimed_by',
+    'exterior_letter',
+    'email_address',
+    'exterior_number',
+    'federal_entity', 
+    'internal_letter', 
+    'internal_number',
+    'keywords',
+    'locality',
+    'municipality',
+    'phone_number',
+    'position',
+    'postal_code',
+    'road_name',
+    'road_name_1',
+    'road_name_2',
+    'road_name_3',
+    'road_type',
+    'road_type_1',
+    'road_type_2',
+    'road_type_3',
+    'settling_name',
+    'settling_type',
+    'shopping_center_name',
+    'shopping_center_store_number',
+    'shopping_center_type',
+    'www',
+    'page',
+    'logo',
+    'category',
+    'slug',
+    'images'
+];
+
+module.exports = {Venue: PlaceModel, fields: fieldsWhiteList};
