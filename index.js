@@ -938,20 +938,48 @@ var getDealsForVenue = function(req, res){
     var Deal = Parse.Object.extend('Promo');
     var query = new Parse.Query(Deal);
     var venue = new Venue();
+    var now = new Date();
 
     if(body.id){
         venue.id = body.id;
 
-        query.equalTo('venue', venue);
-
-        if(body.skip && _.isNumber(body.skip*1)){
-            query.skip(body.skip);
-        }
+        query
+            .equalTo('venue', venue)
+            .greaterThanOrEqualTo('startViewableDate', now);
 
         query
             .find()
             .then(function(deals){
                 res.status(200).json({status: 'success', results: deals});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getEventsForVenue = function(req, res){
+    var body = req.body;
+    var E = Parse.Object.extend('Event');
+    var query = new Parse.Query(E);
+    var venue = new Venue();
+    var now = new Date();
+    var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
+
+    if(body.id){
+        venue.id = body.id;
+
+        query
+            .equalTo('venue', venue)
+            .greaterThanOrEqualTo('startViewableDate', now)
+            .lessThanOrEqualTo('endVieweableDate', plusFiveDays);
+
+        query
+            .find()
+            .then(function(events){
+                res.status(200).json({status: 'success', results: events});
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
             });
@@ -1269,6 +1297,7 @@ Jound.post('/subscribe', newsletterSubscribe);
 Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.post('/getProductsForVenue', getProductsForVenue);
 Jound.post('/getDealsForVenue', getDealsForVenue);
+Jound.post('/getEventsForVenue', getDealsForVenue);
 Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
