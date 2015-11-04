@@ -945,9 +945,7 @@ var getDealsForVenue = function(req, res){
 
         query
             .equalTo('venue', venue)
-            .greaterThanOrEqualTo('startViewableDate', now);
-
-        query
+            .lessThank('startViewableDate', now)
             .find()
             .then(function(deals){
                 res.status(200).json({status: 'success', results: deals});
