@@ -965,7 +965,7 @@ var getEventsForVenue = function(req, res){
     var venue = new Venue();
     var now = new Date();
     var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
-    
+
     if(body.id){
         venue.id = body.id;
 
@@ -1269,6 +1269,8 @@ Jound.use(checkEnvironment);
 Jound.get('/', home);
 Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/details', getVenueById);
+Jound.get('/venue/:id/event/:eventId', getVenueById);
+Jound.get('/venue/:id/promo/:eventId', getVenueById);
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
 Jound.get('/directions/:from/:to/:mode', getDirections);
