@@ -945,7 +945,7 @@ var getDealsForVenue = function(req, res){
 
         query
             .equalTo('venue', venue)
-            .lessThank('startViewableDate', now)
+            .lessThan('startViewableDate', now)
             .find()
             .then(function(deals){
                 res.status(200).json({status: 'success', results: deals});
@@ -965,10 +965,7 @@ var getEventsForVenue = function(req, res){
     var venue = new Venue();
     var now = new Date();
     var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
-
-    console.log(now.toISOString());
-    console.log(plusFiveDays.toISOString());
-
+    
     if(body.id){
         venue.id = body.id;
 
