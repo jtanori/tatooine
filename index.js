@@ -968,15 +968,17 @@ var getEventsForVenue = function(req, res){
     var now = new Date();
     var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
 
+    console.log(now.toISOString());
+    console.log(plusFiveDays.toISOString());
+
     if(body.id){
         venue.id = body.id;
 
         query
             .equalTo('venue', venue)
-            .greaterThanOrEqualTo('startViewableDate', now)
-            .lessThanOrEqualTo('endVieweableDate', plusFiveDays);
-
-        query
+            .equalTo('active', true)
+            .lessThan('startViewableDate', new Date())
+            .greaterThan('endViewableDate', new Date((now*1) + 5*24*60*60*1000))
             .find()
             .then(function(events){
                 res.status(200).json({status: 'success', results: events});
@@ -1297,7 +1299,7 @@ Jound.post('/subscribe', newsletterSubscribe);
 Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.post('/getProductsForVenue', getProductsForVenue);
 Jound.post('/getDealsForVenue', getDealsForVenue);
-Jound.post('/getEventsForVenue', getDealsForVenue);
+Jound.post('/getEventsForVenue', getEventsForVenue);
 Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
