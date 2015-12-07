@@ -96,21 +96,29 @@ var PlaceModel = Parse.Object.extend('Location', {
 });
 
 var fieldsWhiteList = [
-	'name',
+	'avatar',
     'activity_description',
     'block',
     'building',
     'building_floor',
     'claimed_by',
+    'category',
+    'cover',
+    'cover_video',
     'exterior_letter',
     'email_address',
     'exterior_number',
+    'featured',
     'federal_entity', 
+    'images',
     'internal_letter', 
     'internal_number',
     'keywords',
     'locality',
+    'logo',
     'municipality',
+    'name',
+    'page',
     'phone_number',
     'position',
     'postal_code',
@@ -125,15 +133,12 @@ var fieldsWhiteList = [
     'road_type_3',
     'settling_name',
     'settling_type',
+    'slug',
     'shopping_center_name',
     'shopping_center_store_number',
     'shopping_center_type',
-    'www',
-    'page',
-    'logo',
-    'category',
-    'slug',
-    'images'
+    'verificationLevel',
+    'www'
 ];
 
 module.exports = {Venue: PlaceModel, fields: fieldsWhiteList};

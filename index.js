@@ -1,6 +1,6 @@
 'use strict'; 
 
-//require('newrelic');
+require('newrelic');
 
 var express = require('express');
 var rollbar = require('rollbar');
@@ -34,7 +34,8 @@ var validations = require('./validations.js');
 var utils = require('./utils.js');
 var VenueModule = require('./Venue.js');
 var Venue = VenueModule.Venue;
-var Channel = require('./Channel');
+var Channel = require('./Channel.js');
+var Geo = require('./GeospatialEntities');
 
 //Device type
 var isMobile = false, isPhone = false, isTablet = false, isDesktop = true;
@@ -251,6 +252,7 @@ var getVenueById = function(req, res){
     venueQuery
         .include('category')
         .include('logo')
+        .include('cover')
         .include('page')
         .select(VenueModule.fields);
 
@@ -471,20 +473,17 @@ var unlike = function(req, res){
 };
 
 var getAddress = function(req, res){
-    var lat = parseFloat(req.body.latitude, 10);
-    var lng = parseFloat(req.body.longitude, 10);
+    var lat = req.body.latitude;
+    var lng = req.body.longitude;
+    var extended = req.body.extended;
 
-    if( validations.POSITION.test(lat + ',' + lng)){
-        gmaputil.reverseGeocoding(lat, lng, null, function(e, r){
-            if(e){
-                res.status(400).json({ status: 'error', error: 'Error getting address', code: 400 });
-            }else {
-                res.status(200).json({ status: 'success', address: JSON.parse(r)});
-            }
+    Geo
+        .getAddress(lat, lng, extended)
+        .then(function(address){
+            res.status(200).json({ status: 'success', address: address});
+        }, function(e){
+            res.status(400).json({status: 'error', error: e});
         });
-    }else{
-        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
-    }
 };
 
 var home = function(req, res){
@@ -1260,6 +1259,145 @@ var report = function(req, res){
     }    
 }
 
+var setPageForVenue = function(req, res){
+    var body = req.body;
+    var Page = Parse.Object.extend('Page');
+    var venues, page;
+    var venueQuery = new Parse.Query(Venue);
+
+    if(!_.isEmpty(body.id) && body.pageId){
+        page = new Page({id: body.pageId});
+
+        if(_.isString(body.id)){
+            body.id = [body.id];
+        }
+
+        venueQuery
+            .containedIn('objectId', body.id)
+            .limit(1000)
+            .find(function(venues){
+
+                venues.forEach(function(v){
+                    v.set('page', page);
+                });
+
+                Parse.Cloud.useMasterKey();
+
+                Parse.Object
+                    .saveAll(venues)
+                    .then(function(r){
+                        res.status(200).json({status: 'success'});
+                    }, function(e){
+                        res.status(400).json({status: 'error', error: e});
+                    });
+            }, function(e){
+                console.log('no venues found', e);
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    } 
+};
+
+var setLogoForVenue = function(req, res){
+    var body = req.body;
+    var File = Parse.Object.extend('File');
+    var venues, file;
+    var venueQuery = new Parse.Query(Venue);
+
+    if(!_.isEmpty(body.id) && body.fileId){
+        file = new File({id: body.fileId});
+
+        if(_.isString(body.id)){
+            body.id = [body.id];
+        }
+
+        venueQuery
+            .containedIn('objectId', body.id)
+            .limit(1000)
+            .find(function(venues){
+
+                venues.forEach(function(v){
+                    v.set('logo', file);
+                });
+
+                Parse.Cloud.useMasterKey();
+
+                Parse.Object
+                    .saveAll(venues)
+                    .then(function(r){
+                        res.status(200).json({status: 'success'});
+                    }, function(e){
+                        res.status(400).json({status: 'error', error: e});
+                    });
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    } 
+};
+
+var newVenue = function(req, res){
+    var body = req.body;
+    var File = Parse.Object.extend('File');
+    var User = Parse.Object.extend('_User');
+    var position, f, u, v, images, country, city, district;
+    var countryQuery, cityQuery, districtQuery, promise = new Parse.Promise();
+    var promises = [];
+
+    if(body.userId && body.name && body.phone && body.position && body.position.lat && body.position.lng){
+        position = new Parse.GeoPoint({latitude: body.position.lat, longitude: body.position.lng});
+
+        v = new Venue({
+            position: position,
+            verificationLevel: 2,
+            phone_number: body.phone,
+            name: body.name,
+            checkinCount: 0
+        });
+
+        if(body.imageId){
+            f = new File({id: body.imageId});
+            images = v.relation('imagesRelation');
+            images.add(f);
+        }
+
+        if(body.owner){
+            u = new User({id: body.userId});
+            v.set('claimed_by', u);
+        }
+        //Check for new districts
+        if(body.address){
+            v.set({
+                federal_entity: body.address.adminArea || '',
+                locality: body.address.locality || '',
+                municipality: body.address.subAdminArea || '',
+                settling_name: body.address.subLocality || '',
+                road_name: body.address.thoroughfare || '',
+                postal_code: body.address.postalCode || ''
+            });
+        }
+
+        //TODO: allow for category save
+
+        v
+            .save()
+            .then(function(savedVenue){
+                res.status(200).json({status: 'success', venue: savedVenue.toJSON()});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            })
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var savePhotoForVenue = function(req, res){
+
+};
+
 //Main router
 var Jound = express.Router();
 
@@ -1271,6 +1409,7 @@ Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/details', getVenueById);
 Jound.get('/venue/:id/event/:eventId', getVenueById);
 Jound.get('/venue/:id/promo/:eventId', getVenueById);
+//Jound.get('/venue/:city/:slug');
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
 Jound.get('/directions/:from/:to/:mode', getDirections);
@@ -1305,6 +1444,10 @@ Jound.post('/claimVenue', claimVenue);
 Jound.post('/venueIsClaimed', venueIsClaimed);
 Jound.post('/updatePage', updatePage);
 Jound.post('/report', report);
+Jound.post('/setPageForVenue', setPageForVenue);
+Jound.post('/setLogoForVenue', setLogoForVenue);
+Jound.post('/newVenue', newVenue);
+Jound.post('/savePhotoForVenue', savePhotoForVenue);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
