@@ -1396,7 +1396,49 @@ var newVenue = function(req, res){
 };
 
 var savePhotoForVenue = function(req, res){
+    var body = req.body;
+    var File = Parse.Object.extend('File');
+    var F, f;
 
+    if(body.id && body.data){
+        var venue = new Venue({id: body.id})
+
+        venue
+            .fetch()
+            .then(function(v){
+                if(v){
+                    f = new File();
+                    F = new Parse.File(v.get('name') + '-' + new Date()*1, {base64: body.data});
+
+                    F
+                        .save()
+                        .then(function(f){
+                            f
+                                .set('file', F)
+                                .save(function(){
+                                    v
+                                        .addUnique('images', F.url())
+                                        .save()
+                                        .then(function(){
+                                            res.status(200).json({status: 'success', url: F.url()});
+                                        }, function(e){
+                                            res.status(400).json({status: 'error', error: e});
+                                        });
+                                }, function(e){
+                                    res.status(400).json({status: 'error', error: e});
+                                });
+                        }, function(e){
+                            res.status(400).json({status: 'error', error: e});
+                        });
+                }else{
+                    res.status(400).json({status: 'error', error: {message: 'Invalid venue ID'}});
+                }
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
 };
 
 //Main router
