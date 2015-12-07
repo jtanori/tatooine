@@ -286,6 +286,7 @@ var getVenueById = function(req, res){
         venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
         venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
         venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
+        venue.cover = v.get('cover') ? v.get('cover').toJSON() : undefined;
 
         if(venue.page && venue.page.about){
             venue.page.about = sanitizeHtml(venue.page.about, {
