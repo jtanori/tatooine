@@ -1476,7 +1476,7 @@ var trackEvent = function(req, res){
                 a.set('category', category);
                 break;
             case 'venues':
-                var venues = d.split(',').map(function(i){return new Venue({id: i});});
+                var venues = d.split(',');
                 a.set('venues', venues);
                 break;
             default:
