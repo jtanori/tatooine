@@ -1467,7 +1467,7 @@ var trackEvent = function(req, res){
                 a.set('user', user);
                 break;
             case 'position':
-                var coords = position.split(',');
+                var coords = d.split(',');
                 var point = new Parse.GeoPoint({latitude: coords[0], longitude: coords[1]});
                 a.set('position', point);
             case 'category':
