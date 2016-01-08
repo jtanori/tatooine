@@ -1466,6 +1466,13 @@ var trackEvent = function(req, res){
                 var user = new (Parse.Object.extend('_User'))({id: d});
                 a.set('user', user);
                 break;
+            case 'position':
+                var coords = position.split(',');
+                var point = new Parse.GeoPoint({latitude: coords[0], longitude: coords[1]});
+                a.set('position', point);
+            case 'category':
+                var category = new (Parse.Object.extend('Category'))({id: d});
+                a.set('category', category);
             default:
                 a.set(i, d);
             }
