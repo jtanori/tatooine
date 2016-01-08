@@ -1451,8 +1451,24 @@ var trackEvent = function(req, res){
         var Analytics = Parse.Object.extend('Analytics');
         var a = new Analytics();
 
-        _.each(req.body.data, function(d){
-            a.set(d, d);
+        console.log(JSON.stringify(req.body.data), 'data');
+
+        _.each(req.body.data, function(d, i){
+
+            switch(i){
+            case 'id':
+            case 'venueId':
+                var venue = new Venue({id: d});
+                a.set('venue', venue);
+                break;
+            case 'user':
+            case 'userId':
+                var user = new (Parse.Object.extend('_User'))({id: d});
+                a.set('user', user);
+                break;
+            default:
+                a.set(i, d);
+            }
         });
 
         Parse.Cloud.useMasterKey();
