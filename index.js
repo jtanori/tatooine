@@ -1457,7 +1457,7 @@ var trackEvent = function(req, res){
 
             switch(i){
             case 'id':
-            case 'venueId':
+            case 'venue':
                 var venue = new Venue({id: d});
                 a.set('venue', venue);
                 break;
