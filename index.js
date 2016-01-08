@@ -1455,6 +1455,8 @@ var trackEvent = function(req, res){
             a.set(d, d);
         });
 
+        Parse.Cloud.useMasterKey();
+
         a
             .save()
             .then(function(){
