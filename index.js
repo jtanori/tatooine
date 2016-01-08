@@ -1445,6 +1445,29 @@ var savePhotoForVenue = function(req, res){
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
+//Track analytics event
+var trackEvent = function(req, res){
+    if(req.body && req.body.data){
+        var Analytics = Parse.Object.extend('Analytics');
+        var a = new Analytics();
+
+        _.each(req.body.data, function(d){
+            a.set(d, d);
+        });
+
+        a
+            .save()
+            .then(function(){
+                res.status(200).json({status: 'ok'});
+            }, function(e){
+                console.log('Analitics error');
+                console.log(e);
+                res.status(200).json({status: 'ok'});
+            });
+    }else{
+        res.status(200).json({status: 'ok'});
+    }
+};
 
 //Main router
 var Jound = express.Router();
@@ -1496,6 +1519,7 @@ Jound.post('/setPageForVenue', setPageForVenue);
 Jound.post('/setLogoForVenue', setLogoForVenue);
 Jound.post('/newVenue', newVenue);
 Jound.post('/savePhotoForVenue', savePhotoForVenue);
+Jound.post('/analytics', trackEvent);
 Jound.get('/search', searchByGET);
 Jound.get('404.html', notFound);
 
