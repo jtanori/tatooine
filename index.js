@@ -1470,9 +1470,15 @@ var trackEvent = function(req, res){
                 var coords = d.split(',');
                 var point = new Parse.GeoPoint({latitude: coords[0], longitude: coords[1]});
                 a.set('position', point);
+                break;
             case 'category':
                 var category = new (Parse.Object.extend('Category'))({id: d});
                 a.set('category', category);
+                break;
+            case 'venues':
+                var venues = d.split(',').map(function(i){return new Venue({id: i});});
+                a.set('venues', venues);
+                break;
             default:
                 a.set(i, d);
             }
