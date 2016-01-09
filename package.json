@@ -25,6 +25,7 @@
     "memjs": "^0.8.5",
     "method-override": "^2.2.0",
     "mobile-detect": "^0.4.3",
+    "moment": "^2.11.0",
     "multer": "^0.1.7",
     "newrelic": "^1.16.4",
     "node-localstorage": "^0.3.6",

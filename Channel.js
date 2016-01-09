@@ -6,6 +6,9 @@ var _ = require('lodash');
 var Autolinker = require('autolinker');
 var FB = require('fb');
 var concat = require('concat-stream');
+var moment = require('moment');
+
+moment.locale('es');
 
 //Configure instagram
 ig.use({ client_id: process.env.INSTAGRAM_CLIENT_ID, client_secret: process.env.INSTAGRAM_CLIENT_SECRET });
@@ -304,7 +307,15 @@ var facebook = function(pageId, token, next){
 
         //More compact
         response.pipe(concat(function (data) {
-            promise.resolve(JSON.parse(data));
+        	data = JSON.parse(data);
+
+        	data.data = data.data.map(function(d){
+        		d.created_time = moment(d.created_time).format("Do MMMM YYYY, h:mm a");
+
+        		return d;
+        	});
+
+            promise.resolve(data);
         }));
 
         response.on("error", function(e){
