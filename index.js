@@ -1490,10 +1490,13 @@ var trackEvent = function(req, res){
                 a.set('position', point);
                 break;
             case 'category':
-                var category = new (Parse.Object.extend('Category'))();
+                var Category = Parse.Object.extend('Category');
+                var category = new Category();
 
-                category.id = d;
-                
+                category.objectId = d;
+
+                console.log('settings category', d);
+
                 a.set('category', category);
                 break;
             case 'venues':
