@@ -896,6 +896,18 @@ var getChannelForVenue = function(req, res){
             });
 
         break;
+
+    case 'facebook':
+        Channel
+            .facebook(body.id, body.accessToken, body.next)
+            .then(function(data){
+                res.status(200).json({status: 'success', results: data.data, paging: data.paging});
+            }, function(e){
+                res.status(400).json({status: 'error', error: e});
+            });
+
+        break;
+
     default:
         res.status(404).json({status: 'error', error: {message: 'No supported channel found'}});
     }

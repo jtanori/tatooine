@@ -4,6 +4,8 @@ var https = require('https');
 var ig = require('instagram-node').instagram();
 var _ = require('lodash');
 var Autolinker = require('autolinker');
+var FB = require('fb');
+var concat = require('concat-stream');
 
 //Configure instagram
 ig.use({ client_id: process.env.INSTAGRAM_CLIENT_ID, client_secret: process.env.INSTAGRAM_CLIENT_SECRET });
@@ -280,8 +282,42 @@ var instagram = function(userName, userID, minId, maxId){
 	return promise;
 }
 
+var facebook = function(pageId, token, next){
+	var promise = new Parse.Promise();
+	var params;
+
+    //If we want to page instead
+    if(next && _.isString(next)){
+    	params = next;
+    }else{
+    	params = {
+	        hostname: 'graph.facebook.com',
+	        port: 443,
+	        path: '/v2.0/' + pageId + '/feed?access_token=' + token,
+	        method: 'GET'
+	    };
+    }
+
+    https.get(params, function (response) {
+        //response is a stream so it is an EventEmitter
+        response.setEncoding("utf8");
+
+        //More compact
+        response.pipe(concat(function (data) {
+            promise.resolve(JSON.parse(data));
+        }));
+
+        response.on("error", function(e){
+        	promise.reject(e);
+        });
+    });
+
+	return promise;
+}
+
 module.exports = {
 	youtube: youtube,
 	twitter: new TwitterAggregator(),
-	instagram: instagram
+	instagram: instagram,
+	facebook: facebook
 }
