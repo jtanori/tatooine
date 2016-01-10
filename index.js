@@ -1471,24 +1471,23 @@ var trackEvent = function(req, res){
             switch(i){
             case 'id':
             case 'venue':
-                var venue = new Venue();
-
-                venue.id = d;
-
+                var venue = new Venue({id: d});
+                
                 a.set('venue', venue);
                 break;
             case 'user':
             case 'userId':
-                var user = new (Parse.Object.extend('_User'))();
-
-                user.id = d;
+                var User = Parse.Object.extend('_User');
+                var user = new User({id: d});
 
                 a.set('user', user);
                 break;
             case 'position':
                 var coords = d.split(',');
                 var point = new Parse.GeoPoint({latitude: coords[0]*1, longitude: coords[1]*1});
+
                 a.set('position', point);
+                
                 break;
             case 'category':
                 var Category = Parse.Object.extend('Category');
