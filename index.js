@@ -1464,6 +1464,7 @@ var trackEvent = function(req, res){
         var a = new Analytics();
 
         console.log(JSON.stringify(req.body.data), 'data');
+        Parse.Cloud.useMasterKey();
 
         _.each(req.body.data, function(d, i){
 
@@ -1491,13 +1492,10 @@ var trackEvent = function(req, res){
                 break;
             case 'category':
                 var Category = Parse.Object.extend('Category');
-                var category = new Category();
-
-                category.objectId = d;
-
-                console.log('settings category', d);
+                var category = new Category({id: d});
 
                 a.set('category', category);
+                
                 break;
             case 'venues':
                 var venues = d.split(',');
@@ -1507,8 +1505,6 @@ var trackEvent = function(req, res){
                 a.set(i, d);
             }
         });
-
-        Parse.Cloud.useMasterKey();
 
         a
             .save()
