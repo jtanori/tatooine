@@ -1472,7 +1472,7 @@ var trackEvent = function(req, res){
             case 'id':
             case 'venue':
                 var venue = new Venue({id: d});
-                
+
                 a.set('venue', venue);
                 break;
             case 'user':
@@ -1492,6 +1492,8 @@ var trackEvent = function(req, res){
             case 'category':
                 var Category = Parse.Object.extend('Category');
                 var category = new Category({id: d});
+
+                console.log('category to set', d);
 
                 a.set('category', category);
                 
