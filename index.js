@@ -1472,16 +1472,24 @@ var trackEvent = function(req, res){
             switch(i){
             case 'id':
             case 'venue':
-                var venue = new Venue({id: d});
+                
+                if(d){
+                    var venue = new Venue({id: d});
 
-                a.set('venue', venue);
+                    a.set('venue', venue);
+                }
+
                 break;
             case 'user':
             case 'userId':
-                var User = Parse.Object.extend('_User');
-                var user = new User({id: d});
+                
+                if(d){
+                    var User = Parse.Object.extend('_User');
+                    var user = new User({id: d});
 
-                a.set('user', user);
+                    a.set('user', user);
+                }
+
                 break;
             case 'position':
                 var coords = d.split(',');
@@ -1491,17 +1499,22 @@ var trackEvent = function(req, res){
                 
                 break;
             case 'category':
-                var C = Parse.Object.extend('Category');
-                var c = new C({id: d});
+                
+                if(d){
+                    var C = Parse.Object.extend('Category');
+                    var c = new C({id: d});
 
-                console.log('category to set', d);
-
-                a.set('category', c);
+                    a.set('category', c);
+                }
                 
                 break;
             case 'venues':
-                var venues = d.split(',');
-                a.set('venues', venues);
+                
+                if(d && d.split(',').length){
+                    var venues = d.split(',');
+                    a.set('venues', venues);
+                }
+
                 break;
             default:
                 a.set(i, d);
