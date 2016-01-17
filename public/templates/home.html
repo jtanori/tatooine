@@ -1,0 +1,159 @@
+<ion-view title="Jound">
+	<ion-nav-buttons side="left">
+        <button class="button button-icon button-clear ion-navicon-round" menu-toggle="left" ng-click="openLeft()" ng-disabled="newBusinessMarker">
+        </button>
+    </ion-nav-buttons>
+	<ion-nav-buttons side="right">
+        <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
+        </button>
+    </ion-nav-buttons>
+            
+	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length || newBusinessMarker">
+		<label class="item-input-wrapper" id="home-search-box">
+			<i class="icon ion-ios-search placeholder-icon"></i>
+			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input">
+		</label>
+		<i ng-show="query && query.length > 2 && isSearchFocused" ng-click="clearSearch()" class="clear-search icon ion-ios-close close" id="home-search-clear"></i>
+		<button class="button button-clear" type="submit" id="home-search-submit">
+			Buscar
+		</button>
+	</form>
+	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
+		<ion-pane>
+			
+
+			<script type="text/ng-template" id="control.tpl.html">
+				
+			</script>
+			
+			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
+				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
+				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
+			</div>
+			<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
+
+			<ui-gmap-google-map center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled}">
+
+				<ui-gmap-polyline ng-repeat="p in routes" path="p.path" stroke="p.stroke" visible='true' geodesic='false' fit="true" editable="false" draggable="false", events="p.events"></ui-gmap-polyline>
+				<ui-gmap-markers
+					models='featuredMarkers'
+					idKey='id'
+					type="spider"
+					typeOptions=''
+					typeEvents=''
+
+					coords="'position'"
+					icon="'icon'"
+					options="'options'"
+					labelContent="'label'"
+					labelAnchor="'labelAnchoe'"
+					labelClass="'labelClass'"
+					events="events"
+					doRebuildAll="false"
+					control="markersControl"
+					>
+				</ui-gmap-markers>
+				<ui-gmap-markers
+					models='markers'
+					idKey='id'
+					type="spider"
+					typeOptions=''
+					typeEvents=''
+
+					coords="'position'"
+					icon="'icon'"
+					options="'options'"
+					labelContent="'label'"
+					labelAnchor="'labelAnchoe'"
+					labelClass="'labelClass'"
+					events="events"
+					doRebuildAll="false"
+					>
+				</ui-gmap-markers>
+				<ui-gmap-marker
+					idKey='map.marker.id'
+					coords='map.marker.center'
+					options='map.marker.options'
+					events='map.marker.events'
+					control='map.marker'
+					>
+				</ui-gmap-marker>
+				<ui-gmap-circle
+					radius='map.circle.radius'
+					fill='map.circle.fill'
+					stroke='map.circle.stroke'
+					clickable='false'
+					draggable='false'
+					editable='false'
+					visible='map.circle.visible'
+					center='map.circle.center',
+					control='map.circle'
+				>
+
+				</ui-gmap-circle>
+			</ui-gmap-google-map>
+		    <!--ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
+				
+
+				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
+
+				<div class="dark" id="map-position-search-label" ng-if="tracingPosition"><ion-spinner icon="ripple"></ion-spinner><div>Trazando ubicacion</div></div>
+				
+				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker || tracingPosition"></button>
+
+				<div ng-if="newBusinessMarker" id="new-business-popup">
+					<div id="new-business-popup-wrapper">
+						<div class="padding">
+							<img ng-src="{{newBusinessImageSRC}}"/>
+						</div>
+					</div>
+					<div class="center aligned padding">
+						<button type="button" class="button button button-small" ng-click="cancelNewBusiness()">
+							<i class="icon ion-close"></i> Cancelar
+						</button>
+						<button type="button" class="button button-assertive" ng-click="takePhoto()">
+							<i class="icon ion-camera "></i>
+						</button>
+						<button type="button" class="button button-positive button-small" ng-click="getNewBusinessAddress()" ng-class="{disabled: !newBusinessMarker}">
+							<i class="icon ion-bookmark"></i> Siguiente
+						</button>
+					</div>
+				</div>
+				
+		    </ion-pane -->
+		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
+		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
+
+				<button class="button button-positive button-small icon icon-right ion-close-circled route-option" ng-show="route1" ng-click="removeRoute(route1)">{{route1.distance}}</button>
+				<button class="button button-assertive button-small icon icon-right ion-close-circled route-option" ng-show="route2" ng-click="removeRoute(route2)">{{route2.distance}}</button>
+				<button class="button button-dark button-small icon icon-right ion-close-circled route-option" ng-show="route3" ng-click="removeRoute(route3)">{{route3.distance}}</button>
+		    </div>
+		    <div ng-show="currentModel" id="home-venue-details" ng-class="{'has-phone': currentModel.get('phone_number')}">
+		    	<div class="list">
+					<div class="item item-avatar" href="#">
+						<img src="{{currentModel.getLogo().url}}" ng-click="openVenue()">
+						<h2 ng-click="openVenue()">{{currentModel.get('name')}}</h2>
+						<p ng-click="openVenue()">{{currentModel.getAddress()}}</p>
+						<a class="button button-positive" ng-show="currentModel.get('phone_number')" href="tel:{{currentModel.get('phone_number')}}">
+							<i class="icon ion-ios-telephone"></i>
+						</a>
+					</div>
+				</div>
+				<div class="tabs tabs-assertive tabs-icon-top">
+					<a class="tab-item" ng-click="share()">
+						<i class="icon ion-share"></i>
+						Compartir
+					</a>
+					<a class="tab-item" ng-click="openVenue()">
+						<i class="icon ion-chevron-right"></i>
+						Ver mas
+					</a>
+					<a class="tab-item" ng-click="traceRoute()">
+						<i class="icon ion-map"></i>
+						¿Como llego?
+					</a>
+				</div>
+		    </div>
+		</ion-pane>
+	</ion-content>
+</ion-view>

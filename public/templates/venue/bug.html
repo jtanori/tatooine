@@ -1,0 +1,33 @@
+
+<div class="modal">
+    <ion-header-bar class="bar-positive">
+        <div class="buttons">
+            <button class="button button-icon ion-android-close" ng-click="closeBug()"></button>
+        </div>
+        <h1 class="title">Reportar Error</h1>
+    </ion-header-bar>
+    <ion-content>
+        <form name="bugForm" ng-submit="sendBug(bugForm)">
+            <div class="list">
+                <li class="item item-avatar">
+                    <img ng-src="{{basicData.logo}}"/>
+                    <h2>{{basicData.name}}</h2>
+                    <p>{{basicData.address}}</p>
+                </li>
+                <div class="item item-divider">Identifica tu problema</div>
+                <ion-radio ng-model="bug.problemType" ng-value="1">Ubicación errónea</ion-radio>
+                <ion-radio ng-model="bug.problemType" ng-value="2">Error en los detalles</ion-radio>
+                <ion-radio ng-model="bug.problemType" ng-value="3">Establecimiento inexistente</ion-radio>
+                <ion-radio ng-model="bug.problemType" ng-value="4">Conflicto de propietario</ion-radio>
+                <div class="item item-divider">Detalles del problema</div>
+                <label class="item item-input">
+                    <textarea placeholder="Describe tu problema" ng-model="bug.comments"></textarea>
+                </label>
+            </div>
+
+            <div class="padding center aligned">
+                <button class="button button-positive" type="submit" ng-disabled="bugForm.$invalid">Enviar Reporte</button>
+            </div>
+        </form>
+    </ion-content>
+</div>

@@ -1,0 +1,38 @@
+<div class="modal image-modal transparent">
+    <ion-header-bar class="bar-dark">
+    	<button class="button button-icon button-clear ion-close" ng-click="closeShareModal()">
+        </button>
+    	<h1 class="title">Compartir</h1>
+    </ion-header-bar>
+	<ion-content class="transparent">
+		<div class="padding">
+			<button class="button button-positive button-block" type="button"
+			socialshare
+			socialshare-provider="facebook"
+			socialshare-url="{{socialShare.url}}"
+			socialshare-text="{{socialShare.text}}"
+			socialshare-via="{{socialShare.APP_ID}}"
+			socialshare-source="{{socialShare.HOST}}"
+			socialshare-description="{{socialShare.description}}">
+			<i class="icon ion-social-facebook"></i> Facebook
+			</button>
+			<button class="button button-calm button-block" type="button"   socialsharing 
+			socialshare
+			socialshare-provider="twitter"
+			socialshare-url="{{socialShare.url}}"
+			socialshare-text="{{socialShare.twitt}}"
+			socialshare-via="{{socialShare.TWITTER_ID}}"
+			socialshare-hashtags="{{socialShare.hashtags}}"><i class="icon ion-social-twitter"></i> Twitter</button>
+			<button class="button button-royal button-block" type="button" socialsharing
+			socialshare
+			socialshare-provider="linkedin"
+			socialshare-url="{{socialShare.url}}"
+			socialshare-text="{{socialShare.text}}"
+			><i class="icon ion-social-linkedin"></i> Linkedin</button>
+			<button class="button button-assertive button-block" type="button" socialsharing
+			socialshare
+			socialshare-provider="google+"
+			socialshare-url="{{socialShare.url}}"><i class="icon ion-social-google+"></i> Google+</button>
+		</div>
+	</ion-content>
+</div>

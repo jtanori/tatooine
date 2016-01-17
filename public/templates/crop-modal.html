@@ -1,0 +1,15 @@
+<div class="modal image-modal transparent" id="crop-modal">
+	<ion-pane class="transparent">
+		<div class="crop-area">
+			<img-crop image="imageToCrop" result-image="croppedImageSRC"></img-crop>
+		</div>
+		<div class="row">
+			<div class="col">
+				<button type="button" class="button button-block" ng-click="cancelCrop()">Cancelar</button>
+			</div>
+			<div class="col">
+				<button type="button" class="button button-positive button-block" ng-click="saveCrop()">Guardar</button>
+			</div>
+		</div>
+	</ion-pane>
+</div>

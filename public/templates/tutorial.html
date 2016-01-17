@@ -1,0 +1,21 @@
+<div class="modal image-modal transparent">
+	<ion-content class="transparent" id="tutorial">
+		<div class="padding">
+			<div class="center aligned">
+                <img src="img/jound-title.png" id="logo">
+            </div>
+			<h3 class="light center aligned">Bienvenido</h3>
+			<p class="light">Te dejamos unos cuantos videos para que aprendas a usar <strong>Jound</strong> rápidamente (aunque es super fácil).</p>
+		</div>
+		<div class="list list-inset">
+            <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
+                <img src="img/icon-yt.png"/>
+                <h2 class="light">{{video.title}}</h2>
+                <p class="light">{{video.description}}</p>
+            </div>
+        </div>
+		
+
+		<div class="center aligned"><button type="button" class="button button-assertive" ng-click="closeTutorial()">Omitir</button></div>
+	</ion-content>
+</div>

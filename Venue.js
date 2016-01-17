@@ -3,96 +3,132 @@ var Parse = require('parse').Parse;
 
 var PlaceModel = Parse.Object.extend('Location', {
 	getURL: function(){
-		return '//www.jound.mx/venue/' + this.id;
-	},
-	getWWW: function(){
-		if(this.get('www')){
-			return this.get('www').replace(/^(https?|ftp):\/\//, '');
-		}
-	},
-	getAddress: function(){
-		var address = '';
-		var n = this.get('exterior_number');
-		var castedN = parseInt(n, 10);
+        return '//www.jound.mx/venue/' + this.id;
+    },
+    getWWW: function(){
+        if(this.get('www')){
+            return this.get('www').replace(/^(https?|ftp):\/\//, '');
+        }
+    },
+    getAddress: function(){
+        var address = '';
+        var n = this.get('exterior_number');
+        var castedN = parseInt(n, 10);
 
-		if(!_.isEmpty(this.get('road_type'))){
-			address += this.escape('road_type') + ' ' + this.escape('road_name');
-		}
+        if(!_.isEmpty(this.get('road_type'))){
+            address += this.escape('road_type') + ' ' + this.escape('road_name');
+        }
 
-		if(!_.isEmpty(this.get('road_type_1'))){
-			address += ' entre ' + this.escape('road_type_1') + ' ' + this.escape('road_name_1');
-		}
+        if(!_.isEmpty(this.get('road_type_1'))){
+            address += ' entre ' + this.escape('road_type_1') + ' ' + this.escape('road_name_1');
+        }
 
-		if(!_.isEmpty(this.get('road_type_2'))){
-			address += ' y ' + this.escape('road_type_2') + ' ' + this.escape('road_name_2');
-		}
+        if(!_.isEmpty(this.get('road_type_2'))){
+            address += ' y ' + this.escape('road_type_2') + ' ' + this.escape('road_name_2');
+        }
 
-		if(n){
-			if(!_.isNaN(castedN) && _.isNumber(castedN)){
-				address += ' #' + _.escape(n);
-			}else if(!_.isString(n)){
-				if(n === 'SN' || n === 'sn'){
-					address += ' Sin numero';
-				}else {
-					address += ' #' + _.escape(n);
-				}
-			}
-		}
+        if(n){
+            if(!_.isNaN(castedN) && _.isNumber(castedN)){
+                address += ' #' + _.escape(n);
+            }else if(!_.isString(n)){
+                if(n === 'SN' || n === 'sn'){
+                    address += ' Sin numero';
+                }else {
+                    address += ' #' + _.escape(n);
+                }
+            }
+        }
 
-		return address;
-	},
-	getVecinity: function(){
-		var address = '';
+        return address;
+    },
+    getVecinity: function(){
+        var address = '';
 
-		if(this.get('settling_type') && this.get('settling_name')){
-			address += this.get('settling_type') + ' ' + this.get('settling_name');
-		}else if(this.get('settling_name')){
-			address += 'Colonia ' + this.get('settling_name');
-		}
+        if(this.get('settling_type') && this.get('settling_name')){
+            address += this.get('settling_type') + ' ' + this.get('settling_name');
+        }else if(this.get('settling_name')){
+            address += 'Colonia ' + this.get('settling_name');
+        }
 
-		return address;
-	},
-	getCity: function(){
-		var city = '';
-		var location = this.get('locality');
-		var municipality = this.get('municipality');
-		var state = this.get('federal_entity');
+        return address;
+    },
+    getCityName: function(){
+        var city = '';
+        var l = this.get('locality');
+        var m = this.get('municipality');
 
-		if(location === municipality){
-			city += location + ', ' + state;
-		}else {
-			city += location + ', ' + municipality + ', ' + state;
-		}
+        if(!_.isEmpty(l)){
+            city = l;
+        }else{
+            city = m;
+        }
 
-		if(this.get('postal_code')){
-			city += ' C.P ' + this.escape('postal_code');
-		}
+        return city;
+    },
+    getCity: function(){
+        var city = '';
+        var l = this.get('locality');
+        var m = this.get('municipality');
+        var s = this.get('federal_entity');
 
-		return city;
-	},
-	getLogo: function(){
-		if(_.isString(this.get('logo'))){
-			return this.get('logo');
-		}else if(this.get('logo') && this.get('logo').get('file')){
-			return this.get('logo').get('file').url();
-		}else{
-			return 'http://www.jound.mx/images/venue_default@2x.jpg';
-		}
-	},
-	getBasicData: function(){
-		return {
-			name: this.get('name'),
-			address: this.getAddress(),
-			city: this.getCity(),
-			vecinity: this.getVecinity(),
-			phoneNumber: this.get('phone_number'),
-			url: this.get('www'),
-			activity: this.get('activity_description'),
-			logo: this.getLogo(),
-			email: !!this.get('email_address'),
-			www: this.getWWW()
-		};
-	}
+        if(l === m){
+            city += l + ', ' + s;
+        }else {
+            city += l + ', ' + m + ', ' + s;
+        }
+
+        if(this.get('postal_code')){
+            city += ' C.P ' + this.escape('postal_code');
+        }
+
+        return city;
+    },
+    getBanner: function(){
+        var l;
+
+        if(this.get('cover')){
+            l = this.get('cover').get('file');
+
+            if(l.url){
+                return {url: l.url(), isDefault: false};
+            }else if(l._url){
+                return {url: l._url, isDefault: false};
+            }
+        }else{
+            return {url:'img/splash.jpg', isDefault: true};
+        }
+    },
+    getLogo: function(){
+        var l;
+        console.log(this, 'logo');
+        if(this.get('logo')){
+            l = this.get('logo').get('file');
+
+            if(l.url){
+                return l.url();
+            }else if(l._url){
+                return l._url;
+            }
+        }else{
+            return 'img/venue_default_large.jpg';
+        }
+    },
+    getBasicData: function(){
+        return {
+            name: this.get('name'),
+            address: this.getAddress(),
+            city: this.getCity(),
+            vecinity: this.getVecinity(),
+            phoneNumber: this.get('phone_number'),
+            url: this.get('www'),
+            activity: this.get('activity_description'),
+            logo: this.getLogo(),
+            banner: this.getBanner(),
+            email: this.get('email_address'),
+            www: this.getWWW(),
+            postalCode: this.get('postal_code')
+        };
+    }
 });
 
 var fieldsWhiteList = [

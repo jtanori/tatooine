@@ -1,0 +1,32 @@
+<ion-view id="login-view">
+    <ion-content id="login">
+        <div id="login-wrapper">
+            <div>
+                <div class="center aligned">
+                    <img src="img/jound-title.png" id="logo">
+                </div>
+                <form name="loginForm" novalidate="" ng-submit="isSignup() ? signup(loginForm) : login(loginForm)" id="loginForm" class="padding form auth">
+                    <div class="h4 center aligned light">{{label}}</div>
+                    <input name="username" ng-model="user.username" required type="email" placeholder="Dirección de correo electrónico">
+                    <br />
+                    <input name="password" ng-model="user.password" required type="password" placeholder="Contraseña"> 
+                    <input name="passwordConfirmation" ng-model="user.passwordConfirmation" type="password" placeholder="Confirmar contraseña" ng-if="isSignup()"> 
+
+                    <button class="button button-block rounded button-assertive" type="submit" ng-disabled="isSignup() ? checkForm(loginForm) : loginForm.$invalid">{{label}}</button>
+
+                    <div class="center aligned" ng-if="!isSignup()">
+                        <a class="button button-clear button-full" ng-click="enableSignup()">Crear Cuenta</a>
+                    </div>
+                    <div class="center aligned" ng-if="isSignup()">
+                        <a class="button button-clear button-full" ng-click="enableLogin()">Entrar con mi correo</a>
+                    </div>
+                    
+                    <div class="h5 center aligned light">O bien</div>
+                    <button type="button" class="button button-positive button-block rounded" ng-click="facebookLogin()"><i class="icon ion-social-facebook"></i> Entrar con Facebook</button>
+                </form>
+            </div>
+        </div>
+    </ion-content>
+
+    <div id="intro"></div>
+</ion-view>

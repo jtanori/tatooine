@@ -1,0 +1,13 @@
+<div class="modal image-modal transparent preview" ng-click="closeFSImagePreviewModal()">
+	<ion-pane class="transparent">
+		<img ng-src="{{businessImageSRC}}" class="fullscreen-image"/>
+		<div class="row" id="image-modal-buttons">
+			<div class="col">
+				<button type="button" class="button button-block" ng-click="closeFSImagePreviewModal()">Cancelar</button>
+			</div>
+			<div class="col">
+				<button type="button" class="button button-block button-positive" ng-click="usePhoto(businessImageSRC)">Usar foto</button>
+			</div>
+		</div>
+	</ion-pane>
+</div>

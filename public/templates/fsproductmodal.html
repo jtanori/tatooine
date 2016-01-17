@@ -1,0 +1,13 @@
+<div class="modal image-modal transparent no-absolute">
+	<ion-pane class="transparent">
+		<ion-scroll direction="y" style="height: 100%" scrollbar-y="false" zooming="true">
+			<ion-item class="item-dark product item">
+			    <h2 class="light">{{currentItem.name}}</h2>
+			    <p>{{currentItem.description}}</p>
+			    <div class="light">${{currentItem.price.toFixed(2)}}</div>
+			</ion-item>
+			<img ng-src="{{currentFSImage}}" class="fullscreen-image"/>
+		</ion-scroll>
+		<div class="text-center padding light" id="fullscreen-image-tip" ng-click="closeFSModal()">Cerrar</div>
+	</ion-pane>
+</div>

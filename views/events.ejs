@@ -1,0 +1,22 @@
+<% layout('./layouts/app') -%>
+<script>
+<% if(data.events){ %>
+window.venueEvents = <%- JSON.stringify(data.events) %>;
+<% } %>
+<% if(data.promos){ %>
+window.venuePromos = <%- JSON.stringify(data.promos) %>;
+<% } %>
+<% if(data.reviews){ %>
+window.venueReviews = <%- JSON.stringify(data.reviews) %>;
+<% } %>
+<% if(data.products){ %>
+window.venueProducts = <%- JSON.stringify(data.products) %>;
+<% } %>
+<% if(data.about){ %>
+window.venueAbout = <%- JSON.stringify(data.about) %>;
+<% } %>
+<% if(data.event){ %>
+window.venueEvent = <%- JSON.stringify(data.event) %>;
+<% } %>
+</script>
+<ion-nav-view></ion-nav-view>

@@ -1,0 +1,102 @@
+<ion-side-menus enable-menu-with-back-views="false">
+    <ion-side-menu-content drag-content="false">
+        <ion-nav-bar class="bar-assertive nav-title-slide-ios7">
+        </ion-nav-bar>
+        <ion-nav-view name="app" animation="slide-left-right"></ion-nav-view>
+    </ion-side-menu-content>
+
+    <ion-side-menu side="left" ng-class="{'menu-active': isLeftOpen()}">
+        <ion-content class="dark-bg drawer" id="drawer">
+            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')">
+                <div class="center aligned" id="drawer-avatar-info">
+                    <!--a ng-click="profile()" class="button button-clear button-icon ion-wrench"></a-->
+                    <span class="h5 light">Hola {{user.get('fullName') || user.get('username')}}</span>
+                </div>
+            </div>
+            <div>
+                <a class="button button-clear button-full left aligned" ng-click="home()">
+                    <i class="icon ion-home"></i> Inicio
+                </a>
+                <!--a class="button button-clear button-full left aligned" ng-click="help()">
+                    <i class="icon ion-help-buoy"></i> Ayuda
+                </a-->
+                <a class="button button-clear button-full left aligned" ng-click="about()">
+                    <i class="icon ion-information-circled"></i> Acerca de
+                </a>
+                <a class="button button-clear button-full left aligned" ng-click="privacy()">
+                    <i class="icon ion-lock-combination"></i> Privacidad
+                </a>
+                <a class="button button-assertive button-full left aligned" ng-click="business()" ng-class="{disabled: !newBusinessStarted}">
+                    <i class="icon ion-upload"></i> Agregar un negocio
+                </a>
+            </div>
+            
+            <br />
+
+            <div class="center aligned">
+                <a class="button button-clear button-small button-full" menu-close ng-click="logout()">
+                    <i class="icon ion-log-out"></i> Cerrar Sesión
+                </a>
+            </div>
+        </ion-content>
+    </ion-side-menu>
+
+    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+    <ion-side-menu side="right" ng-class="{'menu-active': isRightOpen()}">
+        <div class="bar bar-header bar-dark">
+            <h1 class="title">Configuración</h1>
+        </div>
+        <ion-content class="dark-bg has-header drawer has-tabs">
+            <!--div class="item item-divider">Mapa</div>
+
+            <ion-toggle class='item-dark' ng-model="settings.autoSearch" toggle-class="toggle-assertive" ng-checked="settings.autoSearch">Auto-Busqueda</ion-toggle>
+            <ion-toggle class='item-dark' ng-model="settings.autoFocus" toggle-class="toggle-calm" ng-checked="settings.autoFocus">Auto-Enfoque</ion-toggle>
+            <ion-toggle class='item-dark' ng-model="settings.mapAnimation" toggle-class="toggle-calm" ng-checked="settings.mapAnimation">Animacion</ion-toggle-->
+
+            <div class="item item-divider">Rango de búsqueda</div>
+            <label class="item item-input item-select item-dark">
+                <div class="input-label">
+                    Kilómetros
+                </div>
+                <select ng-model="settings.searchRadius" integer>
+                    <option value="500" ng-selected="settings.searchRadius == 500">0.5kms</option>
+                    <option value="1000" ng-selected="settings.searchRadius == 1000">1km</option>
+                    <option value="2000" ng-selected="settings.searchRadius == 2000">2kms</option>
+                    <option value="3000" ng-selected="settings.searchRadius == 3000">3kms</option>
+                    <option value="4000" ng-selected="settings.searchRadius == 4000">4kms</option>
+                    <option value="5000" ng-selected="settings.searchRadius == 5000">5kms</option>
+                    <option value="7500" ng-selected="settings.searchRadius == 7500">7.5kms</option>
+                    <option value="10000" ng-selected="settings.searchRadius == 10000">10kms</option>
+                    <option value="15000" ng-selected="settings.searchRadius == 15000">15kms</option>
+                </select>
+            </label>
+
+            <br />
+
+            <div class="center aligned light">¿Necesitas ayuda? Dale play a los videos oficiales y aprende a usar <strong>Jound</strong> sin problemas.</div>
+
+            <div class="list list-inset">
+                <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
+                    <img src="img/icon-yt.png"/>
+                    <h2 class="light">{{video.title}}</h2>
+                    <p class="light">{{video.description}}</p>
+                </div>
+            </div>
+        </ion-content>
+        <div class="tabs tabs-dark tabs-icon-only">
+            <a class="tab-item" ng-click="openExternalApp('fb', fbID)">
+                <i class="icon ion-social-facebook"></i>
+            </a>
+            <a class="tab-item">
+                <i class="icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></i>
+            </a>
+            <a class="tab-item">
+                <i class="icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></i>
+            </a>
+            <a class="tab-item">
+                <i class="icon ion-earth" ng-click="openUrl(www)"></i>
+            </a>
+        </div>
+    </ion-side-menu>
+</ion-side-menus>

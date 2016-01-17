@@ -1,0 +1,38 @@
+<ion-view title="{{name}} - Reseñas" align-title="left">
+	<ion-nav-buttons side="left">
+        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
+        </button>
+    </ion-nav-buttons>
+    <ion-content id="venue-reviews-page" class="has-subfooter">
+    	<ion-refresher pulling-text="Actualizar reseñas..." on-refresh="refreshItems(venueId)"></ion-refresher>
+    	<ion-list>
+			<ion-item ng-repeat="item in items" class="review item-avatar" ng-class="{'comment': item.rating == 0}">
+				<img ng-src="{{item.author.avatar}}">
+				<h2>{{item.author.name || item.author.username.split('@')[0]}}</h2>
+				<p>{{item.comments}}</p>
+				<rating ng-model="item.rating" max="max" readonly="true" class="assertive small" ng-if="item.rating"></rating>
+				<div ng-if="!item.rating" class="comment-tag">Comentario</div>
+				<small class="date">Publicado el {{item.displayDate}}</small>
+			</ion-item>
+    	</ion-list>
+    	<div ng-if="noReviews" class="center aligned padding error message">
+    		<div><i class="icon ion-nuclear"></i></div>
+    		<p>No hay reseñas, se el primero en decir algo.</p>
+    	</div>
+        <ion-infinite-scroll on-infinite="loadItems(venueId, skip)" distance="1%" immediate-check="true" ng-if="canLoad()">
+            <ion-spinner></ion-spinner>
+        </ion-infinite-scroll>
+    </ion-content>
+    <ion-footer-bar class="bar-dark bar-subfooter center aligned" ng-class="{'disable-pointer-events disabled': canReview()}">
+		<rating ng-model="rating" max="max" readonly="readOnly" ng-class="{energized:rating>0}"></rating>
+	</ion-footer-bar>
+    <ion-footer-bar align-title="left" class="bar-dark item-input-inset">
+		<label class="item-input-wrapper">
+			<i class="icon ion-chatboxes placeholder-icon"></i>
+			<input type="text" placeholder="Escribe tu reseña..." ng-model="reviewText" on-enter="saveReview(reviewText, rating)">
+		</label>
+		<button class="button button-clear" ng-disabled="!reviewText.length" ng-click="saveReview(reviewText, rating)">
+			Guardar
+		</button>
+	</ion-footer-bar>
+</ion-view>

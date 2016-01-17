@@ -1,0 +1,11 @@
+<ion-view view-title="Acerca de {{basicData.name}}" id="about-page" class="external-content" align-title="left">
+	<ion-nav-buttons side="left">
+        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
+        </button>
+    </ion-nav-buttons>
+	<ion-content>
+		<div class="padding">
+			<div ng-bind-html="text">{{text}}</div>
+		</div>
+	</ion-content>
+</ion-view>

@@ -22,6 +22,7 @@ var polyline = require('polyline');
 var https = require('https');
 var sanitizeHtml = require('sanitize-html');
 var md5 = require('md5');
+var URL = require('url');
 var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
   username: process.env.MEMCACHEDCLOUD_USERNAME,
   password: process.env.MEMCACHEDCLOUD_PASSWORD
@@ -79,6 +80,7 @@ app.use(function(req, res, next){
 
 app.locals._ = _;
 app.locals.LAYOUT = LAYOUT;
+app.locals.FACEBOOK_ID = process.env.FACEBOOK_ID;
 
 //===============ROUTES===============
 var title = process.env.DEFAULT_PAGE_TITLE;
@@ -248,6 +250,7 @@ var getVenueById = function(req, res){
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https:' : 'http:';
     var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+    var url = _.compact(req.url.split('/'));
 
     venueQuery
         .include('category')
@@ -297,15 +300,18 @@ var getVenueById = function(req, res){
         if(isAjax){
             res.status(200).json({ status: 'success', venue: venue});
         }else{
+            console.log(keywords, 'keywords');
             render(
                 {
                     activeMenuItem: 'home',
-                    title: v.get('name') + ', ' + v.get('locality') + ' | Jound',
+                    title: v.get('name'),
                     categories: categories.toJSON() || [],
-                    venue: venue,
+                    venue: v,
                     keywords: keywords,
                     image: v.getLogo(),
-                    url: protocol + '//www.jound.mx/venue/' + v.id
+                    url: protocol + '//www.jound.mx/venue/' + v.id,
+                    description: 'testing',
+                    canonical: url[0] === 'app' ? 'http://www.jound.mx/venue/' + v.id : false
                 }
             );
         }
@@ -491,9 +497,68 @@ var home = function(req, res){
     var categories = new Categories();
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https' : 'http';
+    var url = _.compact(req.url.split('/'));
+    
+    var data = {q: req.query.q, p: {lat: req.query.lat, lng: req.query.lng, radius: req.query.radius}, c: req.query.category};
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+    var query = new Parse.Query(Venue);
+    var category, position, categoryQuery, q;
+    var venues = [];
+    var cities = [];
+    var citiesTrack = {};
+    var search = req.url.split('?');
+
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
+        if(_.isEmpty(data)){
+            render();
+        }else{
+            if(data.q){
+                q = _.chain(data.q.split(' ')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+
+                if(data.q.length === 1){
+                    query.equalTo('keywords', q[0].toLowerCase());
+                }else{
+                    query.containedIn('keywords', utils.strings.sanitize(q));
+                }
+            }
+
+            if(data.c && data.c !== 'all'){
+                query.equalTo('category', new Category({id: data.c}));
+            }
+            
+            if(data.p && validations.POSITION.test(data.p.lat + ',' + data.p.lng)){
+                position = new Parse.GeoPoint({latitude: parseFloat(data.p.lat,10), longitude: parseFloat(data.p.lng,10)});
+                query.near('position', position);
+                query.withinKilometers('position', position, parseFloat(data.p.radius/1000, 10) || 1);
+
+                Parse.Cloud.useMasterKey();
+                query
+                    .select(VenueModule.fields)
+                    .include('logo')
+                    .include('page')
+                    .include('cover')
+                    .include('claimed_by')
+                    .include('category')
+                    .limit(200)
+                    .find({
+                        success: onSuccess,
+                        error: onError
+                    });
+            }else{
+                if(isAjax){
+                    res.setHeader('Content-Type', 'application/json');
+                    res.status(404).json({ status: 'error', error: 'Location is a required value', code: 601});
+                }else{
+                    //Render home page with error message
+                    render();
+                }
+            }
+        }
+    };
+
+    var render = function(){
         res.render('home', {
             data: {
                 activeMenuItem: 'home',
@@ -502,10 +567,88 @@ var home = function(req, res){
                 keywords: keywords,
                 image: defaultImage,
                 url: protocol + '//www.jound.mx',
-                useSearch: true
+                useSearch: true,
+                category: category,
+                venues: venues,
+                canonical: url[0] === 'app' ? protocol + '//www.jound.mx/venues' : false,
+                search: search[1] || false
             }
         });
     };
+
+    var onSuccess = function(r){
+
+        r = _.map(r, function(v){
+            //Fix format (We need to get ride of this)
+            v.set('name', s(v.get('name')).humanize().value());
+            v.set('vecinity_type', s(v.get('vecinity_type')).titleize().value());
+            v.set('road_type', s(v.get('road_type')).humanize().value());
+            v.set('road_type_1', s(v.get('road_type_1')).humanize().value());
+            v.set('road_type_2', s(v.get('road_type_2')).humanize().value());
+            v.set('road_type_3', s(v.get('road_type_3')).humanize().value());
+            v.set('road_name', s(v.get('road_name')).titleize().value());
+            v.set('road_name_1', s(v.get('road_name_1')).titleize().value());
+            v.set('road_name_2', s(v.get('road_name_2')).titleize().value());
+            v.set('road_name_3', s(v.get('road_name_3')).titleize().value());
+            v.set('locality', s(v.get('locality')).titleize().value());
+            v.set('municipality', s(v.get('municipality')).titleize().value());
+            v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
+            v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
+
+            var venue = v.toJSON();
+            venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
+            venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
+            venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
+            venue.cover = v.get('cover') ? v.get('cover').toJSON() : undefined;
+            venue.id = v.id;
+            venue.objectId = v.id;
+
+            if(venue.page && venue.page.about){
+                venue.page.about = sanitizeHtml(venue.page.about, {
+                    allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
+                });
+            }
+
+            if(!citiesTrack[v.get('locality')]){
+                cities.push(v.get('locality'));
+            }
+
+            return venue;
+        });
+
+        if(isAjax){
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
+        }else{
+            cities = _.unique(cities);
+            var qString = '';
+
+            if(data.q && data.q.length){
+                qString = ' para "' + (data.q.split(',').join(' '));
+            }
+
+            if(cities.length > 2){
+                title = (r.length + ' encontrados en ' + cities.join(', ') + qString + '" | Jound').replace(/,([^,]*)$/, ' y $1');
+            }else if(cities.length === 2){
+                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + qString + '" | Jound'; 
+            } else {
+                title = r.length + ' resultados encontrados en ' + cities[0] + qString + '" | Jound';
+            }
+
+            venues = r;
+            render();
+        }
+    };
+    var onError = function(e){
+        if(isAjax){
+            res.setHeader('Content-Type', 'application/json');
+            res.status(404).json({ status: 'error', error: e.message, code: e.code });
+        }else{
+            //Render home page with error message
+            render();
+        }
+    };
+
     //Try getting those damm categories
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
@@ -607,14 +750,15 @@ var searchByGET = function(req, res){
     var venues = [];
     var cities = [];
     var citiesTrack = {};
+    var url = _.compact(req.url.split('/'));
+    var search = req.url.split('?');
+
     var onLoad = function(){
         keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
         if(data.q){
             data.q = !_.isEmpty(data.q) ? decodeURIComponent(data.q) : '';
             q = _.chain(data.q.split(',')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
-
-            console.log(q);
 
             if(data.q.length === 1){
                 query.equalTo('keywords', q[0].toLowerCase());
@@ -665,7 +809,9 @@ var searchByGET = function(req, res){
                 url: protocol + '//www.jound.mx',
                 useSearch: true,
                 category: category,
-                venues: venues
+                venues: venues,
+                canonical: url[0] === 'app' ? protocol + '//www.jound.mx/app/venues' : false,
+                search: search[1] || false
             }
         });
     };
@@ -691,7 +837,12 @@ var searchByGET = function(req, res){
             }else if(cities.length === 2){
                 title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + ' para "' + (data.q.split(',').join(' ')) + '" | Jound'; 
             } else {
-                title = r.length + ' resultados encontrados en ' + cities[0] + ' para "' + (data.q.split(',').join(' ')) + '" | Jound';
+                if(data.q.length){
+                    title = r.length + ' resultados encontrados en ' + cities[0] + ' para "' + (data.q.split(',').join(' ')) + '" | Jound';
+                }else{
+                    title = r.length + ' resultados encontrados en ' + cities[0] + ' " | Jound';
+                }
+                
             }
 
             venues = r;
@@ -802,7 +953,7 @@ var products = function(req, res){
 
 var login = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('login', {
+    res.render('home', {
         data: {
             title: 'Crea tu cuenta | Jound',
             image: defaultImage,
@@ -945,6 +1096,14 @@ var getProductsForVenue = function(req, res){
     }
 };
 
+var getProductsForVenueGET = function(req, res){
+
+};
+
+var getProductByIdGET = function(req, res){
+
+};
+
 var getDealsForVenue = function(req, res){
     var body = req.body;
     var Deal = Parse.Object.extend('Promo');
@@ -977,6 +1136,54 @@ var getEventsForVenue = function(req, res){
     var venue = new Venue();
     var now = new Date();
     var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+
+    if(body.id){
+        venue.id = body.id || req.params.id;
+
+        query
+            .equalTo('venue', venue)
+            .equalTo('active', true)
+            .lessThan('startViewableDate', new Date())
+            .greaterThan('endViewableDate', new Date((now*1) + 5*24*60*60*1000))
+            .find()
+            .then(function(events){
+                if(isAjax){
+                    res.status(200).json({status: 'success', results: events});
+                }else{
+                    res.render('events', {
+                        data: {
+                            events: events.toJSON()
+                        } 
+                    });
+                }
+            }, function(e){
+                if(isAjax){
+                    res.status(400).json({status: 'error', error: e});
+                }else{
+                    res.render('events', {
+                        data: {
+                            events: []
+                        } 
+                    });
+                }
+            });
+
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getEventsForVenueGET = function(req, res){
+    var body = req.params;
+    var E = Parse.Object.extend('Event');
+    var query = new Parse.Query(E);
+    var venue = new Venue();
+    var now = new Date();
+    var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+
+    console.log(req.params, 'params');
 
     if(body.id){
         venue.id = body.id;
@@ -988,7 +1195,81 @@ var getEventsForVenue = function(req, res){
             .greaterThan('endViewableDate', new Date((now*1) + 5*24*60*60*1000))
             .find()
             .then(function(events){
-                res.status(200).json({status: 'success', results: events});
+                console.log(events, 'events');
+                res.render('events', {
+                    data: {
+                        events: events.map(function(e){return e.toJSON();})
+                    } 
+                });
+            }, function(e){
+                res.render('events', {
+                    data: {
+                        events: []
+                    } 
+                });
+            });
+
+    }else{
+        res.render('not-found');
+    }
+};
+
+var getEventByIdGET = function(req, res){
+    var body = req.params;
+    var E = Parse.Object.extend('Event');
+    var e = new E();
+
+    if(body.id && body.eventId){
+        e.id = body.eventId;
+        e
+            .fetch()
+            .then(function(e){
+                var img;
+
+                if(e.get('banner') && e.get('banner').url){
+                    img = e.get('banner').url();
+                }else{
+                    e.get('bannerUrl');
+                }
+
+                res.render('events', {
+                    data: {
+                        title: e.get('title'),
+                        description: e.get('description'),
+                        event: e.toJSON(),
+                        url: 'http://www.jound.mx/venues/' + body.id + '/event/' + body.eventId,
+                        canonical: 'http://www.jound.mx/venue/' + body.id + '/event/' + body.eventId,
+                        image: img
+                    } 
+                });
+            }, function(e){
+                res.render('events', {
+                    data: {
+                        event: false
+                    } 
+                });
+            });
+
+    }else{
+        res.render('not-found');
+    }
+};
+
+var getEventById = function(req, res){
+    var body = req.body;
+    var E = Parse.Object.extend('Event');
+    var e = new E();
+
+    if(body.id){
+        e.id = body.id;
+        e
+            .fetch()
+            .then(function(e){
+                if(e){
+                    res.status(200).json({status: 'success', results: e.toJSON()});
+                }else{
+                    res.status(400).json({status: 'error', error: {message: 'event not found'}});
+                }
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
             });
@@ -1542,10 +1823,23 @@ Jound.use(logRequest);
 Jound.use(checkEnvironment);
 
 Jound.get('/', home);
+Jound.get('/venue', home);
 Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/details', getVenueById);
-Jound.get('/venue/:id/event/:eventId', getVenueById);
-Jound.get('/venue/:id/promo/:eventId', getVenueById);
+Jound.get('/venue/:id/events', getEventsForVenueGET);
+Jound.get('/venue/:id/event/:eventId', getEventByIdGET);
+Jound.get('/venue/:id/promos', getProductsForVenueGET);
+Jound.get('/venue/:id/promo/:promoId', getProductByIdGET);
+
+//Comply with angular app (TO BE REMOVED)
+Jound.get('/venues', home);
+Jound.get('/venues/:id', getVenueById);
+Jound.get('/venues/:id/details', getVenueById);
+Jound.get('/venues/:id/events', getEventsForVenueGET);
+Jound.get('/venues/:id/event/:eventId', getEventByIdGET);
+Jound.get('/venues/:id/promo', getProductsForVenueGET);
+Jound.get('/venues/:id/promo/:promoId', getProductByIdGET);
+
 //Jound.get('/venue/:city/:slug');
 Jound.get('/position/:position', getVenueByPosition);
 Jound.get('/directions/:from/:to', getDirections);
@@ -1573,6 +1867,7 @@ Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.post('/getProductsForVenue', getProductsForVenue);
 Jound.post('/getDealsForVenue', getDealsForVenue);
 Jound.post('/getEventsForVenue', getEventsForVenue);
+Jound.post('/getEventById', getEventById);
 Jound.post('/getReviewsForVenue', getReviewsForVenue);
 Jound.post('/saveReviewForVenue', saveReviewForVenue);
 Jound.post('/checkIn', checkIn);
