@@ -5,6 +5,7 @@ angular
             var url, uriScheme, schemeUrl;
 
             var isIOS = ionic.Platform.isIOS();
+            var isAndroid = ionic.Platform.isAndroid();
 
             switch (type) {
                 case 'twitter':
@@ -31,7 +32,7 @@ angular
                 case 'fb:status':
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
                     schemeUrl = 'fb://post/' + subIdentifier + '?owner=' + identifier;
-                    url = fallbackURL ? fallbackURL : 'https://facebook.com/' + identifier;
+                    url = fallbackURL ? fallbackURL : 'https://facebook.com/' + subIdentifier + '?owner=' + identifier;
                     break;
                 case 'instagram':
                     uriScheme = isIOS ? type + '://' : 'com.instagram.android';
@@ -70,7 +71,26 @@ angular
                     break;
             }
 
-            window.open(schemeUrl, '_system');
+            if(isAndroid || isIOS){
+                if(isAndroid){
+                    var intent = 'intent://' + schemeUrl.split('://')[1] + '/#Intent;scheme=' + schemeUrl.split('://')[0] + ';package=' + uriScheme + ';S.browser_fallback_url=' + url + ';end';
+                    console.log(intent, 'intent');
+                    window.open(intent, '_blank');
+                }else{
+                    console.log('open scheme url');
+                    window.open(schemeUrl, '_blank');
+
+                    setTimeout(function() {
+                        // If the user is still here, open the App Store
+                        if (!document.webkitHidden) {
+                            // Replace the Apple ID following '/id'
+                            window.open(url, '_blank');
+                        }
+                    }, 25);
+                }
+            }else{
+                window.open(url, '_blank');
+            }
         };
 
         function openURL(address){

@@ -2,7 +2,8 @@ angular
     .module('jound.controllers')
     .filter('unsafe', function($rootScope, $sce) {
         return function(val) {
-            return $sce.trustAsHtml(val);
+            //return $sce.trustAsHtml(val);}
+            return val;
         };
     })
     .controller('VenueCtrl', function(
