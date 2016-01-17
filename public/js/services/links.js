@@ -70,18 +70,18 @@ angular
                     break;
             }
 
-            window.open(url, '_system');
+            window.open(schemeUrl, '_system');
         };
 
         function openURL(address){
             if(typeof address !== "string"){
                 throw new Error('No valid address provided');
             }
-            
+
             if(address.indexOf('http://') === -1 && address.indexOf('https://') === -1){
                 address = 'http://' + address;
             }
-            
+
             window.open(address, '_system');
         }
 
