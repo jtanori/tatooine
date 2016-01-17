@@ -85,6 +85,7 @@ app.locals.API_URL = process.env.API_URL;
 app.locals.HOST_URL = process.env.HOST_URL;
 app.locals.PARSE_APP_ID = process.env.PARSE_APP_ID;
 app.locals.PARSE_JS_KEY = process.env.PARSE_JS_KEY;
+app.locals.ENV = process.env.NODE_ENV;
 
 //===============ROUTES===============
 var title = process.env.DEFAULT_PAGE_TITLE;
