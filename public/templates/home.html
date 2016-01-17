@@ -33,7 +33,7 @@
 			</div>
 			<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
 
-			<ui-gmap-google-map center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled}">
+			<ui-gmap-google-map data-tap-disable="true" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled}">
 
 				<ui-gmap-polyline ng-repeat="p in routes" path="p.path" stroke="p.stroke" visible='true' geodesic='false' fit="true" editable="false" draggable="false", events="p.events"></ui-gmap-polyline>
 				<ui-gmap-markers
