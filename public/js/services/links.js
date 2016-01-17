@@ -73,7 +73,7 @@ angular
 
             if(isAndroid || isIOS){
                 if(isAndroid){
-                    var intent = 'intent://' + schemeUrl.split('://')[1] + '/#Intent;scheme=' + schemeUrl.split('://')[0] + ';package=' + uriScheme + ';S.browser_fallback_url=' + url + ';end';
+                    var intent = 'intent://' + schemeUrl.split('://')[1] + '#Intent;scheme=' + schemeUrl.split('://')[0] + ';package=' + uriScheme + ';S.browser_fallback_url=' + url + ';end';
                     console.log(intent, 'intent');
                     window.open(intent, '_blank');
                 }else{
