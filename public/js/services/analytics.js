@@ -28,7 +28,7 @@ angular.module('jound.services')
             timestamp: new Date()*1,
             event: type
         });
-        
+
         //Post device data to analytics service
         $http.post(AppConfig.API_URL + 'analytics', {data: serverLogData});
 
@@ -38,6 +38,6 @@ angular.module('jound.services')
 
         Parse.Analytics.track(type, deviceData);
     };
-    
+
     return global;
 });

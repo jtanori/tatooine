@@ -57,6 +57,7 @@ angular
         $scope.enableUserPhotos = venue.get('enableUserPhotos') === false ? false : true;
         $scope.twentyFourSeven = false;
         $scope.serviceHours = [];
+        $scope.timeline = [];
         $scope.claimMaster = {
             name: '',
             surname: '',
@@ -192,7 +193,7 @@ angular
                     //Save instagram id for future usage if not present
                     if(!$scope.page.photoFeed.id){
                         $scope.page.photoFeed.id = data.id;
-                        
+
                         VenuesService.updatePage($scope.page.id, 'photoFeed', $scope.page.photoFeed);
                     }
 
@@ -227,7 +228,7 @@ angular
                     //Save instagram id for future usage if not present
                     if(!$scope.page.photoFeed.id){
                         $scope.page.photoFeed.id = data.id;
-                        
+
                         VenuesService.updatePage($scope.page.id, 'photoFeed', $scope.page.photoFeed);
                     }
 
@@ -289,7 +290,7 @@ angular
                         $scope.firstTweet = _.first($scope.twitts).id;
                     }
 
-                    AnalyticsService.track('refreshTwitter', {type: 'success', venue: venue.id, firstTweet: $scope.firstTweet}); 
+                    AnalyticsService.track('refreshTwitter', {type: 'success', venue: venue.id, firstTweet: $scope.firstTweet});
                 }, function(e){
                     AnalyticsService.track('error', {type: 'refreshTwitter', venue: venue.id, code:  e.code, message: e.message});
                 })
@@ -310,7 +311,7 @@ angular
 
             _isLoadingTwitter = true;
             $scope.twitterError = '';
-            
+
             VenuesService
                 .getChannel(config)
                 .then(function(response){
@@ -367,7 +368,7 @@ angular
 
                     $scope.timeline = response.results;
 
-                    AnalyticsService.track('refreshFacebook', {type: 'success', venue: venue.id}); 
+                    AnalyticsService.track('refreshFacebook', {type: 'success', venue: venue.id});
                 }, function(e){
                     if(!timeline.length){
                         $scope.facebookError = 'No pudimos actualizar la pagina :(';
@@ -390,7 +391,7 @@ angular
 
             _isLoadingFacebook = true;
             $scope.facebookError = '';
-            
+
             VenuesService
                 .getChannel(config)
                 .then(function(response){
@@ -873,7 +874,7 @@ angular
             }else{
                 $scope.fullScreenSlideshowModal.show();
                 toastr.info(message);
-            }  
+            }
         }
 
         $scope.closeSlideshow = function(){
@@ -890,7 +891,7 @@ angular
 
         $scope.updateSlideStatus = function(slide) {
             var zoomFactor = $ionicScrollDelegate.$getByHandle('scrollHandle' + slide).getScrollPosition().zoom;
-            
+
             if (zoomFactor == $scope.zoomMin) {
                 $ionicSlideBoxDelegate.enableSlide(true);
             } else {
@@ -926,7 +927,7 @@ angular
                                     AnalyticsService.track('error', {venue: venue.id, code:  e.code, message: e.message});
 
                                     $cordovaProgress.hide();
-                                    
+
                                     $timeout(function(){
                                         swal({text: e.message, type: 'error', title: 'Error'});
                                     });

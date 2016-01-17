@@ -20,13 +20,7 @@
 		</button>
 	</form>
 	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
-		<ion-pane>
-
-
-			<script type="text/ng-template" id="control.tpl.html">
-
-			</script>
-
+		<ion-pane data-tap-disabled="true">
 			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
 				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
 				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
