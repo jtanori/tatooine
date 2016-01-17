@@ -134,7 +134,7 @@ angular
         };
 
         $scope.selectCategory = function(c) {
-            console.log('select category', c);
+            //console.log('select category', c);
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.category = c;
@@ -246,7 +246,7 @@ angular
             AnalyticsService.track('beforeShare', {type: 'venue', id: id});
 
             var link = 'http://www.jound.mx/venue/' + id;
-            
+
             ShareService.share($scope, {
                 url: link,
                 text: msg,
@@ -282,7 +282,7 @@ angular
                     var markerStyle;
                     var routeObj;
 
-                    console.log(routeData, 'routedata');
+                    //console.log(routeData, 'routedata');
                     /*
                     if (!$scope.route1) {
                         routeObj = 'route1';
@@ -334,7 +334,7 @@ angular
                         stroke: AppConfig.ROUTES.A,
                         events: {
                             click: function(line){
-                                console.log('line', line);
+                                //console.log('line', line);
                             }
                         }
                     });
@@ -358,7 +358,7 @@ angular
                 titleText: '¿Como piensas llegar?',
                 cancelText: 'Cancelar',
                 buttonClicked: function(index) {
-                    var mode; 
+                    var mode;
 
                     switch(index){
                     case 1:
@@ -658,7 +658,7 @@ angular
                 .getFeatured(p, r)
                 .then(function(venues) {
                     AnalyticsService.track('getFeaturedVenues', {radius:  r, latitude:  p.coords.latitude, longitude:  p.coords.longitude, position: p.coords.latitude + ',' + p.coords.longitude});
-                    
+
                     $timeout(function() {
                         $scope.$apply(function() {
                             $scope.featuredVenues = venues;
@@ -813,7 +813,7 @@ angular
                         $scope.map.zoom = 10;
                         deferred.resolve(radius/1000);
                         break;
-                    default: 
+                    default:
                         AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: 3, message: 'No valid radius provided'});
                         deferred.reject({message: 'No valid radius provided', code: 3});
                         break;
@@ -885,7 +885,7 @@ angular
 
                         deferred.reject(e);
                     });
-            
+
             return deferred.promise;
         }
 
@@ -928,7 +928,7 @@ angular
                             method: 'share',
                             href: url,
                         }, function(response){
-                            console.log('shared', arguments);
+                            //console.log('shared', arguments);
                         });
                         AnalyticsService.track('positionSharing', {position: latlng.lat + ',' + latlng.lng, latitude: latlng.lat, longitude: latlng.lng});
                         break;
@@ -949,7 +949,7 @@ angular
             var center = map.getCenter();
             var latlng = {lat: center.lat(), lng: center.lng()};
             var position = {coords:{latitude: latlng.lat, longitude: latlng.lng}};
-            
+
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.map.marker.center = position.coords;
@@ -1074,9 +1074,14 @@ angular
             if (using) {
                 AnalyticsService.track('usingGelocationChange', {using: 'true'});
                 getCurrentPosition();
-            } else if ($rootScope.marker) {
+            } else if ($scope.map && $scope.map.marker) {
 
-                $rootScope.marker.model.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                $timeout(function(){
+                    $scope.$apply(function(){
+                        $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                        releasePosition();
+                    });
+                });
 
                 toastr.success('Estilo libre activado');
                 AnalyticsService.track('usingGelocationChange', {using: using, freestyle: 'true'});
@@ -1087,9 +1092,9 @@ angular
             var v = venues.map(function(v){return v.id;});
 
             if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
-                AnalyticsService.track('venuesChange', {total: venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});    
+                AnalyticsService.track('venuesChange', {total: venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
             }
-            
+
             if ($scope.markers.length) {
                 $timeout(function(){
                     $scope.$apply(function(){
@@ -1224,12 +1229,14 @@ angular
                             latitude: search.lat*1,
                             longitude: search.lng*1
                         };
+
                         $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                        releasePosition();
                         $scope.map.marker.center = angular.copy($scope.map.center);
                         $scope.map.circle.center = angular.copy($scope.map.center);
                         $scope.map.circle.radius = search.radius ? search.radius *1 : AppConfig.RADIUS.DEFAULT.radius;
 
-                        console.log(search.q, 'search');
+                        //console.log(search.q, 'search');
                         //getFeaturedVenues({coords: {lat: $scope.map.center.latitude, lng: $scope.map.center.longitude}}, $scope.map.circle.radius);
 
                         if(window.initialVenues && window.initialVenues.length){
@@ -1254,6 +1261,7 @@ angular
                     $timeout(function(){
                         $scope.$apply(function(){
                             $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                            releasePosition();
                         });
                     });
                 }

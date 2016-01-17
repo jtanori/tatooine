@@ -70,6 +70,7 @@ angular
         });
 
         $scope.toggleGeolocation = function() {
+            console.log('toggle geolocation');
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 

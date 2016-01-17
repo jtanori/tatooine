@@ -4,10 +4,11 @@
         </button>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
+		<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()"  ng-disabled="newBusinessMarker || tracingPosition"></button>
         <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
         </button>
     </ion-nav-buttons>
-            
+
 	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length || newBusinessMarker">
 		<label class="item-input-wrapper" id="home-search-box">
 			<i class="icon ion-ios-search placeholder-icon"></i>
@@ -20,12 +21,12 @@
 	</form>
 	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
 		<ion-pane>
-			
+
 
 			<script type="text/ng-template" id="control.tpl.html">
-				
+
 			</script>
-			
+
 			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
 				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
 				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
@@ -93,12 +94,12 @@
 				</ui-gmap-circle>
 			</ui-gmap-google-map>
 		    <!--ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
-				
+
 
 				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
 
 				<div class="dark" id="map-position-search-label" ng-if="tracingPosition"><ion-spinner icon="ripple"></ion-spinner><div>Trazando ubicacion</div></div>
-				
+
 				<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button" ng-disabled="newBusinessMarker || tracingPosition"></button>
 
 				<div ng-if="newBusinessMarker" id="new-business-popup">
@@ -119,7 +120,7 @@
 						</button>
 					</div>
 				</div>
-				
+
 		    </ion-pane -->
 		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>

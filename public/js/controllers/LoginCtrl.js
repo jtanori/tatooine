@@ -229,6 +229,7 @@ angular
                             break;
                         default:
                             Facebook.login(function(response){
+                                console.log(response);
                                 if(response.error){
                                     AnalyticsService.track('error', {code:  e.code, message: e.message});
 
