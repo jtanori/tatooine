@@ -94,7 +94,7 @@ angular
                             // Replace the Apple ID following '/id'
                             window.open(url, '_blank');
                         }
-                    }, 25);
+                    }, 1000);
                 }
             }else{
                 window.open(url, '_blank');
