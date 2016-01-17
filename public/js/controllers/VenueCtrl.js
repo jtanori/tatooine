@@ -358,7 +358,7 @@ angular
             if(_isLoadingFacebook) return;
 
             _isLoadingFacebook = true;
-            $scope.facebookError = '';
+            $scope.facebookError = false;
 
             VenuesService
                 .getChannel(config)
@@ -413,7 +413,7 @@ angular
                 }, function(e){
                     _canLoadFacebook = false;
 
-                    if(!timeline.length){
+                    if(!$scope.timeline || !$scope.timeline.length){
                         $scope.facebookError = 'No pudimos cargar la pagina :(';
                     }else{
                         $scope.facebookError = 'No pudimos cargar mas detalles :(';
