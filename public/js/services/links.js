@@ -76,11 +76,13 @@ angular
                     var intent = 'intent://' + schemeUrl.split('://')[1] + '#Intent;scheme=' + schemeUrl.split('://')[0] + ';package=' + uriScheme + ';S.browser_fallback_url=' + url + ';end';
                     console.log(intent, 'intent');
                     window.open(intent, '_blank');
+                    console.log('is hidden', document.webkitHidden);
                 }else{
-                    console.log('open scheme url');
+                    console.log('open scheme url', schemeUrl);
                     window.open(schemeUrl, '_blank');
 
                     setTimeout(function() {
+                        console.log('is hidden', document.webkitHidden);
                         // If the user is still here, open the App Store
                         if (!document.webkitHidden) {
                             // Replace the Apple ID following '/id'
