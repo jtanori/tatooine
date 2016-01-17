@@ -1166,6 +1166,7 @@ angular
         });
 
         $scope.map = {
+            control: {},
             center: {
                 latitude: AppConfig.GEO.DEFAULT_CENTER.coords.latitude,
                 longitude: AppConfig.GEO.DEFAULT_CENTER.coords.longitude
@@ -1180,6 +1181,7 @@ angular
             options: AppConfig.MAP.DEFAULT,
             marker: {
                 id: 'mainMarker',
+                control: {},
                 options: {
                     icon: {
                         url: AppConfig.MARKERS.LOCATION.url
@@ -1207,6 +1209,8 @@ angular
             $scope.map.options.zoomControlOptions.position = google.maps.ControlPosition.RIGHT_CENTER;
             $scope.map.options.panControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
             $scope.map.options.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_TOP;
+
+            console.log(settings, 'settings');
 
             if(search && (search.q || search.category) && search.lat && search.lng){
 
@@ -1281,6 +1285,12 @@ angular
             $rootScope.mainMap.addEventListener(plugin.google.maps.event.MAP_LONG_CLICK, onMapLongClick);*/
 
             $rootScope.mainMap = {};
+        });
+
+        $scope.$on('$ionicView.enter', function(){
+            if($scope.map && _.isFunction($scope.map.control.refresh)){
+                $scope.map.control.refresh();
+            }
         });
 
     });
