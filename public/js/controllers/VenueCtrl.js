@@ -194,8 +194,8 @@ angular
                     //Save instagram id for future usage if not present
                     if(!$scope.page.photoFeed.id){
                         $scope.page.photoFeed.id = data.id;
-
-                        VenuesService.updatePage($scope.page.id, 'photoFeed', $scope.page.photoFeed);
+                        
+                        VenuesService.updatePage($scope.page.objectId, 'photoFeed', $scope.page.photoFeed);
                     }
 
                     if(data && data.results && data.results.length){
@@ -230,7 +230,7 @@ angular
                     if(!$scope.page.photoFeed.id){
                         $scope.page.photoFeed.id = data.id;
 
-                        VenuesService.updatePage($scope.page.id, 'photoFeed', $scope.page.photoFeed);
+                        VenuesService.updatePage($scope.page.objectId, 'photoFeed', $scope.page.photoFeed);
                     }
 
                     if(data && data.results && data.results.length){

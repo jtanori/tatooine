@@ -95,7 +95,7 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 					}) : []
 				};
 			});
-			
+
 
 			promise.resolve(items);
 		}
@@ -180,13 +180,13 @@ var _replaceLinks = function(text, type){
 	                } else if(type === 'youtube'){
 	                	url = '<a ng-click="openExternalApp(\'youtube\', \'' + twitterHandle + '\')">' + twitterHandle + '</a>';
 	                }
-	                
+
 	                return url;
 
 	            case 'hashtag' :
 	                var hashtag = match.getHashtag();
 	                var url;
-	                
+
 	                if(type === 'twitter'){
 	                	url = '<a ng-click="openExternalApp(\'twitter:hashtag\', \'' + hashtag + '\')">' + hashtag + '</a>';
 	                } else if(type === 'instagram'){
@@ -288,6 +288,8 @@ var instagram = function(userName, userID, minId, maxId){
 var facebook = function(pageId, token, next){
 	var promise = new Parse.Promise();
 	var params;
+
+	console.log(pageId, token, next);
 
     //If we want to page instead
     if(next && _.isString(next)){

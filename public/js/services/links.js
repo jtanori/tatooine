@@ -23,7 +23,13 @@ angular
                     schemeUrl = 'twitter://search?query=' + identifier;
                     url = 'https://twitter.com/search?q=' + encodeURIComponent(identifier);
                     break;
+                case 'twitter:tweet':
+                    uriScheme = isIOS ? type + '://' : 'com.twitter.android';
+                    schemeUrl = 'twitter://tweet?text=' + identifier + '&url=' + subIdentifier;
+                    url = 'https://twitter.com/tweet?text=' + identifier + '&url=' + subIdentifier;
+                    break;
                 case 'fb':
+                case 'facebook':
                     uriScheme = isIOS ? type + '://' : 'com.facebook.katana';
                     schemeUrl = 'fb://profile/' + identifier;
                     url = 'https://facebook.com/' + identifier;

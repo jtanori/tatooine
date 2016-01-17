@@ -1,6 +1,6 @@
 angular.module('jound.services')
 
-.factory('ShareService', function($q, $ionicModal, AppConfig, $location){
+.factory('ShareService', function($q, $ionicModal, AppConfig, $location, LinksService){
 
     var global = {};
     var $modal;
@@ -36,6 +36,6 @@ angular.module('jound.services')
             });
         }
     };
-    
+
     return global;
 });

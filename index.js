@@ -1439,17 +1439,30 @@ var checkUserCheckIn = function(req, res){
 var updatePage = function(req, res){
     var body = req.body;
     var Page = Parse.Object.extend('Page');
-    var page;
+    var pageQuery = new Parse.Query(Page);
 
     body.val = body.val || undefined;
 
-    if(body.id && body.attr){
-        page = new Page({id: id});
-        page
-            .save(body.attr, body.val)
-            .first(function(result){
-                res.status(200).json({status: 'success', results: result});
+    if(body.id && body.attr && body.val && _.isString(body.attr)){
+        pageQuery
+            .equalTo('objectId', body.id)
+            .first(function(p){
+                if(p){
+                    Parse.Cloud.useMasterKey();
+
+                    p
+                        .save(body.attr, body.val)
+                        .then(function(result){
+                            res.status(200).json({status: 'success'});
+                        }, function(e){
+                            res.status(400).json({status: 'error', error: e});
+                        });
+                }else {
+                    res.status(400).json({status: 'error', error: {message: 'Page not found'}});
+                }
             }, function(e){
+                console.log('page error');
+                console.log(e);
                 res.status(400).json({status: 'error', error: e});
             });
     }else{
