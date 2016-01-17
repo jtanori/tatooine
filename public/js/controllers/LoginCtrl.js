@@ -52,7 +52,7 @@ angular
                 $rootScope.settings = settings;
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
-                $rootScope.save('settings', $rootScope.settings);
+                $rootScope.user.save('settings', $rootScope.settings);
             }
 
             AnalyticsService.track('login', {user: $rootScope.user.id});
