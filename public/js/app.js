@@ -10,7 +10,7 @@ angular.module('jound.controllers', []);
 angular.module('jound.services', []);
 angular.module('jound.directives', []);
 
-angular.module('jound', 
+angular.module('jound',
   [
     'ng',
     'ionic',
@@ -61,7 +61,7 @@ angular.module('jound',
     'DEFAULT': undefined,
     'VERIFIED': 1,
     'NON_VERIFIED': 2,
-    'CONFLICTING': 3 
+    'CONFLICTING': 3
 })
 
 .constant('WEEKDAYS', {
@@ -78,20 +78,19 @@ angular.module('jound',
 
 .constant('AppConfig', {
     PARSE: {
-        appId: "hq7NqhxfTb2p7vBij2FVjlWj2ookUMIPTmHVF9ZH",
-        jsKey: "cdfm37yRroAiw82t1qukKv9rLVhlRqQpKmuVlkLC"
+        appId: window.PARSE_APP_ID,
+        jsKey: window.PARSE_JS_KEY
     },
     FB: {
         DEFAULT_PERMISSIONS: ["public_profile", "email", "user_friends", "publish_actions"],
         DEFAULT_SCOPE: 'public_profile,email,user_friends,publish_actions',
-        ID: '688997761197114'
+        ID: window.FACEBOOK_ID
     },
     TWITTER: {
         NAME: '@joundmx'
     },
-    API_URL: 'http://dev.jound.mx:5000/',
-    HOST_URL: 'http://www.jound.mx/',
-    //API_URL: 'http://www.jound.mx/',
+    API_URL: window.API_URL,
+    HOST_URL: window.HOST_URL,
     GEO: {
         DEFAULT: {
             enableHighAccuracy: true,
@@ -158,44 +157,44 @@ angular.module('jound',
             'avatar',
             'activity_description',
             'block',
-            'building', 
-            'building_floor', 
+            'building',
+            'building_floor',
             'claimed_by',
             'cover',
             'cover_video',
-            'exterior_letter', 
-            'email_address', 
-            'exterior_number', 
+            'exterior_letter',
+            'email_address',
+            'exterior_number',
             'enableUserPhotos',
             'featured',
-            'federal_entity', 
+            'federal_entity',
             'images',
-            'internal_letter', 
-            'internal_number', 
-            'keywords', 
-            'locality', 
+            'internal_letter',
+            'internal_number',
+            'keywords',
+            'locality',
             'logo',
-            'municipality', 
+            'municipality',
             'name',
             'page',
-            'phone_number', 
-            'position', 
-            'postal_code', 
+            'phone_number',
+            'position',
+            'postal_code',
             'rating',
-            'road_name', 
-            'road_name_1', 
-            'road_name_2', 
-            'road_name_3', 
-            'road_type', 
-            'road_type_1', 
-            'road_type_2', 
-            'road_type_3', 
+            'road_name',
+            'road_name_1',
+            'road_name_2',
+            'road_name_3',
+            'road_type',
+            'road_type_1',
+            'road_type_2',
+            'road_type_3',
             'service_hours',
-            'settling_name', 
-            'settling_type', 
-            'shopping_center_name', 
-            'shopping_center_store_number', 
-            'shopping_center_type', 
+            'settling_name',
+            'settling_type',
+            'shopping_center_name',
+            'shopping_center_store_number',
+            'shopping_center_type',
             'verificationLevel',
             'www'
         ]
@@ -713,7 +712,7 @@ angular.module('jound',
         var settings = u.get('settings');
         //Assign global objects
         $rootScope.user = u;
-        
+
         if(!_.isEmpty(settings)){
             $rootScope.settings = settings;
         }else{
@@ -722,7 +721,7 @@ angular.module('jound',
     }else{
         $rootScope.settings = AppConfig.SETTINGS;
     }
-    
+
     $rootScope.$on('$stateChangeStart', function (event, next, nextParams, fromState) {
         if (_.isEmpty(User.current())) {
             if (next.name !== 'login') {

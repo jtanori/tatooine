@@ -52,9 +52,9 @@ angular
                 $rootScope.settings = settings;
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
-                User.save('settings', $rootScope.settings);
+                $rootScope.save('settings', $rootScope.settings);
             }
-            
+
             AnalyticsService.track('login', {user: $rootScope.user.id});
         }
 
@@ -87,7 +87,7 @@ angular
                                 e.message = 'Usuario y contraseña invalidos';
                                 break;
                         }
-                        
+
                         $timeout(function(){
                             $ionicLoading.hide();
                         });
@@ -116,7 +116,7 @@ angular
                         AnalyticsService.track('signup', {user: User.current().id});
 
                         _onLogin();
-                        
+
                         form.$setPristine();
                         form.$setUntouched();
 
@@ -182,7 +182,7 @@ angular
                     .then(function() {
                         //Set root user
                         $rootScope.user = User.current();
-                        
+
                         _onLogin();
 
                         Facebook
@@ -208,7 +208,7 @@ angular
                                     });
                             }, function(e) {
                                 AnalyticsService.track('error', {code:  e.code, message: e.message});
-                                
+
                                 $state.go('app.home');
                             });
                     }, function(e) {
@@ -231,7 +231,7 @@ angular
                             Facebook.login(function(response){
                                 if(response.error){
                                     AnalyticsService.track('error', {code:  e.code, message: e.message});
-                                    
+
                                     $timeout(function(){
                                         swal({text: 'No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', title: 'Hay caramba!', confirmButtonText: 'Ok', title: 'error'});
                                     });

@@ -17,7 +17,7 @@ angular
         AnalyticsService,
         User
     ) {
-        $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
+        $scope.usingGeolocation = User.current() && User.current().get('settings') ? User.current().get('settings').usingGeolocation : true;
         $ionicSideMenuDelegate.canDragContent(false);
 
         var options = {
