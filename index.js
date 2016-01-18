@@ -525,7 +525,7 @@ var home = function(req, res){
                 if(data.q.length === 1){
                     query.equalTo('keywords', q[0].toLowerCase());
                 }else{
-                    query.containedIn('keywords', utils.strings.sanitize(q));
+                    query.containsAll('keywords', utils.strings.sanitize(q));
                 }
             }
 
@@ -547,6 +547,7 @@ var home = function(req, res){
                     .include('claimed_by')
                     .include('category')
                     .limit(200)
+                    .ascending('featured')
                     .find({
                         success: onSuccess,
                         error: onError
@@ -715,7 +716,7 @@ var search = function(req, res){
         if(data.q.length === 1){
             query.equalTo('keywords', q[0].toLowerCase());
         }else{
-            query.containedIn('keywords', utils.strings.sanitize(q));
+            query.containsAll('keywords', utils.strings.sanitize(q));
         }
     }
 
@@ -733,8 +734,11 @@ var search = function(req, res){
             .select(VenueModule.fields)
             .include('logo')
             .include('page')
+            .include('cover')
             .include('claimed_by')
+            .include('category')
             .limit(200)
+            .ascending('featured')
             .find({
                 success: onSuccess,
                 error: onError

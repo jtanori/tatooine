@@ -148,7 +148,6 @@ angular.module('jound',
         autoFocus: true,
         mapAnimation: true,
         searchRadius: 1000,//meters
-        center: null,
         usingGeolocation: true,
         position: null
     },
@@ -710,6 +709,7 @@ angular.module('jound',
         //Check if we have no settings in the cloud
         var wasEmpty = _.isEmpty(u.get('settings'));
         var settings = u.get('settings');
+        
         //Assign global objects
         $rootScope.user = u;
 

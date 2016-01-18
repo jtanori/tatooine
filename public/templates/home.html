@@ -27,7 +27,7 @@
 			</div>
 			<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
 
-			<ui-gmap-google-map data-tap-disable="true" control="map.control" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled}">
+			<ui-gmap-google-map data-tap-disable="true" control="map.control" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled, 'has-venue':currentModel.id, 'has-routes':routes.length}">
 
 				<ui-gmap-polyline ng-repeat="p in routes" path="p.path" stroke="p.stroke" visible='true' geodesic='false' fit="true" editable="false" draggable="false", events="p.events"></ui-gmap-polyline>
 				<ui-gmap-markers
@@ -90,7 +90,6 @@
 		    <!--ion-pane id="map" ng-class="{'has-venue': currentModel, 'has-routes': route1 || route2 || route3}">
 
 
-				<button type="button" ng-if="currentModel" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
 
 				<div class="dark" id="map-position-search-label" ng-if="tracingPosition"><ion-spinner icon="ripple"></ion-spinner><div>Trazando ubicacion</div></div>
 
@@ -116,12 +115,14 @@
 				</div>
 
 		    </ion-pane -->
-		    <div ng-show="route1 || route2 || route3" id="home-routes" class="right aligned">
-		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" ng-show="route1 || route2 || route3" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
+			<button type="button" ng-if="currentModel.id" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
 
-				<button class="button button-positive button-small icon icon-right ion-close-circled route-option" ng-show="route1" ng-click="removeRoute(route1)">{{route1.distance}}</button>
-				<button class="button button-assertive button-small icon icon-right ion-close-circled route-option" ng-show="route2" ng-click="removeRoute(route2)">{{route2.distance}}</button>
-				<button class="button button-dark button-small icon icon-right ion-close-circled route-option" ng-show="route3" ng-click="removeRoute(route3)">{{route3.distance}}</button>
+		    <div ng-show="routes.length" id="home-routes" class="right aligned">
+		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
+
+				<button class="button button-positive button-small icon icon-right ion-close-circled route-option" ng-show="routes[0]" ng-click="removeRoute(0)">{{routes[0].distance}}</button>
+				<button class="button button-assertive button-small icon icon-right ion-close-circled route-option" ng-show="routes[1]" ng-click="removeRoute(1)">{{routes[1].distance}}</button>
+				<button class="button button-dark button-small icon icon-right ion-close-circled route-option" ng-show="routes[2]" ng-click="removeRoute(2)">{{routes[2].distance}}</button>
 		    </div>
 		    <div ng-show="currentModel" id="home-venue-details" ng-class="{'has-phone': currentModel.get('phone_number')}">
 		    	<div class="list">
