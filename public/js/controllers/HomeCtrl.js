@@ -181,7 +181,7 @@ angular
                 s.category = c;
             }
 
-            if(position){
+            if(position && position.coords && position.coords.latitude && position.coords.longitude){
                 s.lat = position.coords.latitude;
                 s.lng = position.coords.longitude;
             }else{
