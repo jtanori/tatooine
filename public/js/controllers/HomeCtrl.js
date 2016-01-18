@@ -199,7 +199,7 @@ angular
 
                 //TODO: Fix backwards (attributes from URI) search
                 VenuesService
-                    .search(position, $rootScope.settings.searchRadius, q, c)
+                    .search({coords:{latitude: s.lat, longitude: s.lng}}, $rootScope.settings.searchRadius, q, c)
                     .then(function(venues) {
                         $timeout(function() {
                             $ionicLoading.hide();
