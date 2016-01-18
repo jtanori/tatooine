@@ -184,6 +184,9 @@ angular
             if(position){
                 s.lat = position.coords.latitude;
                 s.lng = position.coords.longitude;
+            }else{
+                s.lat = map.marker.center.latitude;
+                s.lng = map.marker.center.longitude;
             }
 
             $location.path('/venues').search(s);
