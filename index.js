@@ -634,11 +634,11 @@ var home = function(req, res){
             }
 
             if(cities.length > 2){
-                title = (r.length + ' encontrados en ' + cities.join(', ') + qString + '" | Jound').replace(/,([^,]*)$/, ' y $1');
+                title = (r.length + ' encontrados en ' + cities.join(', ') + qString).replace(/,([^,]*)$/, ' y $1');
             }else if(cities.length === 2){
-                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + qString + '" | Jound';
+                title = r.length + 'resultados encontrados en ' + cities[0] + ' y ' + cities[1] + qString;
             } else {
-                title = r.length + ' resultados encontrados en ' + cities[0] + qString + '" | Jound';
+                title = r.length + ' resultados encontrados en ' + cities[0] + qString;
             }
 
             venues = r;
