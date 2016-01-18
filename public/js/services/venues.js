@@ -189,9 +189,7 @@ angular.module('jound.services')
                 category.id = c;
                 query.equalTo('category', category);
             }
-
-            console.log(SanitizeService.strings.sanitize(q), 'query');
-
+            
             //Search near current position
             query
                 .near('position', geoPoint)

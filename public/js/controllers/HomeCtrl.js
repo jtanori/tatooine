@@ -70,6 +70,7 @@ angular
                     if (c.length) {
                         $scope.categories = c.toKeywordsArray();
                         $scope.plainCategories = c.toPlainArray();
+                        $scope.categoriesFound = c.length;
                     } else {
                         $scope.categories = [];
                         $scope.plainCategories = [];
@@ -83,6 +84,9 @@ angular
 
             $scope.categories = loadedCategories.toKeywordsArray();
             $scope.plainCategories = loadedCategories.toPlainArray();
+            $scope.categoriesFound = $scope.categories.length;
+
+            window.categories = null;
         }
 
         $scope.filterCategories = function() {
@@ -130,6 +134,7 @@ angular
                 _.each($scope.categories, function(c) {
                     c.selected = true
                 });
+                $scope.categoriesFound = $scope.categories.length;
             }
         };
 
@@ -214,7 +219,7 @@ angular
                         $timeout(function(){
                             isSearching = false;
                             swal({title: "Error", text: error.message, type: "error", confirmButtonText: "Ok" });
-                            AnalyticsService.track('error', {position: s.lat + ',' + s.lng, count: venues.length, latitude: s.lat, longitude: s.lng, type: 'search', code: error.code, message: error.message, search: q, radius: r, category: c});
+                            AnalyticsService.track('error', {position: s.lat + ',' + s.lng, latitude: s.lat, longitude: s.lng, type: 'search', code: error.code, message: error.message, search: q, radius: r, category: c});
                         });
                     });
             });
@@ -223,7 +228,7 @@ angular
         $scope.clearCategory = function(){
             $scope.category = false;
 
-            if(!$scope.query.length){
+            if(!$scope.query || !$scope.query.length){
                 $scope.clearResults();
                 $scope.currentMarker = null;
                 $scope.currentModel = null;

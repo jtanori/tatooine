@@ -15,4 +15,7 @@
     right: 0;
 }
 
+#categories-results-list.visible {
+	z-index: 1000;
+}
 .angular-google-map-container, .angular-google-map { height: 100%; }

@@ -499,7 +499,7 @@ var getAddress = function(req, res){
 };
 
 var home = function(req, res){
-    var categories = new Categories();
+    var categories = [];
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https' : 'http';
     var url = _.compact(req.url.split('/'));
@@ -514,7 +514,7 @@ var home = function(req, res){
     var search = req.url.split('?');
 
     var onLoad = function(){
-        keywords = categories.toJSON().map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
+        keywords = categories.map(function(c){return {title: c.pluralized, keywords: _.chain(c.keywords).uniq().sort().compact().value().join(' '), id: c.objectId}});
 
         if(_.isEmpty(data)){
             render();
@@ -569,7 +569,7 @@ var home = function(req, res){
             data: {
                 activeMenuItem: 'home',
                 title: title,
-                categories: categories.toJSON() || [],
+                categories: categories,
                 keywords: keywords,
                 image: defaultImage,
                 url: protocol + '//www.jound.mx',
@@ -658,7 +658,15 @@ var home = function(req, res){
     //Try getting those damm categories
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
-            categories.reset(JSON.parse(value));
+            categories = JSON.parse(value).map(function(c){
+                return {
+                    displayName: c.displayName,
+                    keywords: c.keywords,
+                    name: c.name,
+                    pluralized: c.pluralized,
+                    objectId: c.objectId
+                };
+            });
             onLoad();
         }else{
             //Try getting those damm categories

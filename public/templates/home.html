@@ -20,14 +20,14 @@
 		</button>
 	</form>
 	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
-		<ion-pane data-tap-disabled="true">
-			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
+		<ion-pane>
+			<ul class="list list-inset" id="categories-results-list" ng-show="isSearchFocused" ng-class="{'visible':isSearchFocused}">
 				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
 				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
-			</div>
+			</ul>
 			<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
 
-			<ui-gmap-google-map data-tap-disable="true" control="map.control" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled, 'has-venue':currentModel.id, 'has-routes':routes.length}">
+			<ui-gmap-google-map data-tap-disabled="true" control="map.control" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled, 'has-venue':currentModel.id, 'has-routes':routes.length}">
 
 				<ui-gmap-polyline ng-repeat="p in routes" path="p.path" stroke="p.stroke" visible='true' geodesic='false' fit="true" editable="false" draggable="false", events="p.events"></ui-gmap-polyline>
 				<ui-gmap-markers
@@ -115,7 +115,7 @@
 				</div>
 
 		    </ion-pane -->
-			<button type="button" ng-if="currentModel.id" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button>
+			<!--button type="button" ng-if="currentModel.id" class="button button-clear clear-search ion-ios-close" id="map-clear-venue" ng-click="clearSelectedVenue()"></button-->
 
 		    <div ng-show="routes.length" id="home-routes" class="right aligned">
 		    	<button class="button button-clear button-small" ng-click="removeAllRoutes()" id="home-routes-clear"><i class="icon ion-close"></i> Limpiar</button>
