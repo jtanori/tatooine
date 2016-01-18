@@ -195,7 +195,7 @@ angular
             $timeout(function(){
                 $ionicLoading.show({template: 'Buscando, espere un segundo :)'});
 
-                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
+                AnalyticsService.track('search', {position: s.lat + ',' + s.lng, latitude: s.lat, longitude: s.lng, search: q, radius: r, category: c});
 
                 //TODO: Fix backwards (attributes from URI) search
                 VenuesService
@@ -206,7 +206,7 @@ angular
                             $scope.$apply(function() {
                                 $scope.venues = venues;
                                 isSearching = false;
-                                AnalyticsService.track('search', {position: position.coords.latitude + ',' + position.coords.longitude, count: venues.length, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
+                                AnalyticsService.track('search', {position: s.lat + ',' + s.lng, count: venues.length, latitude: s.lat, longitude: s.lng, search: q, radius: r, category: c});
                             });
                         });
                     }, function(error) {
@@ -214,7 +214,7 @@ angular
                         $timeout(function(){
                             isSearching = false;
                             swal({title: "Error", text: error.message, type: "error", confirmButtonText: "Ok" });
-                            AnalyticsService.track('error', {position: position.coords.latitude + ',' + position.coords.longitude, type: 'search', code: error.code, message: error.message, latitude: position.coords.latitude, longitude: position.coords.longitude, search: q, radius: r, category: c});
+                            AnalyticsService.track('error', {position: s.lat + ',' + s.lng, count: venues.length, latitude: s.lat, longitude: s.lng, type: 'search', code: error.code, message: error.message, search: q, radius: r, category: c});
                         });
                     });
             });
