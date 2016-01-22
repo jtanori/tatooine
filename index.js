@@ -545,9 +545,7 @@ var home = function(req, res){
                     .include('page')
                     .include('cover')
                     .include('claimed_by')
-                    .include('category')
                     .limit(200)
-                    .ascending('featured')
                     .find({
                         success: onSuccess,
                         error: onError
@@ -621,6 +619,10 @@ var home = function(req, res){
 
             return venue;
         });
+        //Remove duplicates
+        r = _.uniq(r, true, function(rs){
+            return rs.get('name') + '-' + rs.get('position').latitude + '-' + rs.get('position').longitude;
+        });
 
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
@@ -656,6 +658,7 @@ var home = function(req, res){
     };
 
     //Try getting those damm categories
+    //TODO: Create categories module
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
             categories = JSON.parse(value).map(function(c){
@@ -670,8 +673,8 @@ var home = function(req, res){
             onLoad();
         }else{
             //Try getting those damm categories
-            categories.fetch({
-                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();},
+            (new Categories())().fetch({
+                success: function(categories){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();},
                 error: onLoad
             });
         }
@@ -698,6 +701,9 @@ var search = function(req, res){
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
+            r = _.uniq(r, true, function(rs){
+                return rs.get('name') + '-' + rs.get('position').latitude + '-' + rs.get('position').longitude;
+            });
             _.each(r, function(r){ r.set('logo', r.getLogo()); });
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
@@ -746,7 +752,6 @@ var search = function(req, res){
             .include('claimed_by')
             .include('category')
             .limit(200)
-            .ascending('featured')
             .find({
                 success: onSuccess,
                 error: onError
@@ -798,8 +803,11 @@ var searchByGET = function(req, res){
                 .select(VenueModule.fields)
                 .include('logo')
                 .include('page')
+                .include('cover')
                 .include('claimed_by')
+                .include('category')
                 .limit(200)
+                .ascending('name')
                 .find({
                     success: onSuccess,
                     error: onError
@@ -835,6 +843,9 @@ var searchByGET = function(req, res){
     var onSuccess = function(r){
         if(isAjax){
             res.setHeader('Content-Type', 'application/json');
+            r = _.uniq(r, true, function(rs){
+                return rs.get('name') + '-' + rs.get('position').latitude + '-' + rs.get('position').longitude;
+            });
             _.each(r, function(r){ r.set('logo', r.getLogo()); });
             res.status(200).json({ status: 'success', message: 'Become the bull!', results: r});
         }else{
@@ -1023,6 +1034,8 @@ var getChannelForVenue = function(req, res){
     var body = req.body;
     var url;
 
+    console.log(body);
+    console.log('BODY');
     switch(body.type){
     case 'youtube':
         url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + body.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
@@ -1040,7 +1053,7 @@ var getChannelForVenue = function(req, res){
 
         break;
     case 'twitter':
-
+        console.log('let get twitter');
         Channel
             .twitter
             .getTimeline(body.account, body.minId, body.maxId)

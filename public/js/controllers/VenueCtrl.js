@@ -11,16 +11,15 @@ angular
         $rootScope,
         $stateParams,
         $timeout,
-        $cordovaInAppBrowser,
         $state,
-        $cordovaSocialSharing,
+
         $ionicModal,
         $ionicHistory,
-        $cordovaDialogs,
-        $cordovaProgress,
-        toastr,
         $ionicSlideBoxDelegate,
         $ionicScrollDelegate,
+
+        toastr,
+        
         VenuesService,
         LinksService,
         ShareService,
@@ -194,7 +193,7 @@ angular
                     //Save instagram id for future usage if not present
                     if(!$scope.page.photoFeed.id){
                         $scope.page.photoFeed.id = data.id;
-                        
+
                         VenuesService.updatePage($scope.page.objectId, 'photoFeed', $scope.page.photoFeed);
                     }
 
@@ -655,10 +654,10 @@ angular
                             }
                         });
 
-                    AnalyticsService.track('checkin', {venue: venue.id, user: User.current().id});
+                    AnalyticsService.track('checkin', {venue: venue.id, user: $rootScope.user.id});
                 }, function(e){
                     $scope.isCheckedIn = false;
-                    AnalyticsService.track('error', {type: 'checkin', venue: venue.id, user: User.current().id, code:  e.code, message: e.message});
+                    AnalyticsService.track('error', {type: 'checkin', venue: venue.id, user: $rootScope.user.id, code:  e.code, message: e.message});
                 })
                 .finally(function(){
                     $scope.checkinLoading = false;
@@ -667,6 +666,13 @@ angular
 
         $scope.isCheckedIn = false;
         var _isCheckedIn = function(){
+
+            console.log('user', $rootScope.user.isAnonimous());
+            if($rootScope.user.isAnonimous()){
+                //TODO: Ask for login
+                return;
+            }
+
             var now = (new Date())*1;
             var sixteenHours = 16*60*60*1000;
             var checkinDate, checkinValidDate;
@@ -759,7 +765,7 @@ angular
         $scope.sendClaim = function(){
             $cordovaProgress.showSimpleWithLabelDetail(true, 'Enviando peticion');
 
-            AnalyticsService.track('claim', {venue: venue.id, user: User.current().id});
+            AnalyticsService.track('claim', {venue: venue.id, user: $rootScope.user.id});
 
             VenuesService
                 .claim(venue.id, $scope.claim)
@@ -794,7 +800,7 @@ angular
         $scope.sendBug = function(){
             $cordovaProgress.showSimpleWithLabelDetail(true, 'Enviando Reporte');
 
-            AnalyticsService.track('bug', {venue: venue.id, type: $scope.bug.problemType, user: User.current().id});
+            AnalyticsService.track('bug', {venue: venue.id, type: $scope.bug.problemType, user: $rootScope.user.id});
 
             VenuesService
                 .report(venue.id, $scope.bug.comments, $scope.bug.problemType)
@@ -1297,7 +1303,7 @@ angular
             $scope.fullScreenModal.hide();
         };
     })
-    .controller('VenueReviewsCtrl', function($scope, $stateParams, $state, $cordovaProgress, $ionicHistory, VenuesService, User, venue, AnalyticsService){
+    .controller('VenueReviewsCtrl', function($scope, $rootScope, $stateParams, $state, $cordovaProgress, $ionicHistory, VenuesService, User, venue, AnalyticsService){
         var _canLoadMore = true;
         var _pageSize = 20;
         var _page = 0;
@@ -1309,7 +1315,7 @@ angular
         $scope.rating = 0;
         $scope.max = 5;
         $scope.reviewText = '';
-        $scope.userId = User.current().id;
+        $scope.userId = $rootScope.user.id;
         $scope.name = venue.get('name');
 
         VenuesService.current(venue);
@@ -1387,7 +1393,7 @@ angular
         }
 
         $scope.canReview = function(){
-            var id = User.current().id;
+            var id = $rootScope.user.id;
             var hasReviewed = _.find($scope.items, function(i){
                 return i.author.objectId === id;
             });
@@ -1403,18 +1409,18 @@ angular
             $cordovaProgress.showSimpleWithLabelDetail(true, 'Guardando', 'Esperen un segundo');
 
             VenuesService
-                .saveReview($scope.venueId, text, User.current().id, rating)
+                .saveReview($scope.venueId, text, $rootScope.user.id, rating)
                 .then(function(comment){
                     if(comment){
                         var at = (new Date(comment.createdAt));
-                        comment.author = User.current().toJSON();
-                        comment.author.avatar = User.current().getAvatar();
+                        comment.author = $rootScope.user.toJSON();
+                        comment.author.avatar = $rootScope.user.getAvatar();
                         comment.venue = VenuesService.current();
                         comment.displayDate = at.toLocaleDateString() + ' @ ' + at.toLocaleTimeString();
                         $scope.items = [comment].concat($scope.items);
                         $scope.noReviews = false;
 
-                        AnalyticsService.track('saveReview', {venue: $scope.venueId, user: User.current().id, type: 'success'});
+                        AnalyticsService.track('saveReview', {venue: $scope.venueId, user: $rootScope.user.id, type: 'success'});
                     }
                 }, function(e){
                     AnalyticsService.track('error', {type: 'saveReview', venue: $scope.venueId, code:  e.code, message: e.message});

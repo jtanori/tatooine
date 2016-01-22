@@ -154,7 +154,7 @@ angular.module('jound.services')
 .factory('CategoryModel', function(){
     return Parse.Object.extend({className: 'Category'});
 })
-.factory('VenuesService', function($q, $http, $rootScope, $cordovaDevice, VenueModel, SanitizeService, CategoryModel, AppConfig, User, Facebook) {
+.factory('VenuesService', function($q, $http, $rootScope, VenueModel, SanitizeService, CategoryModel, AppConfig, User, Facebook) {
 
     var _currentResults = [];
     var _currentVenue;
@@ -189,22 +189,23 @@ angular.module('jound.services')
                 category.id = c;
                 query.equalTo('category', category);
             }
-            
+
             //Search near current position
             query
                 .near('position', geoPoint)
                 .withinKilometers('position', geoPoint, r/1000)
-                .include('logo')
-                .include('cover')
-                .include('page')
-                .include('claimed_by')
+                .include(['logo', 'cover', 'page', 'claimed_by'])
                 .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .limit(200)
-                .ascending('featured')
                 .find()
                 .then(
                     function(results){
                         if(results.length){
+                            //Remove duplicates
+                            results = _.uniq(results, true, function(r){
+                                return r.get('name') + '-' + r.get('position').latitude + '-' + r.get('position').longitude;
+                            });
+
                             _currentResults = results;
                             deferred.resolve(results);
                         }else{
@@ -237,14 +238,11 @@ angular.module('jound.services')
                     };
 
                     query
+                        .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                         .near('position', geoPoint)
                         .withinKilometers('position', geoPoint, r.radius/1000)
-                        .include('logo')
-                        .include('cover')
-                        .include('page')
-                        .include('claimed_by')
+                        .include(['logo', 'cover', 'page', 'claimed_by'])
                         .equalTo('featured', true)
-                        .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                         .limit(r.limit)
                         .find()
                         .then(
@@ -290,7 +288,7 @@ angular.module('jound.services')
 
                         v.set(response.data.venue);
 
-                        if(response.data.venue && response.data.venue.page){
+                        if(response.data.venue){
                             if(response.data.venue.page){
                                 p = new P(response.data.venue.page);
                                 v.set('page', p);
@@ -501,8 +499,6 @@ angular.module('jound.services')
         updatePage: function(id, attr, val){
             var deferred = $q.defer();
 
-
-            console.log('update page', id, attr, val);
             if(_.isEmpty(attr)) {
                 deferred.reject('Please provide an attribute to update');
             }else if(_.isEmpty(id)) {
@@ -563,6 +559,11 @@ angular.module('jound.services')
             return deferred.promise;
         },
         report: function(id, details, problemType){
+            if($rootScope.user.isAnonimous()){
+                //TODO: Add login window
+                return;
+            }
+            //Fix this for web
             var device = $cordovaDevice.getDevice();
             var cordova = $cordovaDevice.getCordova();
             var model = $cordovaDevice.getModel();
@@ -706,8 +707,6 @@ angular.module('jound.services')
 
         getEventById: function(eventId){
             var deferred = $q.defer();
-
-            console.log('get event by id', eventId);
 
             $http
                 .post(AppConfig.API_URL + 'getEventById', {

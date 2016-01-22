@@ -1,6 +1,6 @@
 angular.module('jound.services')
 
-.factory('AnalyticsService', function($q, $ionicPlatform, $cordovaDevice, $http, AppConfig, User){
+.factory('AnalyticsService', function($q, $ionicPlatform, $http, AppConfig, User){
 
     var global = {};
 

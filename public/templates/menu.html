@@ -30,10 +30,16 @@
                     <i class="icon ion-upload"></i> Agregar un negocio
                 </a>
             </div>
-            
+
             <br />
 
-            <div class="center aligned">
+            <div class="center aligned" ng-if="$parent.user.isAnonimous()">
+                <a class="button button-assertive button-full" ng-click="signup()">Crear cuenta</a>
+            </div>
+            <div class="center aligned" ng-if="$parent.user.isAnonimous()">
+                <a class="button button-positive button-full" ng-click="facebookLogin()"><i class="icon ion-social-facebook"></i> Entrar con Facebook</a>
+            </div>
+            <div class="center aligned" ng-if="!$parent.user.isAnonimous()">
                 <a class="button button-clear button-small button-full" menu-close ng-click="logout()">
                     <i class="icon ion-log-out"></i> Cerrar Sesión
                 </a>

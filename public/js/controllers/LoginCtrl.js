@@ -12,10 +12,19 @@ angular
 
         Facebook,
         User,
+        AnonymousUser,
         AppConfig,
         AnalyticsService) {
+            
+        if ($rootScope.user) {
+            $state.go('app.home');
+            return;
+        }
 
         var _signup = false;
+
+        $ionicHistory.clearCache();
+        $ionicHistory.clearHistory();
 
         $scope.user = {};
         $scope.master = {};
@@ -152,15 +161,11 @@ angular
             return !(form.$valid && isEqual);
         };
 
-        if (Parse.User.current()) {
+        $scope.skip = function(){
+            $rootScope.user = AnonymousUser.current();
+            $rootScope.settings = AnonymousUser.current().get('settings');
             $state.go('app.home');
-
-            return;
-        }
-
-        $ionicHistory.clearCache();
-        $ionicHistory.clearHistory();
-        $scope.enableLogin();
+        };
 
         function facebookLogin(response) {
             if (!response.authResponse) {
@@ -250,4 +255,8 @@ angular
                     });
                 });
         };
+
+        $scope.$on('$ionicView.enter', function(){
+            $scope.enableLogin();
+        });
     });

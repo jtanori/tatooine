@@ -14,7 +14,6 @@ angular.module('jound',
   [
     'ng',
     'ionic',
-    'ngCordova',
     'ngSanitize',
     'ionic.rating',
     'ngIOS9UIWebViewPatch',
@@ -158,6 +157,7 @@ angular.module('jound',
             'block',
             'building',
             'building_floor',
+            'category',
             'claimed_by',
             'cover',
             'cover_video',
@@ -578,6 +578,7 @@ angular.module('jound',
     // if none of the above states are matched, use this as the fallback
     //TODO: Load loading controller first to avoid displaying login screen in android
     $urlRouterProvider.otherwise(function ($injector, $location) {
+        console.log('otherwise');
         var $state = $injector.get("$state");
         $state.go("start");
     });
@@ -665,6 +666,9 @@ angular.module('jound',
                 return 'http://www.gravatar.com/avatar/' + CryptoJS.MD5(this.get('username'));
             }
         },
+        isAnonimous: function(){
+            return false;
+        },
         getBasicData: function(){
             return {
                 id: this.id,
@@ -680,6 +684,121 @@ angular.module('jound',
         }
     });
 })
+
+.factory('AnonymousUser', ['$localStorage', 'AppConfig', function($localStorage, AppConfig){
+    var _current;
+    var User = (function () {
+        var instance;
+
+        function createInstance() {
+            var object = function(initialAttributes){
+                if(!_.isEmpty($localStorage.getObject('anon-user'))){
+                    this.attributes = $localStorage.getObject('anon-user');
+                }else{
+                    this.attributes = initialAttributes;
+                    this.save();
+                }
+            };
+
+            object.prototype = {
+                save: function(key, value){
+                    var $self = this;
+                    //Want to save current attributes?
+                    if(_.isEmpty(key)){
+                        $localStorage.setObject('anon-user', this.attributes);
+                    }else{
+                        var c = $localStorage.getObject('anon-user') || {};
+
+                        if(_.isObject(key)){
+                            _.each(key, function(k, v){
+                                c[v] = k;
+                                $self.attributes[v] = k;
+                            });
+                        }else{
+                            c[key] = value;
+                            this.attributes[key] = value;
+                        }
+
+                        $localStorage.setObject('anon-user', c);
+                    }
+
+                    return c;
+                },
+                get: function(key){
+                    return this.attributes[key];
+                },
+                set: function(key, value){
+                    var c = this.attributes;
+
+                    if(_.isObject(key)){
+                        _.each(key, function(k, v){
+                            c[v] = k;
+                        });
+                    }else{
+                        c[key] = value;
+                    }
+
+                    return c;
+                },
+                toJSON: function(){
+                    return this.attributes;
+                },
+                getAvatar: function(){
+                    var a = this.get('avatar');
+
+                    if(_.isString(a)){
+                        return a;
+                    }else if(this.get('avatar') && this.get('avatar').get('file')){
+                        return this.get('avatar').get('file').url();
+                    }else{
+                        return 'http://www.gravatar.com/avatar/anonymous';
+                    }
+                },
+                isAnonimous: function(){
+                    return true
+                },
+                id: 'anonymous',
+                getBasicData: function(){
+                    return {
+                        id: this.id,
+                        username: 'anonimous',
+                        displayName: 'Anonimo',
+                        settings: this.get('settings'),
+                        avatar: this.getAvatar(),
+                        name: 'Anonimo'
+                    };
+                }
+            };
+
+            return new object({settings: AppConfig.SETTINGS});
+        }
+
+        return {
+            current: function () {
+                if (!instance) {
+                    instance = createInstance();
+                }
+                return instance;
+            },
+            exists: function(){
+                if(instance || !_.isEmpty($localStorage.getObject('anon-user'))){
+                    return true;
+                }
+
+                return false;
+            },
+            logOut: function(){
+                $localStorage.removeItem('anon-user');
+                instance = null;
+
+                return instance;
+            }
+        };
+    })();
+
+    return User;
+}])
+
 .factory('$localStorage', ['$window', function($window) {
     return {
         set: function(key, value) {
@@ -693,23 +812,26 @@ angular.module('jound',
         },
         getObject: function(key) {
             return JSON.parse($window.localStorage[key] || '{}');
+        },
+        removeItem: function(item){
+            $window.localStorage.removeItem(item);
         }
     }
 }])
-.run(function($rootScope, User, $localStorage, $state, AppConfig){
+
+.run(function($rootScope, User, AnonymousUser, $localStorage, $state, AppConfig){
     //Initialize Parse
     Parse.initialize(AppConfig.PARSE.appId, AppConfig.PARSE.jsKey);
     //Get user
     var u = User.current();
+
     //Set user in root
     $rootScope.user = null;
     $rootScope.settings = null;
     //Load settings
     if(u){
-        //Check if we have no settings in the cloud
-        var wasEmpty = _.isEmpty(u.get('settings'));
         var settings = u.get('settings');
-        
+
         //Assign global objects
         $rootScope.user = u;
 
@@ -717,13 +839,15 @@ angular.module('jound',
             $rootScope.settings = settings;
         }else{
             u.save('settings', AppConfig.SETTINGS);
+            $rootScope.settings = AppConfig.SETTINGS;
         }
-    }else{
-        $rootScope.settings = AppConfig.SETTINGS;
+    }else if(AnonymousUser.exists()){
+        $rootScope.user = AnonymousUser.current();
+        $rootScope.settings = AnonymousUser.current().get('settings');
     }
 
     $rootScope.$on('$stateChangeStart', function (event, next, nextParams, fromState) {
-        if (_.isEmpty(User.current())) {
+        if (_.isEmpty($rootScope.user)) {
             if (next.name !== 'login') {
                 event.preventDefault();
                 $state.go('login');

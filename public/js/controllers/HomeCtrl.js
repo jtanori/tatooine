@@ -8,7 +8,6 @@ angular
         $state,
         $stateParams,
 
-        $cordovaGeolocation,
         $ionicActionSheet,
         $ionicHistory,
         $ionicLoading,
@@ -47,7 +46,9 @@ angular
         $scope.routes = [];
         $scope.venue = {};
         $scope.venues = [];
+        $scope.indexedVenues = {};
         $scope.featuredVenues = [];
+        $scope.indexedFeaturedVenues = {};
         $scope.markers = [];
         $scope.featuredMarkers = [];
         $scope.points = [];
@@ -162,6 +163,7 @@ angular
             $scope.venue = {};
             $scope.points = [];
             $scope.isSearchFocused = false;
+            $scope.featuredVenues = [];
 
             ionic.DomUtil.blurAll();
 
@@ -670,12 +672,6 @@ angular
                 },
                 events: {
                     click: function(marker){
-                        var $venues = $scope.venues;
-
-                        if (isFeatured) {
-                            $venues = $scope.featuredVenues;
-                        }
-
                         $scope.map.center = {
                             latitude: marker.model.data.position.latitude,
                             longitude: marker.model.data.position.longitude
@@ -687,9 +683,7 @@ angular
                                 var id = marker.model.data.objectId;
 
                                 $scope.currentMarker = marker;
-                                $scope.currentModel = _.find($venues, function(v) {
-                                    return v.id === id;
-                                });
+                                $scope.currentModel = $scope.indexedVenues[id] ? $scope.indexedVenues[id] : $scope.indexedFeaturedVenues[id];
 
                                 AnalyticsService.track('venueClick', {id: id, isFeatured: isFeatured});
                             });
@@ -1009,15 +1003,19 @@ angular
                 $timeout(function(){
                     $scope.$apply(function(){
                         $scope.markers = [];
-                        $scope.markers = [];
+                        $scope.venues = [];
                     });
                 });
             }
             //Add all venues to the map
             if (venues.length) {
+                $scope.indexedVenues = _.indexBy(venues, 'id');
+
                 _.each(venues, function(v) {
                     addVenue(v);
                 });
+            }else{
+                $scope.indexedVenues = {};
             }
         });
 
@@ -1038,9 +1036,13 @@ angular
             }
 
             if(venues.length){
+                $scope.indexedFeaturedVenues = _.indexBy(venues, 'id');
+
                 _.each(venues, function(v){
                     addVenue(v, true);
                 });
+            }else{
+                $scope.indexedFeaturedVenues = {};
             }
         });
 

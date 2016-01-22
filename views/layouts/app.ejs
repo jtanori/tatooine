@@ -45,7 +45,7 @@
         <meta name="twitter:image" content="<%=data.image%>">
 
         <% include ../commons/new_relic %>
-        
+
         <link href="/css/ionic.app.min.css" rel="stylesheet">
         <link href="/css/style.css" rel="stylesheet">
         <link href="/lib/ionic-rating/ionic-rating.css" rel="stylesheet">
@@ -62,10 +62,11 @@
         window.PARSE_APP_ID = "<%=PARSE_APP_ID%>";
         window.PARSE_JS_KEY = "<%=PARSE_JS_KEY%>";
         </script>
+
+        <script src="/lib/jquery/dist/jquery.min.js"></script>
     </head>
     <body ng-app="jound">
         <%- body%>
-        <script src="/lib/jquery/dist/jquery.min.js"></script>
         <script src="/lib/lodash/lodash.min.js"></script>
         <script src="/js/underscore.strings.min.js"></script>
         <script src="/js/parse-1.5.0.min.js"></script>
@@ -73,7 +74,6 @@
 
         <!-- ionic/angularjs js -->
         <script src="/lib/ionic/js/ionic.bundle.js"></script>
-        <script src="/lib/ionic-service-core/ionic-core.js"></script>
         <script src="/lib/ionic-rating/ionic-rating.min.js"></script>
         <script src="/lib/ng-img-crop/compile/minified/ng-img-crop.js"></script>
         <script src='/lib/angular-simple-logger/dist/angular-simple-logger.min.js'></script>
@@ -87,8 +87,6 @@
         <script src="/js/app.js"></script>
 
         <script src="/lib/ngCordova/dist/ng-cordova.js"></script>
-        <script src="/lib/ionic-service-push/ionic-push.js"></script>
-
         <script src="/js/ngIOS9UIWebViewPatch.js"></script>
 
         <script src="/js/services/analytics.js"></script>

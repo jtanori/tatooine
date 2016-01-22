@@ -4,7 +4,6 @@ angular
         $scope,
         $rootScope,
         $state,
-        $cordovaInAppBrowser,
         $ionicPlatform,
         $ionicSideMenuDelegate,
         $timeout,
@@ -15,7 +14,8 @@ angular
         AppConfig,
         LinksService,
         AnalyticsService,
-        User
+        User,
+        AnonymousUser
     ) {
         $scope.usingGeolocation = User.current() && User.current().get('settings') ? User.current().get('settings').usingGeolocation : true;
         $ionicSideMenuDelegate.canDragContent(false);
@@ -222,11 +222,29 @@ angular
             $rootScope.user = null;
             $rootScope.settings = null;
 
-            User.logOut();
+            if(User.current()){
+                User.logOut();
+            }else {
+                AnonymousUser.logOut();
+            }
+
             $state.go('login');
         }
 
         $scope.helpVideos = [];
+
+        $scope.signup = function(){
+            $ionicModal.fromTemplateUrl('templates/loginmodal.html', {
+                scope: $scope,
+                animation: 'slide-in-up'
+            }).then(function(modal) {
+                modal.show();
+            });
+        };
+
+        $scope.facebookLogin = function(){
+            console.log('facebook login');
+        };
 
         Parse.Config
             .get()

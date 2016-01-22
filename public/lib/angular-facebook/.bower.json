@@ -33,6 +33,5 @@
   },
   "_source": "git://github.com/Ciul/Angularjs-Facebook.git",
   "_target": "~0.2.3",
-  "_originalSource": "angular-facebook",
-  "_direct": true
+  "_originalSource": "angular-facebook"
 }

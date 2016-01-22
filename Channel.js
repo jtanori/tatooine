@@ -44,6 +44,8 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 		config.max_id = maxId;
 	}
 
+	console.log('get username ' + userName);
+
 	client.get('statuses/user_timeline', config, function(error, tweets, response){
 		var items = {};
 
