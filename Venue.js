@@ -1,5 +1,7 @@
 var _ = require('lodash');
 var Parse = require('parse').Parse;
+var s = require("underscore.string");
+var sanitizeHtml = require('sanitize-html');
 
 var PlaceModel = Parse.Object.extend('Location', {
 	getURL: function(){
@@ -145,9 +147,9 @@ var fieldsWhiteList = [
     'email_address',
     'exterior_number',
     'featured',
-    'federal_entity', 
+    'federal_entity',
     'images',
-    'internal_letter', 
+    'internal_letter',
     'internal_number',
     'keywords',
     'locality',
@@ -177,4 +179,38 @@ var fieldsWhiteList = [
     'www'
 ];
 
-module.exports = {Venue: PlaceModel, fields: fieldsWhiteList};
+var venueParse = function(v){
+	//Fix format (We need to get ride of this)
+	v.set('name', s(v.get('name')).humanize().value());
+	v.set('vecinity_type', s(v.get('vecinity_type')).titleize().value());
+	v.set('road_type', s(v.get('road_type')).humanize().value());
+	v.set('road_type_1', s(v.get('road_type_1')).humanize().value());
+	v.set('road_type_2', s(v.get('road_type_2')).humanize().value());
+	v.set('road_type_3', s(v.get('road_type_3')).humanize().value());
+	v.set('road_name', s(v.get('road_name')).titleize().value());
+	v.set('road_name_1', s(v.get('road_name_1')).titleize().value());
+	v.set('road_name_2', s(v.get('road_name_2')).titleize().value());
+	v.set('road_name_3', s(v.get('road_name_3')).titleize().value());
+	v.set('locality', s(v.get('locality')).titleize().value());
+	v.set('municipality', s(v.get('municipality')).titleize().value());
+	v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
+	v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
+
+	var venue = v.toJSON();
+	venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
+	venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
+	venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
+	venue.cover = v.get('cover') ? v.get('cover').toJSON() : undefined;
+	venue.id = v.id;
+	venue.objectId = v.id;
+
+	if(venue.page && venue.page.about){
+		venue.page.about = sanitizeHtml(venue.page.about, {
+			allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
+		});
+	}
+
+	return venue;
+}
+
+module.exports = {Venue: PlaceModel, fields: fieldsWhiteList, parse: venueParse};

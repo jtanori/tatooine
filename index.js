@@ -499,7 +499,7 @@ var getAddress = function(req, res){
 };
 
 var home = function(req, res){
-    var categories = [];
+    var categories = new Categories();
     var keywords = [];
     var protocol = req.connection.encrypted ? 'https' : 'http';
     var url = _.compact(req.url.split('/'));
@@ -567,7 +567,7 @@ var home = function(req, res){
             data: {
                 activeMenuItem: 'home',
                 title: title,
-                categories: categories,
+                categories: categories.toJSON() || [],
                 keywords: keywords,
                 image: defaultImage,
                 url: protocol + '//www.jound.mx',
@@ -583,35 +583,7 @@ var home = function(req, res){
     var onSuccess = function(r){
 
         r = _.map(r, function(v){
-            //Fix format (We need to get ride of this)
-            v.set('name', s(v.get('name')).humanize().value());
-            v.set('vecinity_type', s(v.get('vecinity_type')).titleize().value());
-            v.set('road_type', s(v.get('road_type')).humanize().value());
-            v.set('road_type_1', s(v.get('road_type_1')).humanize().value());
-            v.set('road_type_2', s(v.get('road_type_2')).humanize().value());
-            v.set('road_type_3', s(v.get('road_type_3')).humanize().value());
-            v.set('road_name', s(v.get('road_name')).titleize().value());
-            v.set('road_name_1', s(v.get('road_name_1')).titleize().value());
-            v.set('road_name_2', s(v.get('road_name_2')).titleize().value());
-            v.set('road_name_3', s(v.get('road_name_3')).titleize().value());
-            v.set('locality', s(v.get('locality')).titleize().value());
-            v.set('municipality', s(v.get('municipality')).titleize().value());
-            v.set('federal_entity', s(v.get('federal_entity')).titleize().value());
-            v.set('www', v.get('www') ? v.get('www').toLowerCase() : '');
-
-            var venue = v.toJSON();
-            venue.logo = v.get('logo') ? v.get('logo').toJSON() : undefined;
-            venue.category = v.get('category') ? v.get('category').toJSON() : undefined;
-            venue.page = v.get('page') ? v.get('page').toJSON() : undefined;
-            venue.cover = v.get('cover') ? v.get('cover').toJSON() : undefined;
-            venue.id = v.id;
-            venue.objectId = v.id;
-
-            if(venue.page && venue.page.about){
-                venue.page.about = sanitizeHtml(venue.page.about, {
-                    allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'img' ])
-                });
-            }
+            venue = VenueModule.parse(v);
 
             if(!citiesTrack[v.get('locality')]){
                 cities.push(v.get('locality'));
@@ -658,23 +630,14 @@ var home = function(req, res){
     };
 
     //Try getting those damm categories
-    //TODO: Create categories module
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
-            categories = JSON.parse(value).map(function(c){
-                return {
-                    displayName: c.displayName,
-                    keywords: c.keywords,
-                    name: c.name,
-                    pluralized: c.pluralized,
-                    objectId: c.objectId
-                };
-            });
+            categories.reset(JSON.parse(value));
             onLoad();
         }else{
             //Try getting those damm categories
-            (new Categories())().fetch({
-                success: function(categories){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();},
+            categories.fetch({
+                success: function(){client.set('categories', JSON.stringify(categories.toJSON())); onLoad();},
                 error: onLoad
             });
         }
@@ -1021,13 +984,19 @@ var newsletterSubscribe = function(req, res){
 
 var notFound = function(req, res){
     var protocol = req.connection.encrypted ? 'https' : 'http';
-    res.render('404', {
-        data: {
-            title: 'Pagina no encontrada :( | Jound',
-            image: defaultImage,
-            url: protocol + '//www.jound.mx/404'
-        }
-    });
+    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+
+    if(isAjax){
+        res.status(404).json({error: {message: 'Not found'}});
+    } else {
+        res.status(404).render('404', {
+            data: {
+                title: 'Pagina no encontrada :( | Jound',
+                image: defaultImage,
+                url: protocol + '//www.jound.mx/404'
+            }
+        });
+    }
 };
 
 var getChannelForVenue = function(req, res){
@@ -1131,7 +1100,94 @@ var getProductsForVenueGET = function(req, res){
 };
 
 var getProductByIdGET = function(req, res){
+    var body = req.body;
 
+    if(body.id && body.venue){
+        var venue = new Venue({id: body.venue});
+        var Product = Parse.Object.extend('Product');
+        var productQuery = new Parse.Query(Product);
+
+        Parse.Cloud.useMasterKey();
+
+        productQuery
+            .equalTo('objectId', body.id)
+            .equalTo('client', venue)
+            .equalTo('available', true)
+            .first(function(p){
+                if(p){
+                    res.status(200).json({status: 'success', product: p.toJSON()});
+                }else{
+                    res.status(404).json({status: 'error', error: {message: 'Product not found', code: 404}});
+                }
+            }, function(e){
+                res.status(200).json({status: 'success', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getProductById = function(req, res){
+    var body = req.body;
+
+    if(body.id && body.venue){
+        var venue = new Venue({id: body.venue});
+        var Product = Parse.Object.extend('Product');
+        var productQuery = new Parse.Query(Product);
+
+        Parse.Cloud.useMasterKey();
+
+        productQuery
+            .equalTo('objectId', body.id)
+            .equalTo('client', venue)
+            .equalTo('available', true)
+            .first(function(p){
+                if(p){
+                    res.status(200).json({status: 'success', product: p.toJSON()});
+                }else{
+                    res.status(404).json({status: 'error', error: {message: 'Product not found', code: 404}});
+                }
+            }, function(e){
+                res.status(200).json({status: 'success', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
+};
+
+var getProductForVenue= function(req, res){
+    var body = req.body;
+
+    if(body.id && body.venue){
+        var venue = new Venue({id: body.venue});
+        var Product = Parse.Object.extend('Product');
+        var productQuery = new Parse.Query(Product);
+
+        Parse.Cloud.useMasterKey();
+
+        productQuery
+            .equalTo('objectId', body.id)
+            .equalTo('client', venue)
+            .equalTo('available', true)
+            .include('client')
+            .include('client.logo')
+            .include('client.page')
+            .include('client.cover')
+            .include('client.claimed_by')
+            .first(function(p){
+                if(p){
+                    var v = VenueModule.parse(p.get('client'));
+
+                    res.status(200).json({status: 'success', product: p.toJSON(), venue: v});
+                }else{
+                    res.status(404).json({status: 'error', error: {message: 'Product not found', code: 404}});
+                }
+            }, function(e){
+                res.status(200).json({status: 'success', error: e});
+            });
+    }else{
+        res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
+    }
 };
 
 var getDealsForVenue = function(req, res){
@@ -1908,6 +1964,8 @@ Jound.post('/search', search);
 Jound.post('/subscribe', newsletterSubscribe);
 Jound.post('/getChannelForVenue', getChannelForVenue);
 Jound.post('/getProductsForVenue', getProductsForVenue);
+Jound.post('/getProductForVenue', getProductForVenue);
+Jound.post('/getProductById', getProductById);
 Jound.post('/getDealsForVenue', getDealsForVenue);
 Jound.post('/getEventsForVenue', getEventsForVenue);
 Jound.post('/getEventById', getEventById);
