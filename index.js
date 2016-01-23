@@ -1924,20 +1924,24 @@ Jound.use(checkEnvironment);
 Jound.get('/', home);
 Jound.get('/venue', home);
 Jound.get('/venue/:id', getVenueById);
-Jound.get('/venue/:id/details', getVenueById);
 Jound.get('/venue/:id/events', getEventsForVenueGET);
-Jound.get('/venue/:id/event/:eventId', getEventByIdGET);
-Jound.get('/venue/:id/promos', getProductsForVenueGET);
-Jound.get('/venue/:id/promo/:promoId', getProductByIdGET);
+Jound.get('/venue/:id/events/:eventId', getEventByIdGET);
+Jound.get('/venue/:id/promos', getVenueById);
+Jound.get('/venue/:id/promos/:promoId', getVenueById);
+Jound.get('/venue/:id/products', getVenueById);
+Jound.get('/venue/:id/products/:productId', getVenueById);
+Jound.get('/venue/:id/about', getVenueById);
 
 //Comply with angular app (TO BE REMOVED)
 Jound.get('/venues', home);
 Jound.get('/venues/:id', getVenueById);
-Jound.get('/venues/:id/details', getVenueById);
 Jound.get('/venues/:id/events', getEventsForVenueGET);
-Jound.get('/venues/:id/event/:eventId', getEventByIdGET);
-Jound.get('/venues/:id/promo', getProductsForVenueGET);
-Jound.get('/venues/:id/promo/:promoId', getProductByIdGET);
+Jound.get('/venues/:id/events/:eventId', getEventByIdGET);
+Jound.get('/venues/:id/promos', getVenueById);
+Jound.get('/venues/:id/promos/:promoId', getVenueById);
+Jound.get('/venues/:id/products', getVenueById);
+Jound.get('/venues/:id/products/:productId', getVenueById);
+Jound.get('/venues/:id/about', getVenueById);
 
 //Jound.get('/venue/:city/:slug');
 Jound.get('/position/:position', getVenueByPosition);
