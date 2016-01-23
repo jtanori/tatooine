@@ -1932,6 +1932,7 @@ Jound.get('/venue/:id/products', getVenueById);
 Jound.get('/venue/:id/products/:productId', getVenueById);
 Jound.get('/venue/:id/about', getVenueById);
 Jound.get('/venue/:id/reviews', getVenueById);
+Jound.get('/venue/:id/checkin', getVenueById);
 
 //Comply with angular app (TO BE REMOVED)
 Jound.get('/venues', home);
@@ -1944,6 +1945,7 @@ Jound.get('/venues/:id/products', getVenueById);
 Jound.get('/venues/:id/products/:productId', getVenueById);
 Jound.get('/venues/:id/about', getVenueById);
 Jound.get('/venues/:id/reviews', getVenueById);
+Jound.get('/venues/:id/checkin', getVenueById);
 
 //Jound.get('/venue/:city/:slug');
 Jound.get('/position/:position', getVenueByPosition);
