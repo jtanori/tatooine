@@ -1798,36 +1798,26 @@ var savePhotoForVenue = function(req, res){
         venue
             .fetch()
             .then(function(v){
-                console.log('venue found');
                 if(v){
                     f = new File();
-                    F = new Parse.File(v.get('name') + '-' + new Date()*1, {base64: body.data});
+                    F = new Parse.File(s.slugify(v.get('name')) + '-' + new Date()*1, {base64: body.data});
 
                     F
                         .save()
                         .then(function(){
-                            console.log('file saved');
-                            console.log(F.url());
                             return f.save('file', F);
                         })
                         .then(function(){
-                            console.log('File saved');
-                            console.log(F.url());
                             Parse.Cloud.useMasterKey();
 
                             return v.addUnique('images', F.url()).save();
                         })
                         .then(function(){
-                            console.log('venue saved');
                             res.status(200).json({status: 'success', url: F.url()});
                         }, function(e){
-                            console.log('An error has occurred');
-                            console.log(e);
                             res.status(400).json({status: 'error', error: e});
                         });
                 }else{
-                    console.log('Error getting venue');
-                    console.log(body.id);
                     res.status(400).json({status: 'error', error: {message: 'Invalid venue ID'}});
                 }
             }, function(e){
