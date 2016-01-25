@@ -44,8 +44,6 @@ TwitterAggregator.prototype.getTimeline = function(userName, sinceId, maxId){
 		config.max_id = maxId;
 	}
 
-	console.log('get username ' + userName);
-
 	client.get('statuses/user_timeline', config, function(error, tweets, response){
 		var items = {};
 
@@ -267,6 +265,11 @@ var instagram = function(userName, userID, minId, maxId){
 			if(err){
 				promise.reject(err);
 			}else if(users.length){
+				users = users.filter(function(u){
+					if(u.username === userName){
+						return u;
+					}
+				});
 
 				ig.user_media_recent(users[0].id, config, function(err, result, remaining, limit) {
 					if(err){
