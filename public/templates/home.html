@@ -4,7 +4,9 @@
         </button>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
-		<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': $parent.settings.usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button"></button>
+		<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': $parent.settings.usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button">
+			<ion-spinner ng-if="tracingPosition"></ion-spinner>
+		</button>
 		<button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
         </button>
     </ion-nav-buttons>

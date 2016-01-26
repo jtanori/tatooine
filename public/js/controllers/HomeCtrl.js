@@ -508,10 +508,10 @@ angular
                     $scope.query = '';
 
                     if($scope.currentMarker){
-                        if($scope.currentMarker.model.data.featured){
-                            $scope.currentMarker.options.icon.url = AppConfig.MARKERS.VENUE_FEATURED.url;
+                        if($scope.currentMarker.model.featured){
+                            $scope.currentMarker.model.icon.url = AppConfig.MARKERS.VENUE_FEATURED.url;
                         }else{
-                            $scope.currentMarker.options.icon.url = AppConfig.MARKERS.VENUE.url;
+                            $scope.currentMarker.model.icon.url = AppConfig.MARKERS.VENUE.url;
                         }
                     }
 
@@ -837,7 +837,7 @@ angular
         var lockPosition = function(lock, showMessage){
             $scope.centerCaptured = lock === false ? false : true;
 
-            if(showMessage === false){
+            if(showMessage === false || !$rootScope.user){
                 return;
             }
 
@@ -849,7 +849,7 @@ angular
             }
 
             AnalyticsService.track('lockPosition', {release: !!lock});
-            toastr.info(message, null, {"closeButton": true,"positionClass": "toast-bottom-center", "preventDuplicates": true});
+            toastr.info(message);
         };
 
         var releasePosition = function(){
@@ -957,30 +957,34 @@ angular
                                 });
                             });
 
-                            if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
-                                deferred.resolve(position);
-                            }else {
-                                if(!$scope.watchPosition){
-                                    $scope.watchPosition = $interval(function(){
-                                        getCurrentPosition(true);
-                                    }, 20000);
+                            if(!$rootScope.user){
+                                deferred.reject({message: 'User does not longer exists', code: 500});
+                            }else{
+                                if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
+                                    deferred.resolve(position);
+                                }else {
+                                    if(!$scope.watchPosition){
+                                        $scope.watchPosition = $interval(function(){
+                                            getCurrentPosition(true);
+                                        }, 20000);
+                                    }
+
+                                    previousPosition = {coords:{latitude: position.coords.latitude, longitude: position.coords.longitude}};
+
+                                    $rootScope.settings.position = previousPosition;
+
+                                    $rootScope.user.save({
+                                        'settings': $rootScope.settings,
+                                        'lastPosition': new Parse.GeoPoint({
+                                            latitude: position.coords.latitude,
+                                            longitude: position.coords.longitude
+                                        })
+                                    });
+
+                                    AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
+
+                                    deferred.resolve(position);
                                 }
-
-                                previousPosition = {coords:{latitude: position.coords.latitude, longitude: position.coords.longitude}};
-
-                                $rootScope.settings.position = previousPosition;
-
-                                $rootScope.user.save({
-                                    'settings': $rootScope.settings,
-                                    'lastPosition': new Parse.GeoPoint({
-                                        latitude: position.coords.latitude,
-                                        longitude: position.coords.longitude
-                                    })
-                                });
-
-                                AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
-
-                                deferred.resolve(position);
                             }
                         }, function(e) {
                             $timeout(function(){

@@ -9351,24 +9351,6 @@ a.button {
   border: 1px solid #ddd;
   border-bottom: 0; }
 
-#map #map-geolocation-button {
-  position: absolute;
-  color: #ef473a;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-size: 1.5rem;
-  min-height: initial;
-  border-radius: 0.2rem;
-  background: white;
-  line-height: 1rem;
-  bottom: 1rem;
-  right: 1rem;
-  box-shadow: 0 0 1px #ef473a; }
-  #map #map-geolocation-button.active {
-    opacity: 1;
-    color: #387ef5;
-    box-shadow: 0 0 1px #387ef5; }
-
 #map #map-position-search-label {
   position: absolute;
   bottom: 0;
@@ -9380,8 +9362,18 @@ a.button {
   left: 0;
   right: 0; }
 
-.platform-android #map #map-geolocation-button {
-  right: 3.75rem; }
+#map-geolocation-button.disabled:before {
+  opacity: 0; }
+
+#map-geolocation-button ion-spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: white; }
+  #map-geolocation-button ion-spinner svg {
+    fill: #fff;
+    stroke: #fff; }
 
 #map-category {
   background: rgba(0, 0, 0, 0.65);
@@ -9908,38 +9900,6 @@ ion-footer-bar.disabled:before {
     .menu.menu-right.menu-active {
       -webkit-transform: translate3d(0, 0, 0); }
 
-#new-business-popup {
-  position: absolute;
-  left: 0.5rem;
-  bottom: 0.5rem;
-  right: 0.5rem;
-  width: auto; }
-  #new-business-popup #new-business-popup-wrapper {
-    border-radius: 0.25rem;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-    background-color: #fff;
-    margin: 0 auto;
-    width: 33%; }
-  #new-business-popup #new-business-photo-button {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5); }
-  #new-business-popup img {
-    max-width: 100%;
-    max-height: 100%; }
-  #new-business-popup #new-business-popup-image {
-    padding-right: 0.5rem; }
-
-#crop-modal .crop-area {
-  overflow: hidden;
-  width: 300px;
-  height: 300px;
-  margin: 0.5rem auto;
-  border: 1px solid red; }
-
 @media only screen and (max-device-width: 568px) {
   .ui-medium-and-larger {
     display: none; } }
@@ -9960,3 +9920,42 @@ ion-footer-bar.disabled:before {
     height: 100%;
     display: table-cell;
     vertical-align: middle; }
+
+@media screen and (min-width: 1200px) {
+  .grid .card {
+    width: 22%;
+    display: inline-block;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+    vertical-align: top; }
+    .grid .card .text span {
+      display: block;
+      max-height: 4rem;
+      overflow: hidden;
+      text-overflow: ellipsis; } }
+
+@media screen and (min-width: 800px) and (max-width: 1199px) {
+  .grid .card {
+    width: 30%;
+    display: inline-block;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+    vertical-align: top; }
+    .grid .card .text span {
+      display: block;
+      max-height: 4rem;
+      overflow: hidden;
+      text-overflow: ellipsis; } }
+
+@media screen and (min-width: 640px) and (max-width: 799px) {
+  .grid .card {
+    width: 47%;
+    display: inline-block;
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+    vertical-align: top; }
+    .grid .card .text span {
+      display: block;
+      max-height: 4rem;
+      overflow: hidden;
+      text-overflow: ellipsis; } }

@@ -33,6 +33,8 @@ angular
     ) {
         AnalyticsService.track('loadVenue', {venue: venue.id});
 
+        $scope.LAYOUT = window.LAYOUT;
+
         $scope.venue = venue;
         $scope.venueId = venue.id;
         $scope.basicData = venue.getBasicData();
@@ -414,8 +416,11 @@ angular
                         _canLoadFacebook = false;
                     }
 
+                    _isLoadingFacebook = false;
+
                 }, function(e){
                     _canLoadFacebook = false;
+                    _isLoadingFacebook = false;
 
                     if(!$scope.timeline || !$scope.timeline.length){
                         $scope.facebookError = 'No pudimos cargar la pagina :(';
@@ -434,6 +439,7 @@ angular
         var _isLoadingFacebook = false;
         var _canLoadFacebook = true;
         $scope.canLoadFacebook = function(){
+            console.log('can load facebook', !_isLoadingFacebook && _canLoadFacebook, !_isLoadingFacebook, _canLoadFacebook)
             return !_isLoadingFacebook && _canLoadFacebook;
         };
 
