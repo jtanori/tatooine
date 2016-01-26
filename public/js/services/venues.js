@@ -223,7 +223,7 @@ angular.module('jound.services')
                             _currentResults = results;
                             deferred.resolve(results, q);
                         }else{
-                            deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
+                            deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.', keywords: q, code: 404});
                         }
                     }, function(e){
                         deferred.reject(e);
