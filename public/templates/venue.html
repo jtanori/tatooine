@@ -264,50 +264,48 @@
                     <ion-content class="grid">
                         <ion-refresher pulling-text="Actualizar Facebook timeline..." on-refresh="refreshFacebook()"></ion-refresher>
 
-                        <div ng-repeat="item in timeline" class="animate-repeat">
-                            <div class="list card social" ng-class="{video: item.type=='video'}">
-                                <div class="item item-avatar" ng-if="!item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{logo}}" ng-if="logo"/>
-                                    <h2 class="positive"><img src="{{item.icon}}" ng-if="item.icon"/><i class="icon ion-speakerphone" ng-if="item.type=='status' && !item.icon"></i> {{item.name || item.from.name}}</h2>
-                                    <p>{{item.story}}</p>
-                                    <p>Publicado el {{item.created_time}}</p>
-                                </div>
-                                <div class="item item-avatar" ng-if="item.from && item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{logo}}" ng-if="logo"/>
-                                    <h2 class="positive"><i class="icon ion-chatboxes"></i> {{item.from.name}}</h2>
-                                    <p>Publicado el {{item.created_time}}</p>
-                                </div>
+                        <div class="list card social" ng-class="{video: item.type=='video'}" ng-repeat="item in timeline">
+                            <div class="item item-avatar" ng-if="!item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                <img ng-src="{{logo.src}}" ng-if="logo"/>
+                                <h2 class="positive"><img src="{{item.icon}}" ng-if="item.icon"/><i class="icon ion-speakerphone" ng-if="item.type=='status' && !item.icon"></i> {{item.name || item.from.name}}</h2>
+                                <p>{{item.story}}</p>
+                                <p>Publicado el {{item.created_time}}</p>
+                            </div>
+                            <div class="item item-avatar" ng-if="item.from && item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                <img ng-src="{{logo}}" ng-if="logo"/>
+                                <h2 class="positive"><i class="icon ion-chatboxes"></i> {{item.from.name}}</h2>
+                                <p>Publicado el {{item.created_time}}</p>
+                            </div>
 
-                                <div class="item item-image" ng-if="item.type=='photo'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}">
+                            <div class="item item-image" ng-if="item.type=='photo'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                <img ng-src="{{item.picture}}">
+                            </div>
+                            <div class="item item-image" ng-if="item.type=='event'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                <img ng-src="{{item.picture}}">
+                            </div>
+                            <div class="item item-image" ng-if="item.type=='video'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
+                                <img ng-src="{{item.picture}}" >
+                                <i class="ion-play icon"></i>
+                            </div>
+                            <div class="item-body" ng-if="item.story || item.message">
+                                <p ng-if="item.caption && item.type!='status'">{{item.caption}}</p>
+                                <p ng-if="item.message && item.type=='status' || item.type=='link'">{{item.message}}</p>
+                                <p ng-if="item.description && item.type=='link'" ng-click="openUrl(item.link)">{{item.description}}</p>
+                                <div class="row">
+                                    <div class="col center aligned"><span class="dark">{{item.likes.data.length || 0}}</span> <i class="icon ion-thumbsup"></i></div>
+                                    <div class="col center aligned"><span class="dark">{{item.shares.count || 0}}</span> <i class="icon ion-share"></i>  </div>
+                                    <div class="col center aligned"><span class="dark">{{item.comments.data.length || 0}}</span> <i class="icon ion-chatbubbles"></i></div>
                                 </div>
-                                <div class="item item-image" ng-if="item.type=='event'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}">
-                                </div>
-                                <div class="item item-image" ng-if="item.type=='video'" ng-click="openExternalApp('facebook:status', item.from.id, item.id)">
-                                    <img ng-src="{{item.picture}}" >
-                                    <i class="ion-play icon"></i>
-                                </div>
-                                <div class="item-body" ng-if="item.story || item.message">
-                                    <p ng-if="item.caption && item.type!='status'">{{item.caption}}</p>
-                                    <p ng-if="item.message && item.type=='status' || item.type=='link'">{{item.message}}</p>
-                                    <p ng-if="item.description && item.type=='link'" ng-click="openUrl(item.link)">{{item.description}}</p>
-                                    <div class="row">
-                                        <div class="col center aligned"><span class="dark">{{item.likes.data.length || 0}}</span> <i class="icon ion-thumbsup"></i></div>
-                                        <div class="col center aligned"><span class="dark">{{item.shares.count || 0}}</span> <i class="icon ion-share"></i>  </div>
-                                        <div class="col center aligned"><span class="dark">{{item.comments.data.length || 0}}</span> <i class="icon ion-chatbubbles"></i></div>
-                                    </div>
-                                </div>
-                                <div class="item tabs tabs-secondary tabs-icon-left">
-                                    <a class="tab-item" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                        <i class="icon ion-social-facebook"></i>
-                                        Ver en Facebook
-                                    </a>
-                                    <a class="tab-item" ng-click="shareFacebook(item.link, venue.id)">
-                                        <i class="icon ion-share"></i>
-                                        Compartir
-                                    </a>
-                                </div>
+                            </div>
+                            <div class="item tabs tabs-secondary tabs-icon-left">
+                                <a class="tab-item" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
+                                    <i class="icon ion-social-facebook"></i>
+                                    Ver en Facebook
+                                </a>
+                                <a class="tab-item" ng-click="shareFacebook(item.link, venue.id)">
+                                    <i class="icon ion-share"></i>
+                                    Compartir
+                                </a>
                             </div>
                         </div>
 
