@@ -266,13 +266,13 @@
 
                         <div class="list card social" ng-class="{video: item.type=='video'}" ng-repeat="item in timeline">
                             <div class="item item-avatar" ng-if="!item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                <img ng-src="{{logo.src}}" ng-if="logo"/>
+                                <img ng-src="{{logo.url}}" ng-if="logo"/>
                                 <h2 class="positive"><img src="{{item.icon}}" ng-if="item.icon"/><i class="icon ion-speakerphone" ng-if="item.type=='status' && !item.icon"></i> {{item.name || item.from.name}}</h2>
                                 <p>{{item.story}}</p>
                                 <p>Publicado el {{item.created_time}}</p>
                             </div>
                             <div class="item item-avatar" ng-if="item.from && item.to" ng-click="item.type == 'link' ? openUrl(item.link) : openExternalApp('facebook:status', item.from.id, item.id)">
-                                <img ng-src="{{logo.src}}" ng-if="logo"/>
+                                <img ng-src="{{logo.url}}" ng-if="logo"/>
                                 <h2 class="positive"><i class="icon ion-chatboxes"></i> {{item.from.name}}</h2>
                                 <p>Publicado el {{item.created_time}}</p>
                             </div>
