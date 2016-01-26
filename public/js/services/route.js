@@ -1,7 +1,7 @@
 angular.module('jound.services')
 
 .factory('RoutesService', function($http, AppConfig, EARTHRADIUS) {
-    
+
     var rad = function(x) {
         return x * Math.PI / 180;
     };
@@ -17,7 +17,7 @@ angular.module('jound.services')
             return $http({
                 url: url,
                 method: 'GET'
-            })
+            });
         },
         //Calculates distance between two points
         distance: function(p1, p2){
@@ -28,7 +28,7 @@ angular.module('jound.services')
                     Math.sin(dLong / 2) * Math.sin(dLong / 2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
             var d = EARTHRADIUS * c;
-            
+
             return d; // returns the distance in meter
         }
     };

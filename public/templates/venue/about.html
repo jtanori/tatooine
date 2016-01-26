@@ -1,11 +1,11 @@
 <ion-view view-title="Acerca de {{basicData.name}}" id="about-page" class="external-content" align-title="left">
 	<ion-nav-buttons side="left">
-        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
-        </button>
+		<a href="/venues/{{venueId}}" class="button button-icon ion-ios-arrow-back"></a>
+    </ion-nav-buttons>
+	<ion-nav-buttons side="right">
+        <a ng-click="share()" class="button button-icon ion-share"></a>
     </ion-nav-buttons>
 	<ion-content>
-		<div class="padding">
-			<div ng-bind-html="text">{{text}}</div>
-		</div>
+		<div ng-bind-html="text">{{text}}</div>
 	</ion-content>
 </ion-view>

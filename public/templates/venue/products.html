@@ -1,15 +1,17 @@
 <ion-view title="{{name}} - Productos" align-title="left">
 	<ion-nav-buttons side="left">
-        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
-        </button>
+        <a href="/venues/{{venueId}}" class="button button-icon ion-ios-arrow-back"></a>
+    </ion-nav-buttons>
+	<ion-nav-buttons side="right">
+        <a ng-click="share()" class="button button-icon ion-share" ng-if="items.length"></a>
     </ion-nav-buttons>
     <ion-content id="venue-products-page">
-        <div ng-if="!loading && !items.length" class="center aligned padding error message">
-            <div><i class="icon ion-nuclear"></i></div>
-            <p>Este comerciante aun no ha agregado productos, hemos notado tu interes, te mantendremos informado cuando {{name}} agregue productos.</p>
+        <div ng-if="!loading && !items.length" class="center aligned padding error message perro">
+            <img src="img/perro.png" />
+            <p>Este comerciante aún no ha agregado productos, hemos notado tu interés, te mantendremos informado cuando {{name}} agregue productos.</p>
         </div>
     	<ion-list>
-			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product" ng-click="openImage(item)">
+			<ion-item ng-repeat="item in items" class="item-thumbnail-left item-icon-left product" ng-click="openProduct(item)">
 				<img ng-src="{{item.picture.url}}" ng-if="item.picture" />
 				<img ng-src="{{item.pictureUrl}}" ng-if="item.pictureUrl && !item.picture" />
 			    <h2>{{item.name}}</h2>

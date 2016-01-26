@@ -33,14 +33,14 @@ angular
 	    $timeout(function (){
 	      $rootScope.$broadcast('focusOn', name);
 	    });
-	  }
+	};
 	})
 	.factory('blur', function ($rootScope, $timeout) {
 	  return function(name) {
 	    $timeout(function (){
 	      $rootScope.$broadcast('blurOn', name);
 	    });
-	  }
+	};
 	})
     .directive('dynamic', function ($compile) {
         return {
@@ -61,7 +61,7 @@ angular
             require: 'ngModel',
             restrict: 'A',
             link: function(scope, element, attrs, ctrl) {
-                var modelToMatch = element.attr('sameAs');      
+                var modelToMatch = element.attr('sameAs');
                 ctrl.$validators.match = function(modelValue, viewValue) {
                     return viewValue === scope.$eval(modelToMatch);
                 };

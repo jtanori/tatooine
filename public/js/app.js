@@ -17,11 +17,12 @@ angular.module('jound',
     'ngSanitize',
     'ionic.rating',
     'ngIOS9UIWebViewPatch',
-    'ngImgCrop',
     'uiGmapgoogle-maps',
     'toastr',
     'facebook',
     '720kb.socialshare',
+    'geolocation',
+    'ngLodash',
 
     'jound.controllers',
     'jound.services',
@@ -75,6 +76,50 @@ angular.module('jound',
 
 .constant('EARTHRADIUS', 6378137)
 
+.constant('TUTORIAL', [
+    {
+        title: 'Ubicate',
+        src: '/img/tutorial/tutorial-1.jpg',
+        text: 'Puedes activar o desactivar la geolocalización en cualquier momento'
+    },
+    {
+        title: 'Explora',
+        src: '/img/tutorial/tutorial-2.gif',
+        text: 'Explora el mundo en estilo libre, captura un centro geográfico al tocar la bolita verde'
+    },
+    {
+        title: 'Busca',
+        src: '/img/tutorial/tutorial-3.gif',
+        text: 'Busca libremente o selecciona alguna de nuestras categorías'
+    },
+    {
+        title: 'Guiate',
+        src: '/img/tutorial/tutorial-4.jpg',
+        text: 'Traza tu ruta, comparte y encuentra los mejores establecimientos'
+    },
+    {
+        title: 'Listo',
+        src: '/img/tutorial/tutorial-5.gif',
+        text: 'Brofist! Estas más que listo para explorar, ¡bienvenido!'
+    }
+])
+
+.constant('HOME_SLIDESHOW', [
+    '/img/home-slideshow/0.jpg',
+    '/img/home-slideshow/1.jpg',
+    '/img/home-slideshow/2.jpg',
+    '/img/home-slideshow/3.jpg',
+    '/img/home-slideshow/4.jpg',
+    '/img/home-slideshow/5.jpg',
+    '/img/home-slideshow/6.jpg',
+    '/img/home-slideshow/7.jpg',
+    '/img/home-slideshow/8.jpg',
+    '/img/home-slideshow/9.jpg',
+    '/img/home-slideshow/10.jpg',
+    '/img/home-slideshow/11.jpg',
+    '/img/home-slideshow/12.jpg'
+])
+
 .constant('AppConfig', {
     PARSE: {
         appId: window.PARSE_APP_ID,
@@ -90,6 +135,7 @@ angular.module('jound',
     },
     API_URL: window.API_URL,
     HOST_URL: window.HOST_URL,
+    MAX_DISTANCE_TO_REFRESH: 500,
     GEO: {
         DEFAULT: {
             enableHighAccuracy: true,
@@ -208,16 +254,6 @@ angular.module('jound',
             'Viernes',
             'Sabado'
         ]
-    },
-    ADMOB: {
-        DEFAULT_OPTIONS: {
-            bannerId: 'ca-app-pub-9450508564392305/7289295079',
-            interstitialId: 'ca-app-pub-9450508564392305/8766028274',
-            adSize: 'SMART_BANNER',
-            //position: AdMob.AD_POSITION.BOTTOM_CENTER,
-            isTesting: true,
-            autoShow: false
-        }
     },
     GOOGLE: {
         MAPS_WEB_KEY: 'AIzaSyDzZII1NdMzWZaRPfTFntVwaGt6p5hnesQ'
@@ -360,8 +396,6 @@ angular.module('jound',
 })
 
 .config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider, $locationProvider) {
-
-
     // Ionic uses AngularUI Router which uses the concept of states
     // Learn more here: https://github.com/angular-ui/ui-router
     // Set up the various states which the app can be in.
@@ -373,6 +407,16 @@ angular.module('jound',
             abstract: true,
             templateUrl: "templates/menu.html",
             controller: 'MenuCtrl'
+        })
+
+        .state('app.tutorial', {
+            url: "/tutorial",
+            views: {
+                'app': {
+                    templateUrl: "templates/tutorial.html",
+                    controller: 'TutorialCtrl'
+                }
+            }
         })
 
         .state('app.home', {
@@ -391,11 +435,6 @@ angular.module('jound',
                 'app': {
                     controller: 'HomeCtrl',
                     templateUrl: 'templates/home.html'
-                }
-            },
-            resolve: {
-                venues: function(){
-                    console.log('venues to resolve', window.initialVenues);
                 }
             }
         })
@@ -428,16 +467,11 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
@@ -451,16 +485,29 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
+                state: 'app.venue'
+            }
+        })
+
+        .state('app.venuePromo', {
+            url: "/venues/:venueId/promos/:promoId",
+            views: {
+                'app': {
+                    templateUrl: "templates/venue/promos.html",
+                    controller: 'VenuePromosCtrl'
                 }
+            },
+            resolve: {
+                venue: function($stateParams, VenuesService) {
+                    return VenuesService.getById($stateParams.venueId);
+                }
+            },
+            defaultBack: {
+                state: 'app.venue'
             }
         })
 
@@ -474,16 +521,29 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
+                state: 'app.venue'
+            }
+        })
+
+        .state('app.venueProduct', {
+            url: "/venues/:venueId/products/:productId",
+            views: {
+                'app': {
+                    templateUrl: "templates/venue/product.html",
+                    controller: 'VenueProductCtrl'
                 }
+            },
+            resolve: {
+                productData: function($stateParams, VenuesService) {
+                    return VenuesService.getProductById($stateParams.venueId, $stateParams.productId);
+                }
+            },
+            defaultBack: {
+                state: 'app.venueProducts'
             }
         })
 
@@ -497,16 +557,11 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
@@ -520,16 +575,11 @@ angular.module('jound',
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venue',
-                getStateParams: function(stateParams) {
-                    return {
-                        postId: stateParams.venueId
-                    };
-                }
+                state: 'app.venue'
             }
         })
 
@@ -537,23 +587,17 @@ angular.module('jound',
             url: "/venues/:venueId/event/:eventId",
             views: {
                 'app': {
-                    templateUrl: "templates/venue/event.html",
+                    templateUrl: "templates/venue/events.html",
                     controller: 'VenueEventCtrl'
                 }
             },
             resolve: {
                 venue: function($stateParams, VenuesService) {
-                    return VenuesService.getById($stateParams.venueId)
+                    return VenuesService.getById($stateParams.venueId);
                 }
             },
             defaultBack: {
-                state: 'app.venueEvents',
-                getStateParams: function(stateParams) {
-                    return {
-                        venueId: stateParams.venueId,
-                        eventId: stateParams.eventId
-                    };
-                }
+                state: 'app.venueEvents'
             }
         })
 
@@ -573,12 +617,11 @@ angular.module('jound',
             url: '/start',
             templateUrl: 'templates/start.html',
             controller: 'StartCtrl'
-        })
+        });
 
     // if none of the above states are matched, use this as the fallback
     //TODO: Load loading controller first to avoid displaying login screen in android
     $urlRouterProvider.otherwise(function ($injector, $location) {
-        console.log('otherwise');
         var $state = $injector.get("$state");
         $state.go("start");
     });
@@ -614,7 +657,9 @@ angular.module('jound',
     FacebookProvider.init(AppConfig.FB.ID);
 })
 
-.factory('User', function($q, $http, AppConfig){
+.factory('User', function($q, $http, AppConfig, lodash){
+    var _ = lodash;
+
     return Parse.User.extend({
         checkUserCheckIn: function(id){
             var deferred = $q.defer();
@@ -685,8 +730,9 @@ angular.module('jound',
     });
 })
 
-.factory('AnonymousUser', ['$localStorage', 'AppConfig', function($localStorage, AppConfig){
+.factory('AnonymousUser', ['$localStorage', 'AppConfig', 'lodash', function($localStorage, AppConfig, lodash){
     var _current;
+    var _ = lodash;
     var User = (function () {
         var instance;
 
@@ -816,11 +862,14 @@ angular.module('jound',
         removeItem: function(item){
             $window.localStorage.removeItem(item);
         }
-    }
+    };
 }])
 
-.run(function($rootScope, User, AnonymousUser, $localStorage, $state, AppConfig){
+.run(function($rootScope, User, AnonymousUser, $localStorage, $state, AppConfig, lodash){
     //Initialize Parse
+    var _ = lodash;
+    window._ = lodash;
+
     Parse.initialize(AppConfig.PARSE.appId, AppConfig.PARSE.jsKey);
     //Get user
     var u = User.current();
@@ -854,11 +903,20 @@ angular.module('jound',
             }
         }
     });
+
+    $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams){
+        $state.go('notFound');
+    });
 })
-.controller('StartCtrl', function($state, $rootScope, User){
+
+.controller('StartCtrl', function($state, $rootScope, $localStorage){
     //Redirect to proper page
     if(!!$rootScope.user){
-        $state.go('app.home');
+        if(!$localStorage.get('tutorial')){
+            $state.go('app.tutorial');
+        }else{
+            $state.go('app.home');
+        }
     }else{
         $state.go('login');
     }

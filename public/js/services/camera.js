@@ -82,8 +82,8 @@ angular.module('jound.services')
             }
 
             return deferred.promise;
-        }
+        };
     });
-    
+
     return global;
 });

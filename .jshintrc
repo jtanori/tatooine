@@ -1,0 +1,5 @@
+{
+    "jquery"        : true,
+    "mocha"         : false,
+    "globals"       : {}        
+}

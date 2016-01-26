@@ -1,0 +1,1074 @@
+/*
+To customize the look and feel of Ionic, you can override the variables
+in ionic's _variables.scss file.
+
+For example, you might change some of the default colors:
+
+$light:                           #fff !default;
+$stable:                          #f8f8f8 !default;
+$positive:                        #387ef5 !default;
+$calm:                            #11c1f3 !default;
+$balanced:                        #33cd5f !default;
+$energized:                       #ffc900 !default;
+$assertive:                       #ef473a !default;
+$royal:                           #886aea !default;
+$dark:                            #444 !default;
+*/
+
+//Override ionic variables
+// Colors
+// -------------------------------
+/*
+$stable:                          #33465d !default;
+$positive:                        #485E90 !default;
+$energized:                       #57be29 !default;
+$dark:                            #2d3d52 !default;
+$assertive:                       #da4334 !default;
+
+//Buttons
+$button-stable-bg:                $stable !default;
+$button-stable-text:              #fff !default;
+$button-stable-border:            #fff !default;
+$button-stable-active-bg:         darken($stable, 15%) !default;
+$button-stable-active-border:     #fff !default;
+
+$button-positive-bg:              $positive !default;
+$button-positive-text:            #fff !default;
+$button-positive-border:          #fff !default;
+$button-positive-active-bg:       darken($positive, 15%) !default;
+$button-positive-active-border:   #fff !default;
+
+$button-default-border:           #fff !default;
+$button-dark-border:              $button-default-border !default;
+$button-energized-border:         $button-default-border !default;
+
+//Bar
+$bar-dark-border:                 transparent !default;
+
+$base-background-color:           $stable !default;
+$base-color:                      #fff !default;
+
+//Tabs
+$tabs-dark-border:                $bar-dark-border !default;
+
+//Modal
+$modal-bg-color:                  transparent !default;
+
+//Cards
+$card-border-color:               transparent !default;
+$card-border-radius:              4px !default;
+*/
+//Font
+$font-family-sans-serif:          robotolight, "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif !default;
+
+//App variables
+$border-calm: 1px solid transparentize(white, 0.97);
+
+//Ionicons
+//$ionicons-font-path: 'ionic/fonts' !default;
+
+$z-index-modal: 1000;
+
+//Forms
+$input-bg: white !default;
+
+// The path for our ionicons font files, relative to the built CSS in www/css
+$ionicons-font-path: "../lib/ionic/fonts" !default;
+
+// Include all of Ionic
+@import "public/lib/ionic/scss/ionic";
+
+.aligned {
+  &.right {
+    text-align: right;
+  }
+
+  &.left {
+    text-align: left;
+  }
+
+  &.center {
+    text-align: center;
+  }
+}
+
+#tutorial #logo {
+	max-width: 20%;
+}
+
+.item.item-dark p {
+	color: darken($light, 30%);
+}
+
+#loader {
+	position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -100;
+    -webkit-transform: translateX(-50%) translateY(-50%);
+	background: url('../img/splash.jpg') no-repeat;
+	background-size: cover;
+	transition: 1s opacity;
+}
+
+#loader {
+	z-index: 1000;
+	pointer-events: none;
+}
+
+#login-view {
+    background: rgb(245,245,245);
+}
+
+#login-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+
+    #logo {
+        max-width: 200px;
+    }
+
+    #login-form {
+        text-align: center;
+        position: relative;
+        .child {
+            text-align: left;
+            max-width: 350px;
+            min-width: 350px;
+            background: white;
+            border: 1px solid lighten($dark, 60%);
+            border-radius: 0.25rem;
+            padding: 2rem inherit;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 50%;
+            margin-top: -50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    #login-slideshow {
+        position: relative;
+    }
+
+    #login-slideshow-slider {
+        width: 229px;
+        height:408px;
+        position: absolute;
+        bottom: 99px;
+        right: 39px;
+
+        img {
+            border: 0;
+        }
+    }
+}
+
+#jound-menu {
+    li {
+        display: inline-block;
+
+        a {
+            text-transform: uppercase;
+            text-decoration: none;
+            color: darken($positive, 40%);
+            margin-right: 1rem;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+
+#login-slideshow {
+    background: url(/img/home-slideshow/phones.png) no-repeat bottom right;
+    min-height: 650px;
+}
+
+@import "drawer";
+
+#home-search-selected-category {
+	position: absolute;
+	border-radius: 0.3rem;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	word-wrap: break-word;
+	overflow: hidden;
+	font-size: 0.9em;top:0.5em;
+	left:1em;
+	display: inline-block;
+	padding: 0.3rem;
+	max-width: 150px;
+}
+
+#home-search-box {
+	position: relative;
+}
+
+#home-search-clear {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    width: 30px;
+    margin-left: -30px;
+    text-align: center;
+    vertical-align: middle;
+    color: $dark;
+    line-height: 100%;
+    padding-top: 11px;
+    padding-bottom: 15px;
+
+    &:before {
+        height: 100%;
+        width: 100%;
+        vertical-align: middle;
+        line-height: 100%;
+        font-size: 1rem;
+        margin: 0;
+    }
+}
+
+#categories-results-list {
+	position: absolute;
+	max-height: 90%;
+	box-shadow: 0 0 50px rgba(0,0,0,0.5);
+	border-radius: 0.5rem;
+	margin-top: 0.5rem;
+	overflow-y: scroll;
+	max-width: 500px;
+    min-width: 400px;
+    padding: 0;
+    z-index: 1000;
+
+	&.ng-hide-add, &.ng-hide-remove {
+	    transition: 0s linear all;
+	}
+
+	&.ng-hide-add-active,
+	&.ng-hide-remove-active {
+		transition: 0.250s linear all;
+	}
+
+	&.ng-show {
+		opacity: 1;
+	}
+
+	&.ng-hide {
+		opacity: 0;
+	}
+
+    .label {
+        display: inline-block;
+        padding: 0.5rem;
+        width: 80%;
+    }
+
+    .button {
+        padding: 0.2rem;
+        line-height: 20px;
+        height: auto;
+        min-height: initial;
+        margin: 0.2rem 0;
+        position: absolute;
+        right: 0.2rem;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .item {
+        padding: 0;
+    }
+}
+
+#map {
+	&.has-venue {
+		height: auto;
+		bottom: 75px + $tabs-height;
+	}
+
+	&.has-routes {
+		bottom: 40px + 75px + $tabs-height;
+	}
+
+	#map-clear-venue {
+		background: white;
+		border-radius: 1rem 1rem 0 0;
+		height: 2rem;
+		width: 2rem;
+		line-height: 1rem;
+		min-height: initial;
+		min-width: initial;
+		position: absolute;
+		bottom: -1px;
+		left: 50%;
+		margin-left: -1rem;
+		color:#444;border: 1px solid #ddd;border-bottom:0;
+	}
+
+	#map-geolocation-button {
+		position: absolute;
+		color: $assertive;
+		width: 2.5rem;
+		height: 2.5rem;
+		font-size: 1.5rem;
+		min-height: initial;
+		border-radius: 0.2rem;
+		background: white;
+		line-height: 1rem;
+		bottom: 1rem;
+		right: 1rem;
+		box-shadow: 0 0 1px $assertive;
+
+		&.active {
+			opacity: 1;
+			color: $positive;
+			box-shadow: 0 0 1px $positive;
+		}
+	}
+
+	#map-position-search-label {
+		position: absolute;
+		bottom: 0;
+		right: 100px;
+		padding: 0.5rem;
+		vertical-align: middle;
+		width: 100%;
+		text-align: center;
+		left: 0;
+		right: 0;
+	}
+}
+
+.platform-android {
+	#map #map-geolocation-button {
+		right: 3.75rem;
+	}
+}
+
+#map-category {
+	background: rgba(0,0,0,0.65);
+    padding: 0.5rem;
+    color: white;
+    text-shadow: 1px 1px 0 black;
+    padding-left: 2.3rem;
+
+    button {
+    	position: absolute;
+	    top: -2px;
+	    left: 0;
+	    padding-top: 0;
+	    padding-bottom: 0;
+	    bottom: 0;
+	    min-height: initial;
+	    padding-left: 0.8rem;
+	    padding-right: 0.8rem;
+    }
+}
+
+#home-venue-details {
+	.list {
+		position: absolute; bottom: $tabs-height; left: 0; right: 0; margin: 0;
+	}
+
+	&.has-phone {
+		.list .item {
+			padding-right: 75px;
+
+			a {
+				position:absolute;right:1em;top:1em;width:40px;height:40px;min-width:40px;min-height:40px;
+			}
+		}
+	}
+}
+
+#home-routes {
+	position: absolute;
+	background: white;
+	bottom: 75px + $tabs-height;
+	left: 0;
+	right: 0;
+	height: 40px;
+	padding: 5px;
+
+	#home-routes-clear {
+		float: left;
+	}
+}
+
+#tutorial-slider {
+	height: 80%;
+    max-height: 80%;
+	margin-top: 5%;
+
+	ion-slide {
+		padding: 1rem;
+        text-align: center;
+
+		img{
+			border: 2px solid white;
+			border-radius: 0.5rem;
+            max-width: 500px;
+            width: 80%;
+            margin: 0 auto;
+        }
+	}
+}
+
+#venue-slider,
+#modal-venue-new-cover,
+#venue-product-page-cover {
+	height: 200px;
+	background: linear-gradient(0deg, $dark, darken($dark, 5%));
+	text-align: center;
+
+	ion-slide {
+		background-size: cover;
+	}
+
+    .swiper-pagination-bullet-active {
+        background-color: white;
+    }
+
+	.venue-slide-bg {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-size: cover;
+		z-index: -1;
+		background-position: center top;
+		background-image: url('../img/splash.jpg');
+		box-shadow: 0 0 100px rgba(0,0,0,1) inset;
+        -webkit-filter: blur(5px);
+	}
+
+	img {
+		max-height: 100%;
+        max-width: 100%;
+	    box-shadow: 0 0 10px black;
+	    height: auto;
+        width: auto;
+	}
+
+	&.cover .venue-slide-bg {
+		z-index: 1;
+		opacity: 1;
+	}
+
+	&.cover {
+		position: relative;
+
+		img {
+			z-index: 100;
+			position: relative;
+			background: transparent;
+			box-shadow: none;
+			margin-top: -15%;
+			top: 50%;
+			margin-bottom: 0;
+			height: 50%;
+		}
+	}
+
+	.default {
+		height: 100%;
+
+		h4 {
+			margin-top: 0;
+		}
+
+		img {
+			margin-top: 1rem;
+			height: 75px;
+			box-shadow: none;
+		}
+	}
+
+	.slider-common-image {
+		height: 100%;
+	}
+
+	#venue-slider-cover-play {
+		position: absolute;
+	    font-size: 3rem;
+	    color: white;
+	    text-shadow: 0 0 0.5rem black;
+	    top: 50%;
+	    margin-top: -1.5rem;
+	    left: 50%;
+	    margin-left: -1.5rem;
+	    width: 3rem;
+	    text-align: center;
+	}
+
+    .img-table {
+        height: 200px;
+        width: 100%;
+
+        .img-cell {
+            height: 200px;
+            width: 100%;
+        }
+    }
+}
+
+#venue-product-page {
+    .price {
+        position: absolute;
+        bottom: 0;
+        padding: 0.5rem;
+        color: white;
+        background-color: rgba(0,0,0,0.5);
+        left: 0;
+        right: 0;
+        text-align: right;
+    }
+
+    #venue-product-page-cover {
+        position: relative;
+        background-size: cover;
+        background-repeat: no-repeat;
+
+        .venue-slide-bg {
+            z-index: 0;
+        }
+
+        img {
+            position: relative;
+        }
+    }
+
+    #venue-product-page-description {
+        margin-bottom: 0;
+
+        p {
+            white-space: initial;
+        }
+    }
+
+    #venue-product-page-call {
+        margin: 0;
+    }
+}
+
+#venue-tabs .tabs {
+	border-bottom: 0;
+}
+
+#venue-home-logo {
+	position: absolute;
+    top: 140px;
+    left: 10px;
+    width: 100px;
+    height: 100px;
+    border: 2px solid white;
+    border-radius: 0.5rem;
+    z-index: 2;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    background-color: white;
+
+    img {
+		min-height: 100%;
+		min-width: 100%;
+		max-width: 100%;
+    }
+}
+
+#venue-home-business-buttons {
+	position: absolute;
+    right: 0;
+    z-index: 3;
+    padding-left: 0;
+    text-align: right;
+    left: 120px;
+}
+
+#venue-home-data {
+	margin-top: 2.5rem;
+}
+
+.card.social {
+	.item-body {
+		p:first-child {
+			margin-top:0;
+		}
+
+		p:last-child {
+			margin-bottom: 0;
+		}
+
+		p span{
+			display: inline-block;
+			margin-right: 0.5rem;
+		}
+
+		.tags a {
+			margin-right: 0.5rem;
+			display: inline-block;
+		}
+
+		a {
+			color: $positive;
+		}
+	}
+
+	.item-image {
+		img {
+			max-height: 300px;
+    		width: auto;
+            max-width: 100%;
+		}
+
+		background: black;
+	}
+
+	&.video {
+		.item-image {
+			max-height: 200px;
+			min-height: 200px;
+			background: black;
+
+			.icon {
+				position:absolute;
+				top:50%;
+				height: 2rem;
+				z-index: 10;
+				color:white;
+				left:50%;
+				width:2rem;
+				font-size: 2rem;
+				margin-left: -1rem;
+				margin-top: -1rem;
+				text-align: center;
+			}
+		}
+	}
+
+	.item.tabs {
+		background: $light;
+		border-top: 1px solid lighten($dark, 65%) !important;
+
+		.tab-item {
+			color: $dark;
+		}
+	}
+}
+
+#tab-venue-facebook {
+    .card.social.video .item-image {
+        height: auto;
+        min-height: auto;
+    }
+}
+
+.transparent {
+	background: transparent !important;
+}
+.image-modal {
+	width: 100% !important;
+	height: 100%;
+	top: 0 !important;
+	left: 0 !important;
+
+	&.no-absolute {
+		.scroll {
+			min-height: 100%;
+
+			.fullscreen-image {
+				position: static;
+			}
+		}
+	}
+
+	ion-slide {
+		img {
+			max-width: 100%;
+			max-height: 100%;
+		}
+	}
+}
+
+.fullscreen-image {
+	max-width: 100%;
+	max-height: 100%;
+	bottom: 0;
+	left: 0;
+	margin: auto;
+	overflow: auto;
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
+.fullscreen-image-slideshow {
+	.image-list-thumb {
+	    padding: 2px 2px 2px 2px;
+	    height: 150px;
+	}
+
+	.slider {
+	    width: 100%;
+	    height: 100%;
+	}
+
+	.image {
+	    width: 100%;
+	    height: 600px;
+	    background-size: contain;
+	    background-repeat: no-repeat;
+	    background-position: center, center;
+	}
+}
+
+#fullscreen-image-tip {
+	position: absolute;
+	text-shadow: 0 0 1px black;
+	text-align: center;
+	left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    border-radius: 2rem;
+    background: rgba(0,0,0,0.7);
+}
+
+.external-content {
+	img {
+		max-width: 100% !important;
+	}
+}
+
+#venue-promos-page,
+#venue-events-page {
+	.slider {
+		height: 100%;
+
+		ion-slide {
+			background-size: contain;
+			background-position: center;
+			background-repeat: no-repeat;
+			background-color: black;
+
+			.promo,
+			.event{
+				padding: 0.5rem;
+				color: white;
+				background: rgba(0,0,0,0.5);
+				position: absolute;
+				bottom: 0;
+				width: 100%;
+
+				* {
+					text-shadow: 0 0 5px black;
+				}
+
+                h4 {
+					color: white;
+                    margin-top: 0;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    overflow: hidden;
+				}
+
+                p {
+                    margin-bottom: 0;
+                }
+			}
+		}
+	}
+}
+
+#venue-products-page {
+	.product {
+		.badge {
+			top: 0;
+			right: 0;
+			border-radius: 0;
+		}
+	}
+}
+
+.message {
+	&.error {
+		font-size: 1.2rem;
+		color: $assertive;
+		padding-top: 2rem;
+
+		.icon {
+			font-size: 2rem;
+		}
+	}
+
+    &.perro img {
+        max-width: 150px;
+    }
+}
+
+
+ul.rating.small {
+	font-size: 10px;
+
+	li {
+		display: inline;
+		border: 0px;
+		background: none;
+		padding: 5px;
+
+		i {
+			font-size: 15px;
+		}
+	}
+}
+
+.item.review {
+	ul.rating.small,
+	.comment-tag {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+	}
+
+	p {
+		text-overflow: initial;
+		overflow: visible;
+		white-space: normal;
+	}
+
+	.comment-tag {
+		font-size: 0.7rem;
+		background: $dark;
+		border-radius: 0.2rem;
+		color: $light;
+		padding:0.1rem 0.3rem;
+		opacity: 0.8;
+	}
+
+	.date {
+		color: #aaa;
+	    text-shadow: 0 1px 0 white;
+	    font-size: 0.7rem;
+	    padding: 0.5rem;
+	    display: block;
+	    text-align: right;
+	    margin-bottom: 0;
+	    padding-bottom: 0;
+	}
+
+	&.comment {
+		background: #ededed;
+	}
+}
+
+ion-footer-bar {
+	&.disabled {
+		&:before {
+			content: '';
+			position: absolute;
+			background: rgba(0,0,0,0.7);
+			left: 0;
+			top: 0;
+			bottom: 0;
+			right: 0;
+		}
+	}
+}
+
+#tab-venue-home-rating {
+	display: inline-block;
+    position: fixed;
+    width: auto;
+    text-align: left;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 4;
+    padding: 0.5rem;
+    background: rgba(0,0,0,0.5);
+    border-radius: 0.5rem;
+}
+
+#tab-venue-home-checkin,
+#venue-product-page .availability {
+	position: fixed;
+    color: white;
+    background: rgba(0,0,0,0.5);
+    border-radius: 0.5rem;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 4;
+    line-height: 30px;
+    height: 38px;
+    min-height: 38px;
+
+    &.icon:before {
+    	font-size: 30px;
+    	line-height: 30px;
+    }
+
+    &.energized {
+    	color: $energized;
+    	box-shadow: 0 0 5px $energized;
+    }
+}
+
+#tab-venue-home-photo {
+	position: fixed;
+	color: white;
+	background: rgba(0,0,0,0.5);
+    border-radius: 0.5rem;
+    z-index: 4;
+    right: 0.5rem;
+    top: 155px;
+}
+
+#tab-venue-home-247 {
+	position: fixed;
+    top: 80px;
+    z-index: 2;
+    color: white;
+    text-align: center;
+    background: rgba(0,0,0,0.5);
+    border-radius: 0.5rem;
+    padding: 0.2rem 0.5rem;
+    right: 0.5rem;
+
+    .span {
+    	font-size: 0.7rem;
+    }
+}
+
+#start-slider {
+	width: 100%;
+	display: block;
+	text-align: center;
+	padding-top: 50%;
+}
+
+#start-spinner {
+	position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    margin-top: -1rem;
+}
+
+#start-spinner-label {
+	position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 50%;
+    margin-top: 1rem;
+}
+
+/* Fix modal backdrop for smaller devices */
+@media (max-width: 679px) {
+	.active .modal-backdrop-bg {
+		opacity: .5;
+	}
+	.modal-backdrop-bg {
+		-webkit-transition: opacity 300ms ease-in-out;
+		transition: opacity 300ms ease-in-out;
+		background-color: #000;
+		opacity: 0;
+	}
+}
+
+.menu {
+	z-index: 1001 !important;
+	&.menu-left {
+		-webkit-transform: translate3d(-100%,0,0);
+		transition: all 0.2s ease-out;
+
+		&.menu-active {
+			-webkit-transform: translate3d(0, 0, 0);
+		}
+	}
+
+	&.menu-right {
+		-webkit-transform: translate3d(100%,0,0);
+		transition: all 0.2s ease-out;
+
+		&.menu-active {
+			-webkit-transform: translate3d(0, 0, 0);
+		}
+	}
+}
+
+#new-business-popup {
+	position: absolute;
+    left: 0.5rem;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    width: auto;
+
+    #new-business-popup-wrapper {
+    	border-radius: 0.25rem;
+	    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+	    background-color: $light;
+	    margin: 0 auto;
+	    width: 33%;
+    }
+
+    #new-business-photo-button {
+    	position: absolute;
+    	top:0;
+    	left:0;
+    	right:0;
+    	bottom:0;
+    	background: rgba(0,0,0,0.5);
+    }
+
+    img {
+    	max-width: 100%;
+    	max-height: 100%;
+    }
+
+    #new-business-popup-image {
+    	padding-right: 0.5rem;
+    }
+}
+
+#crop-modal {
+	.crop-area {
+		overflow: hidden;
+		width: 300px;
+	    height: 300px;
+	    margin: 0.5rem auto;
+	    border: 1px solid red;
+    }
+}
+
+@media only screen and (max-device-width: 568px){
+	.ui-medium-and-larger {
+		display: none;
+	}
+}
+
+#image-modal-buttons {
+	position: absolute;
+    bottom: 0;
+}
+
+.img-table,
+.display-table {
+    height: 100%;
+    display: table;
+    width: 100%;
+
+    .img-cell,
+    .display-table-cell {
+        height: 100%;
+        display: table-cell;
+        vertical-align: middle;
+    }
+}

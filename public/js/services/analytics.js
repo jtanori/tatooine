@@ -19,7 +19,7 @@ angular.module('jound.services')
         }
 
         return d;
-    };
+    }
 
     global.track = function(type, e){
         var deviceData = getDeviceData(e);

@@ -4,38 +4,38 @@
         </button>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
-		<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()"  ng-disabled="newBusinessMarker || tracingPosition"></button>
-        <button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
+		<button ng-if="!newBusinessMarker" class="button button-icon button-clear ion-navigate" ng-class="{'active': $parent.settings.usingGeolocation, 'disabled': tracingPosition}" ng-click="toggleGeolocation()" id="map-geolocation-button"></button>
+		<button class="button button-icon button-clear ion-gear-a" menu-toggle="right" ng-click="openRight()" ng-disabled="newBusinessMarker">
         </button>
     </ion-nav-buttons>
 
 	<form class="bar bar-subheader item-input-inset bar-assertive" name="searchForm" ng-submit="submit(searchForm)" ng-disabled="!categories.length || newBusinessMarker">
+		<button type="button" ng-show="query && query.length > 2" ng-click="clearSearch()" class="clear-search icon ion-ios-close close button button-clear button-icon button-small" id="home-search-clear"></button>
 		<label class="item-input-wrapper" id="home-search-box">
 			<i class="icon ion-ios-search placeholder-icon"></i>
 			<input type="search" placeholder="¿Qué estas buscando?" autocomplete="false" autocorrect="false" ng-model="query" ng-focus="isSearchFocused = true" ng-blur="isSearchFocused = false" ng-change="filterCategories()" ng-model-options="{ debounce: 350 }" id="home-search-input">
 		</label>
-		<i ng-show="query && query.length > 2 && isSearchFocused" ng-click="clearSearch()" class="clear-search icon ion-ios-close close" id="home-search-clear"></i>
 		<button class="button button-clear" type="submit" id="home-search-submit">
 			Buscar
 		</button>
 	</form>
 	<ion-content scroll="false" scrollbar-x="false" scrollbar-y="false" class="has-header has-subheader">
 		<ion-pane>
-			<ul class="list list-inset" id="categories-results-list" ng-show="isSearchFocused" ng-class="{'visible':isSearchFocused}">
-				<li class="item" ng-repeat="category in categories" ng-if="category.selected" ng-click="selectCategory(category)">{{category.title}}</li>
-				<li class="item item-warning" ng-show="!categoriesFound"><i class="icon ion-heart-broken"></i> No hay coincidencias</li>
-			</ul>
+			<div class="list list-inset" id="categories-results-list" ng-show="isSearchFocused">
+				<div class="item" ng-repeat="category in categories" ng-if="category.selected">
+					<div class="label" ng-click="selectCategory(category)">{{category.title}}</div>
+					<button class="button button-small button-positive" ng-click="selectCategory(category, true)">Buscar</button>
+				</div>
+			</div>
 			<div id="map-category" ng-if="category"><button type="button" class="button button-clear button-icon ion-close" ng-click="clearCategory()"></button> {{category.title}}</div>
 
-			<ui-gmap-google-map data-tap-disabled="true" control="map.control" center='map.center' zoom='map.zoom' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled, 'has-venue':currentModel.id, 'has-routes':routes.length}">
+			<ui-gmap-google-map data-tap-disabled="true" control="map.control" center='map.center' zoom='map.zoom' bounds='map.bounds' id="map" options="map.options" pan="true" events="map.events" ng-class="{'disable-pointer-events': $root.mainMap.disabled, 'has-venue':currentModel.id, 'has-routes':routes.length}">
 
 				<ui-gmap-polyline ng-repeat="p in routes" path="p.path" stroke="p.stroke" visible='true' geodesic='false' fit="true" editable="false" draggable="false", events="p.events"></ui-gmap-polyline>
 				<ui-gmap-markers
 					models='featuredMarkers'
 					idKey='id'
 					type="spider"
-					typeOptions=''
-					typeEvents=''
 
 					coords="'position'"
 					icon="'icon'"
@@ -46,14 +46,13 @@
 					events="events"
 					doRebuildAll="false"
 					control="markersControl"
+					options="'options'"
 					>
 				</ui-gmap-markers>
 				<ui-gmap-markers
 					models='markers'
 					idKey='id'
 					type="spider"
-					typeOptions=''
-					typeEvents=''
 
 					coords="'position'"
 					icon="'icon'"
@@ -82,7 +81,8 @@
 					editable='false'
 					visible='map.circle.visible'
 					center='map.circle.center',
-					control='map.circle'
+					control='map.circle',
+					events='map.circle.events'
 				>
 
 				</ui-gmap-circle>

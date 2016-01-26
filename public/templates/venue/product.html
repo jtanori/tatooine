@@ -1,0 +1,44 @@
+<ion-view title="{{item.name}} de {{venue.get('name')}}" align-title="left">
+	<ion-nav-buttons side="left">
+        <a href="/venues/{{venueId}}/products" class="button button-icon ion-ios-arrow-back"></a>
+    </ion-nav-buttons>
+	<ion-nav-buttons side="right">
+        <a ng-click="share()" class="button button-icon ion-share"></a>
+    </ion-nav-buttons>
+    <ion-content id="venue-product-page">
+    	<div ng-if="!item" class="center aligned padding error message perro">
+            <img src="img/perro.png" />
+    		<h3 class="assertive">Parece que ese productos no existes, disculpe las inconveniencias.</h3>
+			<p>- Apu Nahasapeemapetilon</p>
+    	</div>
+		<div ng-if="item.picture && item.picture.url" id="venue-product-page-cover">
+			<div class="venue-slide-bg" style="background-image: url({{item.picture.url}})"></div>
+			<img src="{{item.picture.url}}" />
+			<div ng-if="item.price" class="price">Precio: ${{item.price.toFixed(2)}}</div>
+			<button type="button" class="button button-icon icon availability" ng-click="order()" ng-class="{'ion-close': !item.available, 'ion-checkmark energized': item.available}"> Disponible</button>
+		</div>
+		<div ng-if="!item.picture && item.pictureUrl" id="venue-product-page-cover">
+			<div class="venue-slide-bg" style="background-image: url({{item.pictureUrl}})"></div>
+			<img src="{{item.pictureUrl}}" />
+			<div ng-if="item.price" class="price">Precio: ${{item.price.toFixed(2)}}</div>
+			<button type="button" class="button button-icon icon availability" ng-click="order()" ng-class="{'ion-close': !item.available, 'ion-checkmark energized': item.available}"> Disponible</button>
+		</div>
+		<a id="venue-product-page-call" ng-if="venue.get('phone_number')" class="button button-positive button-full" href="tel:{{venue.get('phone_number')}}"><i class="icon ion-ios-telephone"></i> Llama y consiguelo ahora</a>
+		<div class="list" id="venue-product-page-description" ng-if="item.name || item.description">
+			<div class="item" ng-if="item.name">
+				<h2>Producto</h2>
+				<p>{{item.name}}</p>
+			</div>
+			<div class="item" ng-if="item.description">
+				<h2>Descripción del producto</h2>
+				<p>{{item.description}}</p>
+			</div>
+		</div>
+		<ul ng-if="item.features">
+			<div class="item item-divider">Otras características</div>
+			<li ng-repeat="feature in item.features" class="item">
+				<p>{{feature}}</p>
+			</li>
+		</ul>
+    </ion-content>
+</ion-view>

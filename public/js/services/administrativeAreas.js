@@ -3,7 +3,7 @@ angular.module('jound.services')
 .factory('AdministrativeAreaService', ['$q','$http',
   function ($q,$http) {
 
-    var global = {};  
+    var global = {};
     var Country = Parse.Object.extend('Country');
     var State = Parse.Object.extend('State');
 
@@ -26,7 +26,7 @@ angular.module('jound.services')
     global.getByType = getByType;
 
     global.getComponents = function(place){
-      
+
       var q=$q.defer();
       var countryQuery = new Parse.Query(Country);
       var stateQuery = new Parse.Query(State);
@@ -48,7 +48,7 @@ angular.module('jound.services')
                 .equalTo('code', s.short_name)
                 .equalTo('country', country)
                 .first(function(state){
-                  
+
                   if(state){
                     q.resolve({country: country, state: state});
                   }else{
@@ -68,7 +68,7 @@ angular.module('jound.services')
                 });
             }else{
               //Create new country if this does not exists
-              country = new Country({code: c.short_name, name: c.long_name})
+              country = new Country({code: c.short_name, name: c.long_name});
               country
                 .save()
                 .then(function(){

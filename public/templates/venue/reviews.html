@@ -1,7 +1,9 @@
 <ion-view title="{{name}} - Reseñas" align-title="left">
 	<ion-nav-buttons side="left">
-        <button class="button button-icon ion-ios-arrow-back" ng-click="back()">
-        </button>
+        <a href="/venues/{{venueId}}" class="button button-icon ion-ios-arrow-back"></a>
+    </ion-nav-buttons>
+	<ion-nav-buttons side="right">
+        <a ng-click="share()" class="button button-icon ion-share" ng-if="items.length"></a>
     </ion-nav-buttons>
     <ion-content id="venue-reviews-page" class="has-subfooter">
     	<ion-refresher pulling-text="Actualizar reseñas..." on-refresh="refreshItems(venueId)"></ion-refresher>
@@ -15,18 +17,18 @@
 				<small class="date">Publicado el {{item.displayDate}}</small>
 			</ion-item>
     	</ion-list>
-    	<div ng-if="noReviews" class="center aligned padding error message">
-    		<div><i class="icon ion-nuclear"></i></div>
+    	<div ng-if="noReviews" class="center aligned padding error message perro">
+    		<img src="img/perro.png" />
     		<p>No hay reseñas, se el primero en decir algo.</p>
     	</div>
         <ion-infinite-scroll on-infinite="loadItems(venueId, skip)" distance="1%" immediate-check="true" ng-if="canLoad()">
             <ion-spinner></ion-spinner>
         </ion-infinite-scroll>
     </ion-content>
-    <ion-footer-bar class="bar-dark bar-subfooter center aligned" ng-class="{'disable-pointer-events disabled': canReview()}">
+    <ion-footer-bar class="bar-dark bar-subfooter center aligned" ng-class="{'disable-pointer-events disabled': canReview()}" ng-if="!$parent.user.isAnonimous()">
 		<rating ng-model="rating" max="max" readonly="readOnly" ng-class="{energized:rating>0}"></rating>
 	</ion-footer-bar>
-    <ion-footer-bar align-title="left" class="bar-dark item-input-inset">
+    <ion-footer-bar align-title="left" class="bar-dark item-input-inset" ng-if="!$parent.user.isAnonimous()">
 		<label class="item-input-wrapper">
 			<i class="icon ion-chatboxes placeholder-icon"></i>
 			<input type="text" placeholder="Escribe tu reseña..." ng-model="reviewText" on-enter="saveReview(reviewText, rating)">

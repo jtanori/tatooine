@@ -1,21 +1,27 @@
-<div class="modal image-modal transparent">
-	<ion-content class="transparent" id="tutorial">
-		<div class="padding">
-			<div class="center aligned">
-                <img src="img/jound-title.png" id="logo">
-            </div>
-			<h3 class="light center aligned">Bienvenido</h3>
-			<p class="light">Te dejamos unos cuantos videos para que aprendas a usar <strong>Jound</strong> rápidamente (aunque es super fácil).</p>
-		</div>
-		<div class="list list-inset">
-            <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
-                <img src="img/icon-yt.png"/>
-                <h2 class="light">{{video.title}}</h2>
-                <p class="light">{{video.description}}</p>
-            </div>
-        </div>
-		
+<ion-view id="tutorial" hide-nav-bar="true" class="dark-bg">
+	<ion-content>
+		<ion-slide-box id="tutorial-slider" on-slide-changed="slideChanged(index)" pager-click="slideTo(index)" delegate-handle="tutorialSlideboxHandle" show-pager="false">
+			<ion-slide ng-repeat="item in tutorialItems">
+				<h3 class="light">{{item.title}}</h3>
+				<img src="{{item.src}}" />
+				<h5 class="light">{{item.text}}</h5>
+			</ion-slide>
+		</ion-slide-box>
+		<div class="row">
+			<div class="col right aligned">
+				<button type="button" class="button button-clear" ng-click="previous()" ng-disabled="!canPrev()">Previa</button>
+			</div>
 
-		<div class="center aligned"><button type="button" class="button button-assertive" ng-click="closeTutorial()">Omitir</button></div>
-	</ion-content>
-</div>
+			<div class="center aligned col">
+				<button type="button" class="button button-assertive" ng-click="closeTutorial()">
+					<span ng-if="!canNext()">Comenzar</span>
+					<span ng-if="canNext()">Saltar</span>
+				</button>
+			</div>
+
+			<div class="col left aligned">
+				<button type="button" class="button button-clear" ng-click="next()" ng-disabled="!canNext()">Siguiente</button>
+			</div>
+		</div>
+    </ion-content>
+</ion-view>

@@ -38,12 +38,16 @@
     "youtube-api": "^0.3.2"
   },
   "devDependencies": {
-    "install": "^0.1.8",
-    "npm": "^2.4.1",
     "gulp": "^3.8.11",
+    "gulp-concat": "^2.6.0",
     "gulp-jshint": "^1.10.0",
+    "gulp-minify-css": "^0.3.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.1.1",
     "gulp-uglify": "^1.1.0",
+    "install": "^0.1.8",
     "jshint-stylish": "^1.0.1",
+    "npm": "^2.4.1",
     "watchify": "^2.4.0"
   }
 }

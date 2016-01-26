@@ -32,7 +32,7 @@ angular.module('jound.services')
                     $modal.remove();
                     $modal = null;
                     scope.socialShare = null;
-                }
+                };
             });
         }
     };

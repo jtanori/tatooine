@@ -302,10 +302,11 @@ var getVenueById = function(req, res){
             });
         }
 
+        console.log('venue id', v.id);
+
         if(isAjax){
             res.status(200).json({ status: 'success', venue: venue});
         }else{
-            console.log(keywords, 'keywords');
             render(
                 {
                     activeMenuItem: 'home',
@@ -583,7 +584,7 @@ var home = function(req, res){
     var onSuccess = function(r){
 
         r = _.map(r, function(v){
-            venue = VenueModule.parse(v);
+            var venue = VenueModule.parse(v);
 
             if(!citiesTrack[v.get('locality')]){
                 cities.push(v.get('locality'));
@@ -593,7 +594,7 @@ var home = function(req, res){
         });
         //Remove duplicates
         r = _.uniq(r, true, function(rs){
-            return rs.get('name') + '-' + rs.get('position').latitude + '-' + rs.get('position').longitude;
+            return rs.name + '-' + rs.position.latitude + '-' + rs.position.longitude;
         });
 
         if(isAjax){
@@ -1835,8 +1836,6 @@ var trackEvent = function(req, res){
 
         console.log(JSON.stringify(req.body.data), 'data');
 
-        Parse.Cloud.useMasterKey();
-
         _.each(req.body.data, function(d, i){
 
             switch(i){
@@ -1891,6 +1890,8 @@ var trackEvent = function(req, res){
             }
         });
 
+        Parse.Cloud.useMasterKey();
+
         a
             .save()
             .then(function(){
@@ -1913,6 +1914,9 @@ Jound.use(checkEnvironment);
 
 Jound.get('/', home);
 Jound.get('/venue', home);
+Jound.get('/tutorial', home);
+Jound.get('/login', home);
+Jound.get('/forgot', forgot);
 Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/events', getEventsForVenueGET);
 Jound.get('/venue/:id/events/:eventId', getEventByIdGET);
@@ -1952,8 +1956,6 @@ Jound.get('/agregar-negocio', businessAdd);
 Jound.get('/what-is-jound', whatIsJound);
 Jound.get('/products', function(req, res){res.redirect(301, '/productos')});
 Jound.get('/productos', products);
-Jound.get('/login', login);
-Jound.get('/forgot', forgot);
 
 Jound.post('/like', like);
 Jound.post('/unlike', unlike);

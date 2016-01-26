@@ -96,7 +96,7 @@ angular
             }else{
                 window.open(url, '_blank');
             }
-        };
+        }
 
         function openURL(address){
             if(typeof address !== "string"){

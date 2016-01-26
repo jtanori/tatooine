@@ -1,16 +1,23 @@
 <ion-side-menus enable-menu-with-back-views="false">
+    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
+
     <ion-side-menu-content drag-content="false">
-        <ion-nav-bar class="bar-assertive nav-title-slide-ios7">
+        <ion-nav-bar class="bar-assertive nav-title-slide-ios7" animation="slide-left-right">
         </ion-nav-bar>
         <ion-nav-view name="app" animation="slide-left-right"></ion-nav-view>
     </ion-side-menu-content>
 
     <ion-side-menu side="left" ng-class="{'menu-active': isLeftOpen()}">
         <ion-content class="dark-bg drawer" id="drawer">
-            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')">
+            <div id="drawer-avatar" style="background-image:url('{{user.getAvatar()}}')" ng-if="!$parent.user.isAnonimous()">
                 <div class="center aligned" id="drawer-avatar-info">
-                    <!--a ng-click="profile()" class="button button-clear button-icon ion-wrench"></a-->
                     <span class="h5 light">Hola {{user.get('fullName') || user.get('username')}}</span>
+                </div>
+            </div>
+            <div id="drawer-avatar" ng-if="$parent.user.isAnonimous()" class="avatar-guest">
+                <div class="center aligned" id="drawer-avatar-info">
+                    <span class="h5 light">Hola invitado :)</span>
                 </div>
             </div>
             <div>
@@ -26,20 +33,17 @@
                 <a class="button button-clear button-full left aligned" ng-click="privacy()">
                     <i class="icon ion-lock-combination"></i> Privacidad
                 </a>
-                <a class="button button-assertive button-full left aligned" ng-click="business()" ng-class="{disabled: !newBusinessStarted}">
+                <!--a class="button button-assertive button-full left aligned" ng-click="business()" ng-class="{disabled: !newBusinessStarted}">
                     <i class="icon ion-upload"></i> Agregar un negocio
-                </a>
+                </a-->
             </div>
 
             <br />
 
             <div class="center aligned" ng-if="$parent.user.isAnonimous()">
-                <a class="button button-assertive button-full" ng-click="signup()">Crear cuenta</a>
+                <a class="button button-assertive button-full" ng-click="signup()">Iniciar Sesión</a>
             </div>
-            <div class="center aligned" ng-if="$parent.user.isAnonimous()">
-                <a class="button button-positive button-full" ng-click="facebookLogin()"><i class="icon ion-social-facebook"></i> Entrar con Facebook</a>
-            </div>
-            <div class="center aligned" ng-if="!$parent.user.isAnonimous()">
+            <div class="center aligned">
                 <a class="button button-clear button-small button-full" menu-close ng-click="logout()">
                     <i class="icon ion-log-out"></i> Cerrar Sesión
                 </a>
@@ -47,8 +51,6 @@
         </ion-content>
     </ion-side-menu>
 
-    <div ng-if="isLeftOpen()" class="closer left" ng-click="closeLeft()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
-    <div ng-if="isRightOpen()" class="closer right" ng-click="closeRight()"><button type="button" class="button button-clear button-icon ion-close"></button></div>
     <ion-side-menu side="right" ng-class="{'menu-active': isRightOpen()}">
         <div class="bar bar-header bar-dark">
             <h1 class="title">Configuración</h1>
@@ -82,7 +84,7 @@
 
             <div class="center aligned light">¿Necesitas ayuda? Dale play a los videos oficiales y aprende a usar <strong>Jound</strong> sin problemas.</div>
 
-            <div class="list list-inset">
+            <div class="list list-inset hide-on-keyboard-open" ng-if="helpVideos && helpVideos.length">
                 <div class="item item-dark item-avatar" ng-repeat="video in helpVideos" ng-click="openVideo(video.id)">
                     <img src="img/icon-yt.png"/>
                     <h2 class="light">{{video.title}}</h2>
@@ -90,18 +92,18 @@
                 </div>
             </div>
         </ion-content>
-        <div class="tabs tabs-dark tabs-icon-only">
-            <a class="tab-item" ng-click="openExternalApp('fb', fbID)">
+        <div class="tabs tabs-dark tabs-icon-only hide-on-keyboard-open">
+            <a class="tab-item" ng-click="openExternalApp('fb', fbID)" ng-if="fbID">
                 <i class="icon ion-social-facebook"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-social-twitter" ng-click="openExternalApp('twitter', twitter)"></i>
+            <a class="tab-item" ng-click="openExternalApp('twitter', twitter)" ng-if="twitter">
+                <i class="icon ion-social-twitter"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-social-instagram" ng-click="openExternalApp('instagram', instagram)"></i>
+            <a class="tab-item" ng-click="openExternalApp('instagram', instagram)" ng-if="instagram">
+                <i class="icon ion-social-instagram"></i>
             </a>
-            <a class="tab-item">
-                <i class="icon ion-earth" ng-click="openUrl(www)"></i>
+            <a class="tab-item" ng-click="openUrl(www)" ng-if="www">
+                <i class="icon ion-earth"></i>
             </a>
         </div>
     </ion-side-menu>

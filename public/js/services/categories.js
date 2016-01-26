@@ -12,7 +12,7 @@ angular.module('jound.services')
         },
         toPlainArray: function(){
             return _.memoize(function(){
-                return this.map(function(c){return c.get('keywords').map(function(k){return k + '__' + c.id})}).reduce(function(cu, n){return cu.concat(n);}, []);
+                return this.map(function(c){return c.get('keywords').map(function(k){return k + '__' + c.id;});}).reduce(function(cu, n){return cu.concat(n);}, []);
             }.bind(this))();
         }
     });
@@ -30,7 +30,7 @@ angular.module('jound.services')
                 }
             });
 
-            return deferred.promise
+            return deferred.promise;
         },
         loadCategories: function(categories){
             var c = new Categories();

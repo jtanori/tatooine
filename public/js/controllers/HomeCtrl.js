@@ -5,6 +5,7 @@ angular
         $rootScope,
         $q,
         $timeout,
+        $interval,
         $state,
         $stateParams,
 
@@ -14,6 +15,7 @@ angular
         $ionicModal,
         $ionicPosition,
         $location,
+        geolocation,
         toastr,
 
         AppConfig,
@@ -130,24 +132,47 @@ angular
                         c.selected = false
                     });
                 }
+
+                filterMarkersByKeywords($scope.featuredMarkers, val);
             } else {
                 //Show all categories when nothing is written
                 _.each($scope.categories, function(c) {
-                    c.selected = true
+                    c.selected = true;
                 });
                 $scope.categoriesFound = $scope.categories.length;
+                showAllFeatured();
             }
         };
 
-        $scope.selectCategory = function(c) {
+        $scope.selectCategory = function(c, autoSearch) {
             $timeout(function(){
                 $scope.$apply(function(){
                     $scope.category = c;
                     $scope.query = '';
 
-                    AnalyticsService.track('selectCategory', {category: ''  + c.id});
+                    if(autoSearch){
+                        $scope.submit();
+                    }
                 });
             });
+            //TODO: Show/hide featured markers
+            if(!_.isEmpty($scope.featuredVenues)){
+                $scope.featuredMarkers.forEach(function(m){
+                    if(c.id === m.data.category){
+                        $timeout(function(){
+                            $scope.$apply(function(){
+                                m.options.visible = true;
+                            });
+                        });
+                    }else if(m.options.visible){
+                        $timeout(function(){
+                            $scope.$apply(function(){
+                                m.options.visible = false;
+                            });
+                        });
+                    }
+                });
+            }
         };
 
         $scope.submit = function(form) {
@@ -155,7 +180,13 @@ angular
                 return;
             }
 
+            if(!_.isEmpty(window.initialVenues)){
+                delete window.initialVenues;
+            }
+
             isSearching = true;
+            lockPosition(true, false);
+            disableMap();
 
             $scope.clearResults();
             $scope.currentMarker = null;
@@ -163,15 +194,16 @@ angular
             $scope.venue = {};
             $scope.points = [];
             $scope.isSearchFocused = false;
-            $scope.featuredVenues = [];
+            //$scope.featuredVenues = [];
 
             ionic.DomUtil.blurAll();
 
-            var position, p, category;
+            var p, category;
             var c = $scope.category ? $scope.category.id : false;
             var q = $scope.query && $scope.query.length ? $scope.query.trim() : '';
-            var r = $rootScope.settings.searchRadius;
-            var position = $rootScope.settings.position;
+            var r = $scope.map.circle.radius;
+            var position = {coords: {latitude: $scope.map.marker.center.latitude, longitude: $scope.map.marker.center.longitude}};
+            var excluded = $scope.featuredVenues.map(function(v){return v.id;});
 
             var search = '';
             var s = {};
@@ -188,28 +220,30 @@ angular
                 s.category = c;
             }
 
-            if(position && position.coords && position.coords.latitude && position.coords.longitude){
-                s.lat = position.coords.latitude;
-                s.lng = position.coords.longitude;
-            }else{
-                s.lat = $scope.map.marker.center.latitude;
-                s.lng = $scope.map.marker.center.longitude;
-            }
+            s.lat = position.coords.latitude;
+            s.lng = position.coords.longitude;
 
             $location.path('/venues').search(s);
             $location.replace();
 
+            $ionicLoading.show({template: 'Buscando...'});
+
             $timeout(function(){
-                $ionicLoading.show({template: 'Buscando, espere un segundo :)'});
-
-                AnalyticsService.track('search', {position: s.lat + ',' + s.lng, latitude: s.lat, longitude: s.lng, search: q, radius: r, category: c});
-
-                //TODO: Fix backwards (attributes from URI) search
                 VenuesService
-                    .search({coords:{latitude: s.lat, longitude: s.lng}}, $rootScope.settings.searchRadius, q, c)
-                    .then(function(venues) {
+                    .search(position, $rootScope.settings.searchRadius, q, c, excluded)
+                    .then(function(venues, keywords) {
                         $timeout(function() {
+                            enableMap();
                             $ionicLoading.hide();
+
+                            if(!_.isEmpty($scope.featuredMarkers)){
+                                if(c){
+                                    filterMarkersByCategoryAndKeywords($scope.featuredMarkers, c, keywords);
+                                }else if(keywords){
+                                    filterMarkersByKeywords($scope.featuredMarkers, keywords);
+                                }
+                            }
+
                             $scope.$apply(function() {
                                 $scope.venues = venues;
                                 isSearching = false;
@@ -217,14 +251,25 @@ angular
                             });
                         });
                     }, function(error) {
+                        enableMap();
                         $ionicLoading.hide();
-                        $timeout(function(){
-                            isSearching = false;
-                            swal({title: "Error", text: error.message, type: "error", confirmButtonText: "Ok" });
-                            AnalyticsService.track('error', {position: s.lat + ',' + s.lng, latitude: s.lat, longitude: s.lng, type: 'search', code: error.code, message: error.message, search: q, radius: r, category: c});
-                        });
+
+                        isSearching = false;
+                        var featuredFound = 0;
+
+                        if(error.code === 404){
+                            featuredFound = filterMarkersByKeywords($scope.featuredMarkers, error.keywords);
+                        }
+
+                        if(!featuredFound){
+                            $timeout(function(){
+                                swal({title: "Error", text: error.message, type: "error", confirmButtonText: "Ok" });
+                            });
+                        }
+
+                        AnalyticsService.track('error', {position: s.lat + ',' + s.lng, latitude: s.lat, longitude: s.lng, type: 'search', code: error.code, message: error.message, search: q, radius: r, category: c});
                     });
-            });
+            }, 300);
         };
 
         $scope.clearCategory = function(){
@@ -235,8 +280,19 @@ angular
                 $scope.currentMarker = null;
                 $scope.currentModel = null;
                 $scope.points = [];
+
+                $location.path('/venues').search({});
+                $location.replace();
             }
-        }
+
+            showAllFeatured();
+
+            _.each($scope.categories, function(c) {
+                c.selected = true;
+            });
+
+
+        };
 
         $scope.share = function() {
             var img = $scope.currentModel.getLogo();
@@ -250,9 +306,7 @@ angular
                 msg = '!Hey! Pude encontrar ' + $scope.currentModel.get('name') + ' en #' + s.replaceAll($scope.currentModel.getCityName(), ' ', '') + ' usando #jound';
             }
 
-            AnalyticsService.track('beforeShare', {type: 'venue', id: id});
-
-            var link = 'http://www.jound.mx/venue/' + id;
+            var link = AppConfig.HOST_URL + 'venues/' + id;
 
             ShareService.share($scope, {
                 url: link,
@@ -266,13 +320,23 @@ angular
         $scope.openVenue = function() {
             VenuesService.current($scope.currentModel);
 
+            $ionicLoading.show();
+
             $timeout(function(){
                 $scope.$apply(function(){
                     AnalyticsService.track('openVenue', {origin: 'home', id: $scope.currentModel.id});
-                    $state.go('app.venue', {venueId: $scope.currentModel.id});
+                    $state
+                        .go('app.venue', {venueId: $scope.currentModel.id})
+                        .then(angular.noop, function(e){
+                            AnalyticsService.track('error', {type: 'openVenue', code: e.code, message: e.message, id: $scope.currentModel.id});
+                            swal({title: "Error", text: 'Ha ocurrido un error al cargar los datos, hemos reportado el error.', type: "error", confirmButtonText: "Ok" });
+                        })
+                        .finally(function(){
+                            $ionicLoading.hide();
+                        });
                 });
             });
-        }
+        };
 
         $scope.traceRoute = function() {
             if(!$scope.centerCaptured){
@@ -388,24 +452,182 @@ angular
                 $scope.$apply(function() {
                     $scope.routes.splice(route, 1);
                 });
-            })
-        }
+            });
+
+            /*
+            $timeout(function() {
+                $scope.$apply(function() {
+                    route.line.remove();
+                    $scope[route.name] = null;
+
+                    _.each($scope.markers, function(m){
+                        if(m.get('data').id == route.marker){
+                            m.setIcon(AppConfig.MARKERS.VENUE);
+                        }
+                    });
+
+                    route = null;
+                });
+            });
+            */
+        };
 
         $scope.removeAllRoutes = function() {
             $scope.routes = [];
         };
 
+        $scope.$on('updateFeatured', function(e, exclude){
+            if(!exclude && $scope.featuredVenues.length){
+                $scope.featuredVenues = [];
+            }
+
+            getFeaturedVenues($rootScope.settings.position, $rootScope.settings.searchRadius);
+        });
+
+        $scope.$on('$ionicView.leave', function() {
+            disableMap();
+            $interval.cancel($scope.watchPosition);
+            $scope.watchPosition = null;
+        });
+
+        $rootScope.$watch('user', function(newUser, prevUser){
+            if(newUser && !newUser.isAnonimous()){
+                $scope.clearResults();
+                $scope.currentMarker = null;
+                $scope.currentModel = null;
+                $scope.venue = {};
+                $scope.points = [];
+                $scope.isSearchFocused = false;
+                $scope.featuredVenues = [];
+            }
+        });
+
+        $scope.clearSearch = function(){
+            $timeout(function(){
+                $scope.$apply(function(){
+                    $scope.query = '';
+
+                    if($scope.currentMarker){
+                        if($scope.currentMarker.model.data.featured){
+                            $scope.currentMarker.options.icon.url = AppConfig.MARKERS.VENUE_FEATURED.url;
+                        }else{
+                            $scope.currentMarker.options.icon.url = AppConfig.MARKERS.VENUE.url;
+                        }
+                    }
+
+                    $scope.clearResults();
+                    $scope.currentMarker = null;
+                    $scope.currentModel = null;
+                    ionic.DomUtil.blurAll();
+
+                    $location.path('/venues').search({});
+                    $location.replace();
+                });
+            });
+        };
+
+        $scope.clearResults = function(){
+            AnalyticsService.track('clearResults');
+
+            _.each($scope.venues, function(v){v = null;});
+            _.each($scope.markers, function(m){m = null;});
+
+            $scope.venues = [];
+            $scope.markers = [];
+            $scope.removeAllRoutes();
+            showAllFeatured();
+        };
+
+        function filterMarkersByKeywords($markers, keywords){
+            var allFound = 0;
+
+            //console.log('filterMarkersByKeywords', $markers, keywords);
+
+            if(!_.isEmpty($markers)){
+                if(_.isEmpty(keywords)){
+                    return allFound;
+                } else if(_.isString(keywords)){
+                    keywords = [keywords];
+                }
+
+                allFound = $scope.featuredMarkers.map(function(m){
+                    var found = _.intersection(m.data.keywords, keywords);
+
+                    if(found.length){
+                        if(!m.options.visible){
+                            $timeout(function(){
+                                $scope.$apply(function(){
+                                    m.options.visible = true;
+                                });
+                            });
+                        }
+                    }else if(m.options.visible){
+                        $timeout(function(){
+                            $scope.$apply(function(){
+                                m.options.visible = false;
+                            });
+                        });
+                    }
+
+                    return found.length;
+                }).reduce(function(c, p){
+                    return p + c;
+                });
+            }
+
+            return allFound;
+        }
+
+        function filterMarkersByCategoryAndKeywords($markers, category, keywords){
+            var markers = $markers.filter(function(m){
+                var c = m.get('data').category;
+
+                if(c === category){
+                    return m;
+                }
+            });
+
+            if(!_.isEmpty(markers)){
+                if(!_.isEmpty(keywords)){
+                    filterMarkersByKeywords(markers, keywords);
+                }else{
+                    markers.forEach(function(m){
+                        m.visible = true;
+                    });
+                }
+            }else{
+                hideAllFeatured();
+            }
+        }
+
+        function showAllFeatured(){
+            if(!_.isEmpty($scope.featuredMarkers)){
+                $scope.featuredMarkers.forEach(function(m){
+                    m.options.visible = true;
+                });
+            }
+        }
+
+        function hideAllFeatured(){
+            if(!_.isEmpty($scope.featuredMarkers)){
+                $scope.featuredMarkers.forEach(function(m){
+                    m.options.visible = false;
+                    m.icon.url = AppConfig.MARKERS.VENUE_FEATURED.url;
+                });
+            }
+        }
+
         function disableMap() {
             if ($rootScope.mainMap) {
                 $rootScope.mainMap.disabled=true;
             }
-        };
+        }
 
         function enableMap() {
             if ($rootScope.mainMap) {
                 $rootScope.mainMap.disabled=false;
             }
-        };
+        }
 
         function getRoutePoints(routes) {
             var routePoints = [];
@@ -428,33 +650,7 @@ angular
                 points: routePoints,
                 distance: distance
             };
-        };
-
-        $scope.clearSearch = function(){
-            AnalyticsService.track('clearSearch');
-
-            $timeout(function(){
-                $scope.$apply(function(){
-                    $scope.query = '';
-                    $scope.clearResults();
-                    $scope.currentMarker = null;
-                    $scope.currentModel = null;
-                    ionic.DomUtil.blurAll();
-                    //Keyboard.hide();
-                });
-            });
-        };
-
-        $scope.clearResults = function(){
-            AnalyticsService.track('clearResults');
-
-            _.each($scope.venue, function(v){v = null;});
-            _.each($scope.markers, function(m){m = null});
-
-            $scope.venues = [];
-            $scope.markers = [];
-            $scope.removeAllRoutes();
-        };
+        }
 
         $scope.newBusinessMarker = null;
         $scope.newBusiness = angular.copy(NEW_VENUE_MASTER);
@@ -490,7 +686,7 @@ angular
                     target: latlng,
                     zoom: 16,
                     duration: 1000
-                })
+                });
                 $rootScope.$broadcast('venue:new');
             });
         };
@@ -552,7 +748,7 @@ angular
             }else{
                 $scope.newBusinessModal.show();
             }
-        }
+        };
 
         $scope.saveNewBusiness = function(){
             var nb = $scope.newBusiness;
@@ -606,30 +802,44 @@ angular
 
         $scope.clearSelectedVenue = function(){
             onMapClick();
-        }
+        };
 
         var getFeaturedVenues = function(p, r) {
             if(!$scope.searchFeatured) {
                 return;
             }
 
+            if(_.isEmpty(p) || _.isEmpty(p.coords)){
+                return;
+            }
+
+            var excludedVenues = $scope.featuredVenues.map(function(v){return v.id;});
+
             VenuesService
-                .getFeatured(p, r)
+                .getFeatured(p, r, $scope.category.id, excludedVenues)
                 .then(function(venues) {
                     AnalyticsService.track('getFeaturedVenues', {radius:  r, latitude:  p.coords.latitude, longitude:  p.coords.longitude, position: p.coords.latitude + ',' + p.coords.longitude});
 
                     $timeout(function() {
                         $scope.$apply(function() {
-                            $scope.featuredVenues = venues;
+                            if(excludedVenues.length){
+                                $scope.featuredVenues = $scope.featuredVenues.concat(venues);
+                            }else{
+                                $scope.featuredVenues = venues;
+                            }
                         });
                     });
                 }, function(e){
                     AnalyticsService.track('error', {type: 'getFeaturedVenues', radius:  r, latitude:  p.coords.latitude, longitude:  p.coords.longitude, code: e.code, message: e.message, position: p.coords.latitude + ',' + p.coords.longitude});
                 });
-        }
+        };
 
-        var lockPosition = function(lock){
+        var lockPosition = function(lock, showMessage){
             $scope.centerCaptured = lock === false ? false : true;
+
+            if(showMessage === false){
+                return;
+            }
 
             var message;
             if($scope.centerCaptured){
@@ -639,12 +849,12 @@ angular
             }
 
             AnalyticsService.track('lockPosition', {release: !!lock});
-            toastr.success(message);
-        }
+            toastr.info(message, null, {"closeButton": true,"positionClass": "toast-bottom-center", "preventDuplicates": true});
+        };
 
         var releasePosition = function(){
             lockPosition(false);
-        }
+        };
 
         var mainMarkerClick = function(marker){
             if(!$rootScope.settings.usingGeolocation){
@@ -653,7 +863,7 @@ angular
                 toastr.success('Esta es tu posicion, segun la red U_U');
                 AnalyticsService.track('position', {type: 'lockedByNetwork'});
             }
-        }
+        };
 
         function addVenue(model, isFeatured) {
             var l = model.get('position');
@@ -665,7 +875,9 @@ angular
                     url: AppConfig.MARKERS.VENUE.url,
                     scaledSize: new google.maps.Size(30, 43)
                 },
-                visible: true,
+                options: {
+                    visible: true
+                },
                 position: {
                     latitude: l.latitude,
                     longitude: l.longitude
@@ -709,146 +921,88 @@ angular
                     //console.log($scope.markersControl.getGMarkers());
                 }
             }
-        };
+        }
 
-        function zoomToRadiusLevel(radius) {
-            var deferred = $q.defer();
-
-            if (!radius) {
-                AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: 2, message: 'No radius provided'});
-                deferred.reject({message: 'No radius provided', code: 2});
-            }else{
-                switch (radius / 1000) {
-                    case 0.5:
-                        $scope.map.zoom = 15;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 1:
-                        $scope.map.zoom = 14;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 2:
-                        $scope.map.zoom = 13;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 3:
-                    case 4:
-                        $scope.map.zoom = 12;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 5:
-                        $scope.map.zoom = 12;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 7.5:
-                        $scope.map.zoom = 11;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 10:
-                        $scope.map.zoom = 11;
-                        deferred.resolve(radius/1000);
-                        break;
-                    case 15:
-                        $scope.map.zoom = 10;
-                        deferred.resolve(radius/1000);
-                        break;
-                    default:
-                        AnalyticsService.track('error', {type: 'zoomToRadiusLevel', code: 3, message: 'No valid radius provided'});
-                        deferred.reject({message: 'No valid radius provided', code: 3});
-                        break;
-                }
+        function getCurrentPosition(fromInterval) {
+            if (!$scope.map || !$scope.map.marker) {
+                return;
             }
 
-            return deferred.promise;
-        };
-
-        function getCurrentPosition() {
             var deferred = $q.defer();
 
-            $scope.tracingPosition = true;
-
-            $cordovaGeolocation
-                .getCurrentPosition(AppConfig.GEO.DEFAULT)
-                .then(
-                    function(position) {
-                        $timeout(function(){
-                            $scope.$apply(function(){
-                                $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION.url;
-                                $scope.map.marker.center = {
-                                    latitude: position.coords.latitude,
-                                    longitude: position.coords.longitude
-                                };
-                                $scope.map.center = angular.copy($scope.map.marker.center);
-                                $scope.tracingPosition = false;
-                            });
-                        });
-
-                        $rootScope.settings.position = position;
-
-                        $rootScope.user.save({
-                            'settings': $rootScope.settings,
-                            'lastPosition': new Parse.GeoPoint({
-                                latitude: position.coords.latitude,
-                                longitude: position.coords.longitude
-                            })
-                        });
-
-                        previousPosition = {lat: position.coords.latitude, lng: position.coords.longitude};
-
-                        AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
-
-                        deferred.resolve(position);
-                    }, function(e) {
-                        $timeout(function(){
-                            $scope.$apply(function(){
-                                $scope.tracingPosition = false;
-                            });
-                        });
-
-                        AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: e.code});
-
-                        deferred.reject(e);
+            if(!fromInterval){
+                $timeout(function(){
+                    $scope.$apply(function(){
+                        $scope.tracingPosition = true;
                     });
+                });
+            }
+
+            if($ionicHistory.currentView().stateName !== 'app.home'){
+                deferred.reject({message: 'Home is not active', code: 300});
+            }else{
+                geolocation
+                    .getLocation(AppConfig.GEO.DEFAULT)
+                    .then(
+                        function(position) {
+                            $timeout(function(){
+                                $scope.$apply(function(){
+                                    $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION.url;
+                                    $scope.map.marker.center = {
+                                        latitude: position.coords.latitude,
+                                        longitude: position.coords.longitude
+                                    };
+                                    $scope.map.center = angular.copy($scope.map.marker.center);
+                                    $scope.tracingPosition = false;
+                                });
+                            });
+
+                            if(($rootScope.settings && !_.isEmpty($rootScope.settings.position)) && _.isEqual(position.coords, $rootScope.settings.position.coords)){
+                                deferred.resolve(position);
+                            }else {
+                                if(!$scope.watchPosition){
+                                    $scope.watchPosition = $interval(function(){
+                                        getCurrentPosition(true);
+                                    }, 20000);
+                                }
+
+                                previousPosition = {coords:{latitude: position.coords.latitude, longitude: position.coords.longitude}};
+
+                                $rootScope.settings.position = previousPosition;
+
+                                $rootScope.user.save({
+                                    'settings': $rootScope.settings,
+                                    'lastPosition': new Parse.GeoPoint({
+                                        latitude: position.coords.latitude,
+                                        longitude: position.coords.longitude
+                                    })
+                                });
+
+                                AnalyticsService.track('getCurrentPosition', {type: 'success', position: position.coords.latitude + ',' + position.coords.longitude, latitude: position.coords.latitude, longitude: position.coords.longitude});
+
+                                deferred.resolve(position);
+                            }
+                        }, function(e) {
+                            $timeout(function(){
+                                $scope.$apply(function(){
+                                    $scope.tracingPosition = false;
+                                });
+
+                                $rootScope.$apply(function(){
+                                    $rootScope.settings.usingGeolocation = false;
+                                });
+
+                            });
+
+                            AnalyticsService.track('error', {type: 'getCurrentPosition', message: e.message, code: e.code});
+
+                            deferred.reject(e);
+                        });
+            }
 
             return deferred.promise;
         }
 
-        //Implement add new venue
-        function onMapLongClick(latlng) {
-            if($scope.newBusinessMarker){
-                return;
-            }
-
-            //Share location or add new location
-            $cordovaActionSheet.show({
-                title: '¿Que deseas hacer?',
-                buttonLabels: ['Compartir esta ubicacion'/*, 'Agregar nuevo establecimiento'*/],
-                addCancelButtonWithLabel: 'Cancelar',
-                androidEnableCancelButton: true,
-                winphoneEnableCancelButton: true
-            })
-                .then(function(btnIndex) {
-                    var index = btnIndex;
-                    var url = 'https://www.google.com/maps/place/@' + latlng.lat + ',' + latlng.lng + ',16z/data=!4m2!3m1!1s0x0:0x0';
-
-                    switch(index){
-                    case 1:
-                        FB.ui({
-                            method: 'share',
-                            href: url,
-                        }, function(response){
-                            //console.log('shared', arguments);
-                        });
-                        AnalyticsService.track('positionSharing', {position: latlng.lat + ',' + latlng.lng, latitude: latlng.lat, longitude: latlng.lng});
-                        break;
-                    case 2:
-                        //$scope.startNewBusiness(latlng);
-                        break;
-                    }
-                });
-        };
-
-        //TODO: Implement auto search
         var onMapChangeTimeout = null;
         function onMapChange(map) {
             if($rootScope.settings.usingGeolocation || $scope.centerCaptured){
@@ -872,40 +1026,35 @@ angular
                 $timeout.cancel(onMapChangeTimeout);
             }
 
-            AnalyticsService.track('beforeMapChangeTimeout', {position: latlng.lat + ',' + latlng.lng, latitude: latlng.lat, longitude: latlng.lng});
-
             //Create timeout
             onMapChangeTimeout = $timeout(function(){
                 var settings = $rootScope.user.get('settings');
-                var distance = 0, maxDistanceToRefresh = 500;
+                var distance = 0, maxDistanceToRefresh = AppConfig.MAX_DISTANCE_TO_REFRESH;
 
                 settings = $rootScope.settings;
 
                 $rootScope.user.save('settings', settings);
                 onMapChangeTimeout = null;
 
-                if(!previousPosition){
-                    previousPosition = latlng;
-                    AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: distance, previousPositionLat: latlng.lat, previousPositionLng: latlng.lng});
-                }else {
-                    distance = RoutesService.distance(previousPosition, latlng);
-                    AnalyticsService.track('mapChangeTimeoutReached', {position: latlng.lat + ',' + latlng.lng, distance: distance, previousPositionLat: latlng.lat, previousPositionLng: latlng.lng, latitude: position.coords.lat, longitude: position.coords.lng, position: position.coords.lat + ',' + position.coords.lng});
-                    previousPosition = latlng;
+                if(previousPosition){
+                    distance = RoutesService.distance(previousPosition, position.coords);
                 }
+
+                previousPosition = position;
 
                 if(distance > maxDistanceToRefresh){
                     getFeaturedVenues({coords: {latitude: latlng.lat, longitude: latlng.lng}}, $rootScope.settings.searchRadius);
                 }
             }, 1000);
-        };
+        }
 
         function tryDefaultPosition(){
             var settings = $rootScope.settings;
             var p;
 
-            if(settings.position && settings.position.coords){
+            if(!_.isEmpty(settings.position) && !_.isEmpty(settings.position.coords)){
                 p = settings.position.coords;
-                AnalyticsService.track('position', {position: p.latitude + ',' + p.longitude, type: 'fromSettings', latitude: p.latitude, longitude: p.longitude, position: p.latitude + ',' + p.longitude});
+                AnalyticsService.track('position', {position: p.latitude + ',' + p.longitude, type: 'fromSettings', latitude: p.latitude, longitude: p.longitude});
             }else{
                 p = AppConfig.GEO.DEFAULT_CENTER.coords;
                 AnalyticsService.track('warning', {type: 'positionDefault'});
@@ -939,7 +1088,7 @@ angular
         });
 
         $rootScope.$watch('settings.searchRadius', function(radius) {
-            if ($scope.map.circle) {
+            if ($scope.map.circle && _.isNumber(radius) && radius > 0) {
                 AnalyticsService.track('searchRadiusChange', {radius: radius});
 
                 $timeout(function(){
@@ -947,29 +1096,18 @@ angular
                         $scope.map.circle.radius = radius;
                     });
                 });
-
-                zoomToRadiusLevel(radius);
             }else{
                 AnalyticsService.track('error', {type: 'usingGelocationChange', message: 'No circle or radius defined', radius:  radius, circle: !!$rootScope.circle});
             }
         });
 
         $rootScope.$watch('settings.usingGeolocation', function(using) {
-            if(!_.isNull(window.initialVenues)){
+            if(!_.isEmpty(window.initialVenues)){
                 return;
             }
 
             if (using) {
-
-                $timeout(function(){
-                    $scope.$apply(function(){
-                        $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION.url;
-                        lockPosition();
-                    });
-                });
-
                 AnalyticsService.track('usingGelocationChange', {using: 'true'});
-
                 getCurrentPosition()
                     .then(function(position){
                         if(position){
@@ -987,7 +1125,18 @@ angular
 
             } else {
 
-                tryDefaultPosition();
+                if($scope.watchPosition){
+                    $interval.cancel($scope.watchPosition);
+                    $scope.watchPosition = null;
+                }
+
+                $timeout(function(){
+                    $scope.$apply(function(){
+                        $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                    });
+                });
+
+                releasePosition();
 
             }
         });
@@ -1022,17 +1171,19 @@ angular
         $scope.$watch('featuredVenues', function(venues, oldVenues){
             var v = venues.map(function(v){return v.id;});
 
-            if($rootScope.settings && $rootScope.settings.position && $rootScope.settings.position.coords){
-                AnalyticsService.track('featuredVenuesChange', {total: venues.length, venues: v.toString(), position: $rootScope.settings.position.coords.latitude + ',' + $rootScope.settings.position.coords.longitude});
-            }
-
             if($scope.featuredMarkers.length){
-                $timeout(function(){
-                    $scope.$apply(function(){
-                        $scope.featuredMarkers = [];
-                        $scope.featuredVenues = [];
-                    });
+                _.each($scope.featuredMarkers, function(m){
+                    //TODO: Enhance this
+                    //      Keep current selected featured marker if present in new results
+                    //Release selected model if it has dissapeared
+                    if($scope.currentMarker && $scope.currentMarker.model.id === m.model.id){
+                        $scope.currentMarker = null;
+                    }
+
+                    m = null;
                 });
+
+                $scope.featuredMarkers = [];
             }
 
             if(venues.length){
@@ -1092,6 +1243,11 @@ angular
                 center: {
                     latitude: AppConfig.GEO.DEFAULT_CENTER.coords.latitude,
                     longitude: AppConfig.GEO.DEFAULT_CENTER.coords.longitude
+                },
+                events: {
+                    radius_changed: function(c){
+                        c.map.fitBounds(c.getBounds());
+                    }
                 }
             }),
             options: AppConfig.MAP.DEFAULT,
@@ -1116,67 +1272,11 @@ angular
             }
         };
 
-        uiGmapGoogleMapApi.then(function(maps) {
-            var settings = $rootScope.settings;
-            var search = $location.search();
-
-            $scope.map.marker.options.icon.scaledSize = new google.maps.Size(20, 20);
-            $scope.map.marker.options.icon.anchor = new google.maps.Point(10, 10);
-            $scope.map.options.zoomControlOptions.position = google.maps.ControlPosition.RIGHT_CENTER;
-            $scope.map.options.panControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
-            $scope.map.options.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_TOP;
-
-            if(search && search.radius && search.lat && search.lng){
-                $rootScope.settings.usingGeolocation = false;
-                if(search.category){
-                    var category = $scope.categories.filter(function(c){
-                        if(c.id === search.category){
-                            return c;
-                        }
-                    });
-
-                    if(category.length){
-                        $scope.category = category[0];
-                    }
-                }
-
-                $timeout(function(){
-                    $scope.$apply(function(){
-                        $scope.query = search.q;
-                        $scope.map.center = {
-                            latitude: search.lat*1,
-                            longitude: search.lng*1
-                        };
-
-                        $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
-                        $scope.map.marker.center = angular.copy($scope.map.center);
-                        $scope.map.circle.center = angular.copy($scope.map.center);
-                        $scope.map.circle.radius = search.radius ? search.radius *1 : AppConfig.RADIUS.DEFAULT.radius;
-
-                        if(window.initialVenues && window.initialVenues.length){
-                            $scope.venues = window.initialVenues.map(function(v){
-                                return VenuesService.convertToParseObject(v);
-                            });
-
-                            window.initialVenues = null;
-                            previousPosition = {lat: search.lat*1, lng:search.lng*1};
-                        }else{
-                            swal({text: 'No se encontraron establecimientos, por favor intente con otros parametros de busqueda.', type: 'error', title: 'Ouch!', confirmButtonText: 'Ok :('});
-                        }
-                    });
-                });
-            }
-
-            $rootScope.mainMap = {};
-        });
-
         $scope.$on('$ionicView.enter', function(){
+            enableMap();
+
             if($scope.map && _.isFunction($scope.map.control.refresh)){
                 $scope.map.control.refresh();
-            }
-
-            if(!$rootScope.tutorialModal || !$rootScope.tutorialModal.isShown()){
-                enableMap();
             }
 
             var clearSearchButton = angular.element(document.getElementById('home-search-clear'));
@@ -1201,5 +1301,74 @@ angular
         $scope.$on('$ionicView.beforeLeave', function() {
             disableMap();
             AnalyticsService.track('home', {type: 'beforeLeave'});
+        });
+
+        $scope.$watch('map.circle.getCircle', function(g, p, scope){
+            if(_.isFunction(g) && g !== p){
+                var bounds = g().getBounds();
+                if(!_.isEmpty(bounds)){
+                    var ne = bounds.getNorthEast();
+                    var sw = bounds.getSouthWest();
+
+                    var northeast = {latitude: ne.lat(), longitude: ne.lng()};
+                    var southwest = {latitude: sw.lat(), longitude: sw.lng()};
+
+                    $scope.map.bounds = {northeast: northeast, southwest: southwest};
+                }
+            }
+        });
+
+        uiGmapGoogleMapApi.then(function(maps) {
+            var settings = $rootScope.settings;
+            var search = $location.search();
+
+            $scope.map.marker.options.icon.scaledSize = new google.maps.Size(20, 20);
+            $scope.map.marker.options.icon.anchor = new google.maps.Point(10, 10);
+            $scope.map.options.zoomControlOptions.position = google.maps.ControlPosition.RIGHT_CENTER;
+            $scope.map.options.panControlOptions.position = google.maps.ControlPosition.RIGHT_BOTTOM;
+            $scope.map.options.mapTypeControlOptions.position = google.maps.ControlPosition.RIGHT_TOP;
+
+            if(search && search.radius && search.lat && search.lng){
+                $rootScope.settings.usingGeolocation = false;
+
+                if(search.category){
+                    var category = $scope.categories.filter(function(c){
+                        if(c.id === search.category){
+                            return c;
+                        }
+                    });
+
+                    if(category.length){
+                        $scope.category = category[0];
+                    }
+                }
+
+                $timeout(function(){
+                    $scope.$apply(function(){
+                        $scope.query = search.q;
+                        $scope.map.center = {
+                            latitude: search.lat*1,
+                            longitude: search.lng*1
+                        };
+
+                        $scope.map.marker.options.icon.url = AppConfig.MARKERS.LOCATION_CUSTOM.url;
+                        $scope.map.marker.center = angular.copy($scope.map.center);
+                        $scope.map.circle.center = angular.copy($scope.map.center);
+                        $rootScope.settings.searchRadius = search.radius ? search.radius *1 : AppConfig.RADIUS.DEFAULT.radius;
+
+                        if(window.initialVenues && window.initialVenues.length){
+                            $scope.venues = window.initialVenues.map(function(v){
+                                return VenuesService.convertToParseObject(v);
+                            });
+
+                            previousPosition = {lat: search.lat*1, lng:search.lng*1};
+                        }else{
+                            swal({text: 'No se encontraron establecimientos, por favor intente con otros parametros de busqueda.', type: 'error', title: 'Ouch!', confirmButtonText: 'Ok :('});
+                        }
+                    });
+                });
+            }
+
+            $rootScope.mainMap = {};
         });
     });

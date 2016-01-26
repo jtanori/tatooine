@@ -17,7 +17,8 @@ angular
         User,
         AnonymousUser
     ) {
-        $scope.usingGeolocation = User.current() && User.current().get('settings') ? User.current().get('settings').usingGeolocation : true;
+        $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
+        $scope.helpVideos = [];
         $ionicSideMenuDelegate.canDragContent(false);
 
         var options = {
@@ -26,21 +27,8 @@ angular
             toolbar: 'yes'
         };
 
-        function updateGeolocationButton(val) {
-            $timeout(function() {
-                $scope.$apply(function() {
-                    $scope.usingGeolocation = val;
-                });
-            });
-        };
-
-        $scope.$on('change:usingGeolocation', function(e, val) {
-            updateGeolocationButton(val);
-        });
-
         $rootScope.$watch('settings.usingGeolocation', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
-                updateGeolocationButton(val);
                 $rootScope.user.save('settings', $rootScope.settings);
             }
         });
@@ -66,11 +54,15 @@ angular
         $rootScope.$watch('settings.searchRadius', function(val, oldVal) {
             if (val !== undefined && val !== oldVal) {
                 $rootScope.user.save('settings', $rootScope.settings);
+                $rootScope.$broadcast('updateFeatured', val > oldVal);
             }
         });
 
         $scope.toggleGeolocation = function() {
-            console.log('toggle geolocation');
+            if(window.initialVenues){
+                delete window.initialVenues;
+            }
+            
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 
@@ -80,15 +72,15 @@ angular
         };
 
         $scope.about = function() {
-            $cordovaInAppBrowser.open('http://app.jound.mx/acerca-de-jound.html');
+            LinksService.open('http://app.jound.mx/acerca-de-jound.html');
         };
 
         $scope.privacy = function() {
-            $cordovaInAppBrowser.open('http://www.jound.mx/privacy');
+            LinksService.open('http://www.jound.mx/privacy');
         };
 
         $scope.help = function() {
-            $cordovaInAppBrowser.open('http://www.jound.mx/ayuda');
+            LinksService.open('http://www.jound.mx/ayuda');
         };
 
         $scope.business = function(){
@@ -121,42 +113,6 @@ angular
             LinksService.open(url);
         };
 
-        $scope.tutorial = function(){
-            if($rootScope.mainMap){
-                $rootScope.mainMap.disabled=true;
-            }
-
-            $ionicModal.fromTemplateUrl('templates/tutorial.html', {
-                scope: $scope,
-                animation: 'slide-in-up'
-            }).then(function(modal) {
-                $rootScope.tutorialModal = modal;
-                $rootScope.tutorialModal.show();
-
-                $rootScope.$watch('mainMap', function(){
-                    if($rootScope.tutorialModal && $rootScope.tutorialModal.isShown() && $rootScope.mainMap){
-                        $rootScope.mainMap.disabled=true;
-                    }
-                });
-
-                if($rootScope.mainMap){
-                    $rootScope.mainMap.disabled=true;
-                }
-
-                AnalyticsService.track('openTutorial', {});
-            });
-        };
-
-        $scope.closeTutorial = function(){
-            $rootScope.tutorialModal
-                .remove()
-                .then(function(){
-                    if($rootScope.mainMap){
-                        $rootScope.mainMap.disabled=false;
-                    }
-                });
-        }
-
         var _left = false;
         $scope.openLeft = function() {
             if($rootScope.mainMap){
@@ -181,7 +137,7 @@ angular
 
         $scope.isRightOpen = function(){
             return _right;
-        }
+        };
 
         $scope.closeLeft = function() {
             $ionicSideMenuDelegate.toggleLeft();
@@ -229,21 +185,13 @@ angular
             }
 
             $state.go('login');
-        }
+        };
 
         $scope.helpVideos = [];
 
         $scope.signup = function(){
-            $ionicModal.fromTemplateUrl('templates/loginmodal.html', {
-                scope: $scope,
-                animation: 'slide-in-up'
-            }).then(function(modal) {
-                modal.show();
-            });
-        };
-
-        $scope.facebookLogin = function(){
-            console.log('facebook login');
+            $scope.closeLeft();
+            $state.go('login');
         };
 
         Parse.Config
@@ -254,27 +202,38 @@ angular
                 $scope.instagram = c.get('instagramUsername');
                 $scope.fbID = c.get('facebookPageID');
                 $scope.www = c.get('www');
-            },function(){
-                //Report error
             });
+    })
+    .controller('TutorialCtrl', function($scope, $timeout, $rootScope, $ionicSlideBoxDelegate, $ionicPlatform, $ionicHistory, $localStorage, $state, TUTORIAL){
+        $ionicHistory.clearCache();
+        $ionicHistory.clearHistory();
 
-        $ionicPlatform.ready(function() {
-            if (ionic.Platform.isIOS()) {
-                options.presentationstyle = 'fullscreen';
-                options.transitionstyle = 'fliphorizontal';
-                options.toolbarposition = 'top';
-                options.disallowoverscroll = 'yes';
-            }
+        $scope.tutorialItems = TUTORIAL;
+        $localStorage.set('tutorial', true);
 
-            if(!$localStorage.get('tutorial')) {
-                Parse.Config
-                    .get()
-                    .then(function(c){
-                        if(c.get('showHelpVideos')){
-                            $scope.tutorial();
-                            $localStorage.set('tutorial', true);
-                        }
-                    });
-            }
-        });
+        $scope.closeTutorial = function(){
+            $state.go('app.home');
+        };
+
+        $scope.next = function() {
+            $ionicSlideBoxDelegate.$getByHandle('tutorialSlideboxHandle').next();
+        };
+
+        $scope.previous = function() {
+            $ionicSlideBoxDelegate.$getByHandle('tutorialSlideboxHandle').previous();
+        };
+
+        $scope.slideTo = function(index){
+            $ionicSlideBoxDelegate.$getByHandle('tutorialSlideboxHandle').slide(index);
+        };
+
+        $scope.canPrev = function(){
+            return $ionicSlideBoxDelegate.$getByHandle('tutorialSlideboxHandle').currentIndex();
+        };
+
+        $scope.canNext = function(){
+            var index = $ionicSlideBoxDelegate.$getByHandle('tutorialSlideboxHandle').currentIndex();
+
+            return index < $scope.tutorialItems.length-1;
+        };
     });

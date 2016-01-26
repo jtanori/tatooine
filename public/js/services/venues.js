@@ -4,7 +4,7 @@ angular.module('jound.services')
     return Parse.Object.extend('Location', {
         pageLoaded: false,
         getURL: function(){
-            return '//www.jound.mx/venue/' + this.id;
+            return AppConfig.HOST_URL + 'venues/' + this.id;
         },
         getWWW: function(){
             if(this.get('www')){
@@ -84,7 +84,7 @@ angular.module('jound.services')
 
             return city;
         },
-        getBanner: function(){
+        getCover: function(){
             var l;
 
             try {
@@ -134,6 +134,15 @@ angular.module('jound.services')
 
             return tags;
         },
+        getImages: function(){
+            var images = this.get('images') || [];
+
+            if(!_.isEmpty(images)){
+                images = images.map(function(i){return {url:i};});
+            }
+
+            return images;
+        },
         getBasicData: function(){
             return {
                 name: this.get('name'),
@@ -144,7 +153,7 @@ angular.module('jound.services')
                 url: this.get('www'),
                 activity: this.get('activity_description'),
                 logo: this.getLogo(),
-                banner: this.getBanner(),
+                cover: this.getCover(),
                 email: this.get('email_address'),
                 www: this.getWWW()
             };
@@ -157,12 +166,11 @@ angular.module('jound.services')
 .factory('VenuesService', function($q, $http, $rootScope, VenueModel, SanitizeService, CategoryModel, AppConfig, User, Facebook) {
 
     var _currentResults = [];
+    var _currentFeaturedResults = [];
     var _currentVenue;
 
-    return {
-        //Search by query, position and category
-        //TODO: User search service instead
-        search: function(p, r, q, c){
+    var global = {
+        search: function(p, r, q, c, excludedVenues){
             var deferred = $q.defer();
 
             if(!p || !r){
@@ -178,9 +186,11 @@ angular.module('jound.services')
                 q = _.chain(q).compact().uniq().invoke('trim').invoke('toLowerCase').value();
 
                 if(q.length === 1){
-                    query.equalTo('keywords', q[0].toLowerCase());
+                    q = q[0].toLowerCase();
+                    query.equalTo('keywords', q);
                 }else if(q.length > 1){
-                    query.containsAll('keywords', SanitizeService.strings.sanitize(q));
+                    q = SanitizeService.strings.sanitize(q);
+                    query.containsAll('keywords', q);
                 }
             }
 
@@ -190,12 +200,16 @@ angular.module('jound.services')
                 query.equalTo('category', category);
             }
 
+            if(!_.isEmpty(excludedVenues)){
+                query.notContainedIn('objectId', excludedVenues || []);
+            }
+
             //Search near current position
             query
+                .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .near('position', geoPoint)
                 .withinKilometers('position', geoPoint, r/1000)
                 .include(['logo', 'cover', 'page', 'claimed_by'])
-                .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
                 .limit(200)
                 .find()
                 .then(
@@ -207,7 +221,7 @@ angular.module('jound.services')
                             });
 
                             _currentResults = results;
-                            deferred.resolve(results);
+                            deferred.resolve(results, q);
                         }else{
                             deferred.reject({message: 'No encontramos resultados, intenta buscar en un rango mas amplio.'});
                         }
@@ -218,7 +232,7 @@ angular.module('jound.services')
 
             return deferred.promise;
         },
-        getFeatured: function(p, r){
+        getFeatured: function(p, r, c, excludedVenues){
             var deferred = $q.defer();
 
             if(!p || !r){
@@ -227,6 +241,11 @@ angular.module('jound.services')
 
             var query = new Parse.Query(VenueModel);
             var geoPoint = new Parse.GeoPoint({latitude: p.coords.latitude, longitude: p.coords.longitude});
+            var Category = Parse.Object.extend('Category');
+
+            if(c){
+                query.equalTo('category', new Category({id: c}));
+            }
 
             //Search near current position
             Parse.Config
@@ -236,6 +255,10 @@ angular.module('jound.services')
                         limit: c.get('defaultFeaturedLimit') || 50,
                         radius: c.get('defaultFeaturedRadius') || $rootScope.settings.searchRadius
                     };
+
+                    if(!_.isEmpty(excludedVenues)){
+                        query.notContainedIn('objectId', excludedVenues || []);
+                    }
 
                     query
                         .select(AppConfig.QUERY.VENUE_DEFAULT_FIELDS)
@@ -267,12 +290,16 @@ angular.module('jound.services')
             var deferred = $q.defer();
             var found = false, query;
 
-            if(_currentResults.length){
+            if(_currentVenue && _currentVenue.id === id){
+                return _currentVenue;
+            } else if(_currentResults.length){
                 found = _.find(_currentResults, function(v){
                     return v.id === id;
                 });
-            }else if(_currentVenue && _currentVenue.id === id){
-                return _currentVenue;
+            } else if(_currentFeaturedResults.length){
+                found = _.find(_currentFeaturedResults, function(v){
+                    return v.id === id;
+                });
             }
 
             if(found){
@@ -307,6 +334,39 @@ angular.module('jound.services')
                     }, function(response){
                         deferred.reject(response);
                     });
+            }
+
+            return deferred.promise;
+        },
+        getProductById: function(venueId, productId){
+            var deferred = $q.defer();
+
+            if(!_.isEmpty(_currentVenue) && _currentVenue.id === venueId){
+                $http
+                    .post(AppConfig.API_URL + 'getProductById', {id: productId, venue: venueId})
+                    .then(function(response){
+                        if(response && response.data && response.data.product){
+                            deferred.resolve({venue: _currentVenue, product: response.data.product});
+                        }else{
+                            deferred.reject({message: 'Product not found', code: 404});
+                        }
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            }else if(!_.isEmpty(venueId) && !_.isEmpty(productId)){
+                $http
+                    .post(AppConfig.API_URL + 'getProductForVenue', {id: productId, venue: venueId})
+                    .then(function(response){
+                        if(response && response.data && response.data.venue && response.data.product){
+                            deferred.resolve({venue: response.data.venue, product: response.data.product});
+                        }else{
+                            deferred.reject({message: 'Product not found', code: 404});
+                        }
+                    }, function(response){
+                        deferred.reject(response);
+                    });
+            } else{
+                deferred.reject({message: 'Product not found', code: 404});
             }
 
             return deferred.promise;
@@ -359,15 +419,19 @@ angular.module('jound.services')
                             }else{
                                 Facebook
                                     .login(function(response){
-                                        config.accessToken = response.authResponse.accessToken;
+                                        if(response && !_.isEmpty(response.accessToken)){
+                                            config.accessToken = response.authResponse.accessToken;
 
-                                        $http
-                                            .post(AppConfig.API_URL + 'getChannelForVenue', config)
-                                            .then(function(response){
-                                                deferred.resolve(response.data);
-                                            }, function(e){
-                                                deferred.reject(e);
-                                            });
+                                            $http
+                                                .post(AppConfig.API_URL + 'getChannelForVenue', config)
+                                                .then(function(response){
+                                                    deferred.resolve(response.data);
+                                                }, function(e){
+                                                    deferred.reject(e);
+                                                });
+                                        }else{
+                                            deferred.reject({message: 'Fallo la autorizacion'});
+                                        }
                                     }, function(e){
                                         deferred.reject(e);
                                     });
@@ -559,10 +623,6 @@ angular.module('jound.services')
             return deferred.promise;
         },
         report: function(id, details, problemType){
-            if($rootScope.user.isAnonimous()){
-                //TODO: Add login window
-                return;
-            }
             //Fix this for web
             var device = $cordovaDevice.getDevice();
             var cordova = $cordovaDevice.getCordova();
@@ -640,7 +700,7 @@ angular.module('jound.services')
                 });
 
 
-            }
+            };
 
             if(_.isEmpty(p) || _.isEmpty(name) || _.isEmpty(phone)) {
                 deferred.reject('Please provide a position, name and phone number.');
@@ -650,17 +710,17 @@ angular.module('jound.services')
                     F
                         .save()
                         .then(function(savedFile){
-                            f = new File({file: savedFile})
+                            f = new File({file: savedFile});
                             f
                                 .save()
                                 .then(function(){
                                     save(f);
                                 }, function(e){
                                     deferred.reject(e);
-                                })
+                                });
                         }, function(e){
                             deferred.reject(e);
-                        })
+                        });
 
                 }else{
                     save();
@@ -713,7 +773,6 @@ angular.module('jound.services')
                     id: eventId
                 })
                 .then(function(response){
-                    console.log(response, 'response from server');
                     deferred.resolve(response.data);
                 }, function(response){
                     deferred.reject(response.data.error);
@@ -722,4 +781,6 @@ angular.module('jound.services')
             return deferred.promise;
         }
     };
+
+    return global;
 });

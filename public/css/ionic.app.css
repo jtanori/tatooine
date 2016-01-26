@@ -9124,17 +9124,8 @@ a.button {
 .aligned.center {
   text-align: center; }
 
-#login-wrapper > div {
-  width: 80%;
-  margin: 0 auto;
-  padding: 2rem 0;
-  max-width: 500px; }
-
-#login #logo {
-  width: 25%; }
-
 #tutorial #logo {
-  width: 20%; }
+  max-width: 20%; }
 
 .item.item-dark p {
   color: #b3b3b3; }
@@ -9153,43 +9144,63 @@ a.button {
   background-size: cover;
   transition: 1s opacity; }
 
-#login + #intro {
-  background-image: linear-gradient(0deg, #3e0905, transparent 80%);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  z-index: 0; }
-
-#login {
-  z-index: 2; }
-
-#login-view {
-  background: url("../img/splash.jpg");
-  background-repeat: no-repeat;
-  background-size: cover; }
-
 #loader {
   z-index: 1000;
   pointer-events: none; }
 
-.form.auth input {
-  width: 100%;
-  display: inline-block;
-  margin-bottom: 0;
-  padding: 1rem;
-  background-color: transparent;
-  border: 0;
-  color: white;
-  border-radius: 0; }
+#login-view {
+  background: whitesmoke; }
 
-.form.auth hr {
-  border: 0;
-  border-bottom: 2px solid white; }
+#login-wrapper {
+  max-width: 900px;
+  margin: 0 auto; }
+  #login-wrapper #logo {
+    max-width: 200px; }
+  #login-wrapper #login-form {
+    text-align: center;
+    position: relative; }
+    #login-wrapper #login-form .child {
+      text-align: left;
+      max-width: 350px;
+      min-width: 350px;
+      background: white;
+      border: 1px solid #dddddd;
+      border-radius: 0.25rem;
+      padding: 2rem inherit;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      margin-top: -50%;
+      margin-left: auto;
+      margin-right: auto; }
+  #login-wrapper #login-slideshow {
+    position: relative; }
+  #login-wrapper #login-slideshow-slider {
+    width: 229px;
+    height: 408px;
+    position: absolute;
+    bottom: 99px;
+    right: 39px; }
+    #login-wrapper #login-slideshow-slider img {
+      border: 0; }
 
-.button.rounded {
-  border-radius: 24px; }
+#jound-menu {
+  margin-top: 2rem;
+  margin-bottom: 1rem; }
+  #jound-menu li {
+    display: inline-block; }
+    #jound-menu li a {
+      text-transform: uppercase;
+      text-decoration: none;
+      color: #05255c;
+      margin-right: 1rem; }
+      #jound-menu li a:hover {
+        text-decoration: underline; }
+
+#login-slideshow {
+  background: url(/img/home-slideshow/phones.png) no-repeat bottom right;
+  min-height: 650px; }
 
 .drawer {
   background: #2b2b2b; }
@@ -9202,6 +9213,9 @@ a.button {
     border-bottom: 1px solid #373737;
     height: 140px;
     background-size: cover; }
+    .drawer #drawer-avatar.avatar-guest {
+      background: url("../img/splash.jpg") no-repeat;
+      background-size: cover; }
   .drawer #drawer-avatar-info {
     margin: 0;
     text-align: left;
@@ -9268,13 +9282,15 @@ a.button {
   vertical-align: middle;
   color: #444;
   line-height: 100%;
-  padding-top: 15px;
+  padding-top: 11px;
   padding-bottom: 15px; }
   #home-search-clear:before {
     height: 100%;
     width: 100%;
     vertical-align: middle;
-    line-height: 100%; }
+    line-height: 100%;
+    font-size: 1rem;
+    margin: 0; }
 
 #categories-results-list {
   position: absolute;
@@ -9283,9 +9299,10 @@ a.button {
   border-radius: 0.5rem;
   margin-top: 0.5rem;
   overflow-y: scroll;
-  min-width: 50%; }
-  #categories-results-list li.item {
-    padding: 0.5rem; }
+  max-width: 500px;
+  min-width: 400px;
+  padding: 0;
+  z-index: 1000; }
   #categories-results-list.ng-hide-add, #categories-results-list.ng-hide-remove {
     transition: 0s linear all; }
   #categories-results-list.ng-hide-add-active, #categories-results-list.ng-hide-remove-active {
@@ -9294,6 +9311,22 @@ a.button {
     opacity: 1; }
   #categories-results-list.ng-hide {
     opacity: 0; }
+  #categories-results-list .label {
+    display: inline-block;
+    padding: 0.5rem;
+    width: 80%; }
+  #categories-results-list .button {
+    padding: 0.2rem;
+    line-height: 20px;
+    height: auto;
+    min-height: initial;
+    margin: 0.2rem 0;
+    position: absolute;
+    right: 0.2rem;
+    text-overflow: ellipsis;
+    overflow: hidden; }
+  #categories-results-list .item {
+    padding: 0; }
 
 #map.has-venue {
   height: auto;
@@ -9398,23 +9431,35 @@ a.button {
 
 #tutorial-slider {
   height: 80%;
+  max-height: 80%;
   margin-top: 5%; }
   #tutorial-slider ion-slide {
-    padding: 1rem; }
-    #tutorial-slider ion-slide img, #tutorial-slider ion-slide .box {
+    padding: 1rem;
+    text-align: center; }
+    #tutorial-slider ion-slide img {
       border: 2px solid white;
-      border-radius: 0.5rem; }
+      border-radius: 0.5rem;
+      max-width: 500px;
+      width: 80%;
+      margin: 0 auto; }
 
 #venue-slider,
-#modal-venue-new-cover {
+#modal-venue-new-cover,
+#venue-product-page-cover {
   height: 200px;
   background: linear-gradient(0deg, #444, #373737);
   text-align: center; }
   #venue-slider ion-slide,
-  #modal-venue-new-cover ion-slide {
+  #modal-venue-new-cover ion-slide,
+  #venue-product-page-cover ion-slide {
     background-size: cover; }
+  #venue-slider .swiper-pagination-bullet-active,
+  #modal-venue-new-cover .swiper-pagination-bullet-active,
+  #venue-product-page-cover .swiper-pagination-bullet-active {
+    background-color: white; }
   #venue-slider .venue-slide-bg,
-  #modal-venue-new-cover .venue-slide-bg {
+  #modal-venue-new-cover .venue-slide-bg,
+  #venue-product-page-cover .venue-slide-bg {
     position: absolute;
     top: 0;
     left: 0;
@@ -9423,22 +9468,29 @@ a.button {
     background-size: cover;
     z-index: -1;
     background-position: center top;
-    background-image: "../img/splash.jpg";
-    box-shadow: 0 0 100px black inset; }
+    background-image: url("../img/splash.jpg");
+    box-shadow: 0 0 100px black inset;
+    -webkit-filter: blur(5px); }
   #venue-slider img,
-  #modal-venue-new-cover img {
+  #modal-venue-new-cover img,
+  #venue-product-page-cover img {
     max-height: 100%;
+    max-width: 100%;
     box-shadow: 0 0 10px black;
-    height: 100%; }
+    height: auto;
+    width: auto; }
   #venue-slider.cover .venue-slide-bg,
-  #modal-venue-new-cover.cover .venue-slide-bg {
+  #modal-venue-new-cover.cover .venue-slide-bg,
+  #venue-product-page-cover.cover .venue-slide-bg {
     z-index: 1;
     opacity: 1; }
   #venue-slider.cover,
-  #modal-venue-new-cover.cover {
+  #modal-venue-new-cover.cover,
+  #venue-product-page-cover.cover {
     position: relative; }
     #venue-slider.cover img,
-    #modal-venue-new-cover.cover img {
+    #modal-venue-new-cover.cover img,
+    #venue-product-page-cover.cover img {
       z-index: 100;
       position: relative;
       background: transparent;
@@ -9448,21 +9500,26 @@ a.button {
       margin-bottom: 0;
       height: 50%; }
   #venue-slider .default,
-  #modal-venue-new-cover .default {
+  #modal-venue-new-cover .default,
+  #venue-product-page-cover .default {
     height: 100%; }
     #venue-slider .default h4,
-    #modal-venue-new-cover .default h4 {
+    #modal-venue-new-cover .default h4,
+    #venue-product-page-cover .default h4 {
       margin-top: 0; }
     #venue-slider .default img,
-    #modal-venue-new-cover .default img {
+    #modal-venue-new-cover .default img,
+    #venue-product-page-cover .default img {
       margin-top: 1rem;
       height: 75px;
       box-shadow: none; }
   #venue-slider .slider-common-image,
-  #modal-venue-new-cover .slider-common-image {
+  #modal-venue-new-cover .slider-common-image,
+  #venue-product-page-cover .slider-common-image {
     height: 100%; }
   #venue-slider #venue-slider-cover-play,
-  #modal-venue-new-cover #venue-slider-cover-play {
+  #modal-venue-new-cover #venue-slider-cover-play,
+  #venue-product-page-cover #venue-slider-cover-play {
     position: absolute;
     font-size: 3rem;
     color: white;
@@ -9473,6 +9530,43 @@ a.button {
     margin-left: -1.5rem;
     width: 3rem;
     text-align: center; }
+  #venue-slider .img-table,
+  #modal-venue-new-cover .img-table,
+  #venue-product-page-cover .img-table {
+    height: 200px;
+    width: 100%; }
+    #venue-slider .img-table .img-cell,
+    #modal-venue-new-cover .img-table .img-cell,
+    #venue-product-page-cover .img-table .img-cell {
+      height: 200px;
+      width: 100%; }
+
+#venue-product-page .price {
+  position: absolute;
+  bottom: 0;
+  padding: 0.5rem;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  left: 0;
+  right: 0;
+  text-align: right; }
+
+#venue-product-page #venue-product-page-cover {
+  position: relative;
+  background-size: cover;
+  background-repeat: no-repeat; }
+  #venue-product-page #venue-product-page-cover .venue-slide-bg {
+    z-index: 0; }
+  #venue-product-page #venue-product-page-cover img {
+    position: relative; }
+
+#venue-product-page #venue-product-page-description {
+  margin-bottom: 0; }
+  #venue-product-page #venue-product-page-description p {
+    white-space: initial; }
+
+#venue-product-page #venue-product-page-call {
+  margin: 0; }
 
 #venue-tabs .tabs {
   border-bottom: 0; }
@@ -9526,7 +9620,8 @@ a.button {
   background: black; }
   .card.social .item-image img {
     max-height: 300px;
-    width: auto; }
+    width: auto;
+    max-width: 100%; }
 
 .card.social.video .item-image {
   max-height: 200px;
@@ -9550,6 +9645,10 @@ a.button {
   border-top: 1px solid #eaeaea !important; }
   .card.social .item.tabs .tab-item {
     color: #444; }
+
+#tab-venue-facebook .card.social.video .item-image {
+  height: auto;
+  min-height: auto; }
 
 .transparent {
   background: transparent !important; }
@@ -9630,11 +9729,20 @@ a.button {
       #venue-events-page .slider ion-slide .promo *,
       #venue-events-page .slider ion-slide .event * {
         text-shadow: 0 0 5px black; }
-      #venue-promos-page .slider ion-slide .promo h2,
-      #venue-promos-page .slider ion-slide .event h2,
-      #venue-events-page .slider ion-slide .promo h2,
-      #venue-events-page .slider ion-slide .event h2 {
-        color: white; }
+      #venue-promos-page .slider ion-slide .promo h4,
+      #venue-promos-page .slider ion-slide .event h4,
+      #venue-events-page .slider ion-slide .promo h4,
+      #venue-events-page .slider ion-slide .event h4 {
+        color: white;
+        margin-top: 0;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden; }
+      #venue-promos-page .slider ion-slide .promo p,
+      #venue-promos-page .slider ion-slide .event p,
+      #venue-events-page .slider ion-slide .promo p,
+      #venue-events-page .slider ion-slide .event p {
+        margin-bottom: 0; }
 
 #venue-products-page .product .badge {
   top: 0;
@@ -9647,6 +9755,9 @@ a.button {
   padding-top: 2rem; }
   .message.error .icon {
     font-size: 2rem; }
+
+.message.perro img {
+  max-width: 150px; }
 
 ul.rating.small {
   font-size: 10px; }
@@ -9711,7 +9822,8 @@ ion-footer-bar.disabled:before {
   background: rgba(0, 0, 0, 0.5);
   border-radius: 0.5rem; }
 
-#tab-venue-home-checkin {
+#tab-venue-home-checkin,
+#venue-product-page .availability {
   position: fixed;
   color: white;
   background: rgba(0, 0, 0, 0.5);
@@ -9722,10 +9834,12 @@ ion-footer-bar.disabled:before {
   line-height: 30px;
   height: 38px;
   min-height: 38px; }
-  #tab-venue-home-checkin.icon:before {
+  #tab-venue-home-checkin.icon:before,
+  #venue-product-page .availability.icon:before {
     font-size: 30px;
     line-height: 30px; }
-  #tab-venue-home-checkin.energized {
+  #tab-venue-home-checkin.energized,
+  #venue-product-page .availability.energized {
     color: #ffc900;
     box-shadow: 0 0 5px #ffc900; }
 
@@ -9774,7 +9888,7 @@ ion-footer-bar.disabled:before {
 /* Fix modal backdrop for smaller devices */
 @media (max-width: 679px) {
   .active .modal-backdrop-bg {
-    opacity: .75; }
+    opacity: .5; }
   .modal-backdrop-bg {
     -webkit-transition: opacity 300ms ease-in-out;
     transition: opacity 300ms ease-in-out;
@@ -9833,3 +9947,16 @@ ion-footer-bar.disabled:before {
 #image-modal-buttons {
   position: absolute;
   bottom: 0; }
+
+.img-table,
+.display-table {
+  height: 100%;
+  display: table;
+  width: 100%; }
+  .img-table .img-cell,
+  .img-table .display-table-cell,
+  .display-table .img-cell,
+  .display-table .display-table-cell {
+    height: 100%;
+    display: table-cell;
+    vertical-align: middle; }

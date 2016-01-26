@@ -14,8 +14,10 @@ angular
         User,
         AnonymousUser,
         AppConfig,
-        AnalyticsService) {
-            
+        AnalyticsService,
+
+        HOME_SLIDESHOW) {
+
         if ($rootScope.user) {
             $state.go('app.home');
             return;
@@ -28,6 +30,13 @@ angular
 
         $scope.user = {};
         $scope.master = {};
+        $scope.items = HOME_SLIDESHOW;
+        $scope.swiper = null;
+
+        $ionicHistory.nextViewOptions({
+            disableBack: true,
+            historyRoot: true
+        });
 
         $scope.isSignup = function(){
             return _signup;
@@ -52,25 +61,29 @@ angular
         };
 
         var _onLogin = function(){
-            var settings = User.current().get('settings');
-
             //Set root user
             $rootScope.user = User.current();
 
-            if(!_.isEmpty(settings)){
-                $rootScope.settings = settings;
+            if(!_.isEmpty($rootScope.user) && !_.isEmpty($rootScope.user.get('settings'))){
+                $rootScope.settings = $rootScope.user.get('settings');
             }else{
                 $rootScope.settings = AppConfig.SETTINGS;
                 $rootScope.user.save('settings', $rootScope.settings);
             }
 
             AnalyticsService.track('login', {user: $rootScope.user.id});
-        }
+
+            $scope.enableLogin();
+
+            if(AnonymousUser.exists()){
+                AnonymousUser.logOut();
+            }
+        };
 
         $scope.login = function(form) {
             if (!form.$invalid) {
                 $timeout(function(){
-                    $ionicLoading.show('autenticando...');
+                    $ionicLoading.show('Autenticando...');
                 });
 
                 User
@@ -87,7 +100,8 @@ angular
                         $timeout(function(){
                             $ionicLoading.hide();
                         });
-                        $state.go('app.home');
+
+                        goHome();
                     }, function(e) {
                         AnalyticsService.track('error', {code:  e.code, message: e.message});
 
@@ -105,7 +119,7 @@ angular
                         });
                     });
             }
-        }
+        };
 
         $scope.signup = function(form){
             if (!form.$invalid && !$scope.checkForm(form)) {
@@ -133,8 +147,9 @@ angular
 
                         $timeout(function(){
                             $ionicLoading.hide();
-                        })
-                        $state.go('app.home');
+                        });
+
+                        goHome();
                     },
                     error: function(user, e) {
                         AnalyticsService.track('error', {code:  e.code, message: e.message});
@@ -153,7 +168,7 @@ angular
                     }
                 });
             }
-        }
+        };
 
         $scope.checkForm = function(form){
             var isEqual = ($scope.user.password === $scope.user.passwordConfirmation);
@@ -164,8 +179,18 @@ angular
         $scope.skip = function(){
             $rootScope.user = AnonymousUser.current();
             $rootScope.settings = AnonymousUser.current().get('settings');
-            $state.go('app.home');
+
+            goHome();
         };
+
+        function goHome(){
+            console.log('login');
+            if($localStorage.get('tutorial')){
+                $state.go('app.home');
+            }else{
+                $state.go('app.tutorial');
+            }
+        }
 
         function facebookLogin(response) {
             if (!response.authResponse) {
@@ -181,65 +206,78 @@ angular
                     expiration_date: expDate
                 };
 
+                $timeout(function(){
+                    $ionicLoading.show('Conectando...');
+                });
+
                 //Login
                 Parse.FacebookUtils
                     .logIn(authData)
                     .then(function() {
-                        //Set root user
-                        $rootScope.user = User.current();
-
-                        _onLogin();
-
                         Facebook
                             .api("me", ["public_profile", "email", "user_friends"], function(data) {
+                                _onLogin();
+
+                                console.log('data', data);
+
                                 $rootScope.user.save({
                                         gender: data.gender || '',
                                         firstName: data.first_name,
                                         lastName: data.last_name,
                                         name: data.name,
                                         fullName: data.first_name + ' ' + data.last_name,
-                                        email: data.email,
+                                        //email: data.email,
                                         avatar: 'http://graph.facebook.com/' + data.id + '/picture?type=large',
                                         facebook: true
                                     })
                                     .then(function() {
                                         AnalyticsService.track('userProfileUpdate', {user: $rootScope.user.id});
 
-                                        $state.go('app.home');
+                                        $ionicLoading.hide();
+
+                                        goHome();
                                     }, function(e) {
                                         AnalyticsService.track('error', {code:  e.code, message: e.message, user: $rootScope.user.id});
 
-                                        $state.go('app.home');
+                                        $ionicLoading.hide();
+
+                                        goHome();
                                     });
                             }, function(e) {
+                                _onLogin();
+
                                 AnalyticsService.track('error', {code:  e.code, message: e.message});
 
-                                $state.go('app.home');
+                                $ionicLoading.hide();
+
+                                goHome();
                             });
                     }, function(e) {
+                        console.log(e, 'error 2');
                         AnalyticsService.track('error', {code:  e.code, message: e.message});
+
+                        $ionicLoading.hide();
 
                         swal({text: e.message, title: 'Error', confirmButtonText: 'Ok', type: 'error'});
                     });
             }
-        };
+        }
 
         $scope.facebookLogin = function() {
             Facebook
                 .getLoginStatus(function(response) {
-                    console.log(response, 'get login status');
+                    console.log('login status', response);
                     switch (response.status) {
                         case 'connected':
                             facebookLogin(response);
                             break;
                         default:
                             Facebook.login(function(response){
-                                console.log(response);
                                 if(response.error){
                                     AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                                     $timeout(function(){
-                                        swal({text: 'No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', title: 'Hay caramba!', confirmButtonText: 'Ok', title: 'error'});
+                                        swal({text: 'No podemos conectar con tu cuenta de Facebook, por favor intenta de nuevo', title: 'Hay caramba!', confirmButtonText: 'Ok'});
                                     });
                                 }else{
                                     facebookLogin(response);
@@ -248,6 +286,7 @@ angular
                             break;
                     }
                 }, function(e) {
+                    console.log('login error', e);
                     AnalyticsService.track('error', {code:  e.code, message: e.message});
 
                     $timeout(function(){
@@ -258,5 +297,15 @@ angular
 
         $scope.$on('$ionicView.enter', function(){
             $scope.enableLogin();
+
+            if(!$scope.swiper){
+                $scope.swiper = new Swiper('.swiper-container', {
+                    speed: 1000,
+                    spaceBetween: 100,
+                    observer: true,
+                    autoplay: 3000,
+                    effect: 'fade'
+                });
+            }
         });
     });
