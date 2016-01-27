@@ -2,7 +2,7 @@
     <ion-content id="login">
         <div id="login-wrapper">
             <div class="row">
-                <div class="col" id="login-slideshow">
+                <div class="col" id="login-slideshow" ng-if="LAYOUT != 'phones'">
                     <div id="login-slideshow-slider" class="swiper-container">
                         <div class="swiper-wrapper">
                             <div class="swiper-slide" ng-repeat="img in items">
@@ -11,7 +11,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col" id="login-form">
+                <div class="col" id="login-form" ng-class="{phones: LAYOUT=='phones'}">
                     <div class="child">
                         <div class="center aligned">
                             <img src="img/logo-title.png" id="logo" >
@@ -50,7 +50,7 @@
                 </div>
             </div>
             <br />
-            <div>
+            <div class="padding">
                 <ul class="uppercase" id="jound-menu">
                     <li><a href="/about">Acerca de</a></li>
                     <li><a href="/support">Ayuda</a></li>

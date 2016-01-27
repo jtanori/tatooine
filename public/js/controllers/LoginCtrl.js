@@ -28,6 +28,8 @@ angular
         $ionicHistory.clearCache();
         $ionicHistory.clearHistory();
 
+        $rootScope.LAYOUT = window.LAYOUT;
+
         $scope.user = {};
         $scope.master = {};
         $scope.items = HOME_SLIDESHOW;

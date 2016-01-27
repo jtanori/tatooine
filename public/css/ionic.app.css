@@ -9174,6 +9174,10 @@ a.button {
       margin-top: -50%;
       margin-left: auto;
       margin-right: auto; }
+    #login-wrapper #login-form.phones .child {
+      position: static;
+      top: auto;
+      margin-top: 1rem; }
   #login-wrapper #login-slideshow {
     position: relative; }
   #login-wrapper #login-slideshow-slider {

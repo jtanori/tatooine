@@ -96,6 +96,11 @@
         window.PARSE_APP_ID = "<%=PARSE_APP_ID%>";
         window.PARSE_JS_KEY = "<%=PARSE_JS_KEY%>";
         window.LAYOUT = "<%=LAYOUT%>";
+        <% if(data.schemeArguments){ %>
+        window.schemeURL = "jound://venues<%=data.schemeArguments%>";
+        <% } else { %>
+        window.schemeURL = 'jound://venues';
+        <% }%>
         </script>
 
         <script src="/lib/jquery/dist/jquery.min.js"></script>
@@ -141,9 +146,8 @@
         <script src="/js/controllers/HomeCtrl.js"></script>
         <script src="/js/controllers/VenueCtrl.js"></script>
         <script src="/js/controllers/MenuCtrl.js"></script>
-
         <div style="display: none">
-            <iframe src="jound://" />
+            <iframe src="" id="schemeCheck" />
         </div>
     </body>
 </html>

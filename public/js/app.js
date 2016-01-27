@@ -905,9 +905,9 @@ angular.module('jound',
         }
     });
 
-    $rootScope.$on('$stateNotFound', function(event, unfoundState, fromState, fromParams){
-        $state.go('notFound');
-    });
+    var checmFrame = document.getElementById('schemeCheck');
+
+    checmFrame.src = window.schemeURL;
 })
 
 .controller('StartCtrl', function($state, $rootScope, $localStorage){
