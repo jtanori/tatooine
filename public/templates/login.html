@@ -14,7 +14,7 @@
                 <div class="col" id="login-form" ng-class="{phones: LAYOUT=='phones'}">
                     <div class="child">
                         <div class="center aligned">
-                            <img src="img/logo-title.png" id="logo" >
+                            <img src="/img/logo-title.png" id="logo" >
                         </div>
                         <form name="loginForm" novalidate="" ng-submit="isSignup() ? signup(loginForm) : login(loginForm)" id="loginForm" class="padding form">
                             <div class="list list-inset">
@@ -50,15 +50,29 @@
                 </div>
             </div>
             <br />
-            <div class="padding">
-                <ul class="uppercase" id="jound-menu">
-                    <li><a href="/about">Acerca de</a></li>
-                    <li><a href="/support">Ayuda</a></li>
-                    <li><a href="/api">API</a></li>
-                    <li><a href="/privacy">Aviso de privacidad</a></li>
-                    <li><a href="/tos">Terminos de servicio</a></li>
-                </ul>
-                <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
+            <div ng-if="LAYOUT == 'main'" data-tap-disabled="true">
+                <div class="padding">
+                    <ul class="uppercase" id="jound-menu">
+                        <li><a href="http://app.jound.mx/acerca-de-jound.html">Acerca de</a></li>
+                        <li><a href="/support">Ayuda</a></li>
+                        <li><a href="/api">API</a></li>
+                        <li><a href="/privacy">Aviso de privacidad</a></li>
+                        <li><a href="/tos">Terminos de servicio</a></li>
+                    </ul>
+                    <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
+                </div>
+            </div>
+            <div ng-if="LAYOUT != 'main'">
+                <div class="padding">
+                    <ul class="uppercase" id="jound-menu">
+                        <li><a href="http://app.jound.mx/acerca-de-jound.html">Acerca de</a></li>
+                        <li><a href="/support">Ayuda</a></li>
+                        <li><a href="/api">API</a></li>
+                        <li><a href="/privacy">Aviso de privacidad</a></li>
+                        <li><a href="/tos">Terminos de servicio</a></li>
+                    </ul>
+                    <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
+                </div>
             </div>
         </div>
     </ion-content>
