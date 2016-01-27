@@ -871,6 +871,8 @@ angular.module('jound',
     var _ = lodash;
     window._ = lodash;
 
+    $rootScope.HOST_URL = AppConfig.HOST_URL;
+
     Parse.initialize(AppConfig.PARSE.appId, AppConfig.PARSE.jsKey);
     //Get user
     var u = User.current();
