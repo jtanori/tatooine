@@ -395,7 +395,7 @@ angular.module('jound',
     }
 })
 
-.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider, $locationProvider) {
+.config(function($stateProvider, $urlRouterProvider, $ionicConfigProvider, $httpProvider, $locationProvider, $compileProvider) {
     // Ionic uses AngularUI Router which uses the concept of states
     // Learn more here: https://github.com/angular-ui/ui-router
     // Set up the various states which the app can be in.
@@ -630,6 +630,7 @@ angular.module('jound',
 
     $locationProvider.html5Mode(true);
 
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|jound):/);
 })
 
 .factory('AuthInterceptor', function ($rootScope, $q, AUTH_EVENTS) {

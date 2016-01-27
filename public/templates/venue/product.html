@@ -3,7 +3,8 @@
         <a href="/venues/{{venueId}}/products" class="button button-icon ion-ios-arrow-back"></a>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
-        <a ng-click="share()" class="button button-icon ion-share"></a>
+		<a ng-if="isIOS || isAndroid" class="button button-icon" href="jound://venues/{{venueId}}/reviews" ng-class="{'ion-social-android': isAndroid, 'ion-social-apple': isIOS}"></a>
+		<a ng-click="share()" class="button button-icon ion-share"></a>
     </ion-nav-buttons>
     <ion-content id="venue-product-page">
     	<div ng-if="!item" class="center aligned padding error message perro">

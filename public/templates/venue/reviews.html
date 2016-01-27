@@ -3,6 +3,7 @@
         <a href="/venues/{{venueId}}" class="button button-icon ion-ios-arrow-back"></a>
     </ion-nav-buttons>
 	<ion-nav-buttons side="right">
+		<a ng-if="isIOS || isAndroid" class="button button-icon" href="jound://venues/{{venueId}}/reviews" ng-class="{'ion-social-android': isAndroid, 'ion-social-apple': isIOS}"></a>
         <a ng-click="share()" class="button button-icon ion-share" ng-if="items.length"></a>
     </ion-nav-buttons>
     <ion-content id="venue-reviews-page" class="has-subfooter">

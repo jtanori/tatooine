@@ -20,6 +20,8 @@ angular
         $scope.usingGeolocation = $rootScope.settings.usingGeolocation;
         $scope.helpVideos = [];
         $ionicSideMenuDelegate.canDragContent(false);
+        $rootScope.isIOS = ionic.Platform.isIOS();
+        $rootScope.isAndroid = ionic.Platform.isAndroid();
 
         var options = {
             location: 'no',
@@ -62,7 +64,7 @@ angular
             if(window.initialVenues){
                 delete window.initialVenues;
             }
-            
+
             $rootScope.settings.usingGeolocation = !$rootScope.settings.usingGeolocation;
         };
 

@@ -61,6 +61,9 @@
                         </div>
 
                         <div class="padding" id="venue-home-data">
+                            <div ng-if="$parent.isIOS || $parent.isAndroid" class="right aligned" style="float: right; margin-left:1rem">
+                                <a ng-if="isIOS || isAndroid" type="button" class="button button-small button-positive" href="jound://venues/{{venueId}}"><i class="icon" ng-class="{'ion-social-android': isAndroid, 'ion-social-apple': isIOS}"></i> Abrir en app</a>
+                            </div>
                             <h4>{{basicData.name}}</h4>
                             <p>{{basicData.activity}}</p>
 

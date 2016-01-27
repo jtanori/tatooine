@@ -76,6 +76,11 @@ angular
                     schemeUrl = 'pinterest://user/' + identifier;
                     url = 'https://www.pinterest.com/' + identifier;
                     break;
+                case 'jound':
+                    uriScheme = isIOS ? 'jound://' : 'mx.jound.app';
+                    schemeUrl = 'jound://' + identifier + '/' + subIdentifier;
+                    url = AppConfig.HOST_URL + identifirs + '/' + subIdentifier;
+                    break; 
             }
 
             if(isAndroid || isIOS){

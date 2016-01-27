@@ -1910,6 +1910,7 @@ Jound.get('/venue', home);
 Jound.get('/tutorial', home);
 Jound.get('/login', home);
 Jound.get('/forgot', forgot);
+Jound.get('/start', home);
 Jound.get('/venue/:id', getVenueById);
 Jound.get('/venue/:id/events', getEventsForVenueGET);
 Jound.get('/venue/:id/events/:eventId', getEventByIdGET);
