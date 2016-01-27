@@ -50,29 +50,15 @@
                 </div>
             </div>
             <br />
-            <div ng-if="LAYOUT == 'main'" data-tap-disabled="true">
-                <div class="padding">
-                    <ul class="uppercase" id="jound-menu">
-                        <li><a href="http://app.jound.mx/acerca-de-jound.html">Acerca de</a></li>
-                        <li><a href="{{HOST_URL}}/support">Ayuda</a></li>
-                        <li><a href="{{HOST_URL}}/api">API</a></li>
-                        <li><a href="{{HOST_URL}}/privacy">Aviso de privacidad</a></li>
-                        <li><a href="{{HOST_URL}}/tos">Terminos de servicio</a></li>
-                    </ul>
-                    <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
-                </div>
-            </div>
-            <div ng-if="LAYOUT != 'main'">
-                <div class="padding">
-                    <ul class="uppercase" id="jound-menu">
-                        <li><a href="http://app.jound.mx/acerca-de-jound.html">Acerca de</a></li>
-                        <li><a href="{{HOST_URL}}/support">Ayuda</a></li>
-                        <li><a href="{{HOST_URL}}/api">API</a></li>
-                        <li><a href="{{HOST_URL}}/privacy">Aviso de privacidad</a></li>
-                        <li><a href="{{HOST_URL}}/tos">Terminos de servicio</a></li>
-                    </ul>
-                    <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
-                </div>
+            <div class="padding">
+                <ul class="uppercase" id="jound-menu">
+                    <li><a href="http://app.jound.mx/acerca-de-jound.html">Acerca de</a></li>
+                    <li><a href="{{HOST_URL}}support" ui-sref="{{HOST_URL}}support">Ayuda</a></li>
+                    <li><a href="{{HOST_URL}}api" ui-sref="{{HOST_URL}}api">API</a></li>
+                    <li><a href="{{HOST_URL}}privacy" ui-sref="{{HOST_URL}}privacy">Aviso de privacidad</a></li>
+                    <li><a href="{{HOST_URL}}tos" ui-sref="{{HOST_URL}}tos">Terminos de servicio</a></li>
+                </ul>
+                <div class="dark">Copyright (c) 2016 Jound All Rights Reserved.</div>
             </div>
         </div>
     </ion-content>
