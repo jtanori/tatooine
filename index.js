@@ -302,11 +302,15 @@ var getVenueById = function(req, res){
             });
         }
 
-        console.log('venue id', v.id);
-
         if(isAjax){
             res.status(200).json({ status: 'success', venue: venue});
         }else{
+            var description = v.get('activity_description') + ' ' + v.getAddress() + ' ' + v.getCity();
+
+            if(v.get('phone_number')){
+                description += ' ' + v.get('phone_number');
+            }
+
             render(
                 {
                     activeMenuItem: 'home',
@@ -315,9 +319,10 @@ var getVenueById = function(req, res){
                     venue: v,
                     keywords: keywords,
                     image: v.getLogo(),
-                    url: protocol + '//www.jound.mx/venue/' + v.id,
-                    description: 'testing',
-                    canonical: url[0] === 'app' ? 'http://www.jound.mx/venue/' + v.id : false
+                    url: protocol + '//www.jound.mx/venues/' + v.id,
+                    description: description,
+                    canonical: url[0] === 'app' ? 'http://www.jound.mx/venues/' + v.id : false,
+                    schemeArguments: '/' + v.id
                 }
             );
         }
@@ -1004,8 +1009,6 @@ var getChannelForVenue = function(req, res){
     var body = req.body;
     var url;
 
-    console.log(body);
-    console.log('BODY');
     switch(body.type){
     case 'youtube':
         url = 'https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=' + body.account + '&order=date&key=' + process.env.GOOGLE_SERVER_API_KEY;
@@ -1023,7 +1026,6 @@ var getChannelForVenue = function(req, res){
 
         break;
     case 'twitter':
-        console.log('let get twitter');
         Channel
             .twitter
             .getTimeline(body.account, body.minId, body.maxId)
@@ -1042,7 +1044,6 @@ var getChannelForVenue = function(req, res){
             .then(function(data){
                 res.status(200).json({status: 'success', results: data.results, id: data.id});
             }, function(e){
-                console.log(e, 'error');
                 res.status(400).json({status: 'error', error: e});
             });
 
@@ -1507,7 +1508,6 @@ var checkUserCheckIn = function(req, res){
             .equalTo('venue', venue)
             //.greaterThan('createdAt', (new Date(date)).toUTCString())
             .first(function(c){
-                console.log('check user checkin', c);
                 res.status(200).json({status: 'success', results: c});
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
@@ -1543,8 +1543,6 @@ var updatePage = function(req, res){
                     res.status(400).json({status: 'error', error: {message: 'Page not found'}});
                 }
             }, function(e){
-                console.log('page error');
-                console.log(e);
                 res.status(400).json({status: 'error', error: e});
             });
     }else{
@@ -1685,7 +1683,6 @@ var setPageForVenue = function(req, res){
                         res.status(400).json({status: 'error', error: e});
                     });
             }, function(e){
-                console.log('no venues found', e);
                 res.status(400).json({status: 'error', error: e});
             });
     }else{
@@ -1834,8 +1831,6 @@ var trackEvent = function(req, res){
         var Analytics = Parse.Object.extend('Analytics');
         var a = new Analytics();
 
-        console.log(JSON.stringify(req.body.data), 'data');
-
         _.each(req.body.data, function(d, i){
 
             switch(i){
@@ -1897,8 +1892,6 @@ var trackEvent = function(req, res){
             .then(function(){
                 res.status(200).json({status: 'ok'});
             }, function(e){
-                console.log('Analitics error');
-                console.log(e);
                 res.status(200).json({status: 'ok'});
             });
     }else{

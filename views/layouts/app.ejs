@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-    <head>
+    <head <%if(data.venue){%>prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# business: http://ogp.me/ns/business#"<%}%>>
         <meta charset="utf-8">
         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
 
@@ -16,26 +16,41 @@
             <link rel="canonical" href="<%= data.canonical %>" />
             <% } %>
         <% } %>
-        <meta name="apple-itunes-app" content="app-id=1234567, app-argument=jound://venues"/>
+        <meta property="fb:app_id" content="<%=FACEBOOK_ID%>" />
         <meta name="description" content="<%=data.description || 'Descarga Jound, te va a encantar'%>">
+        <% if(data.schemeArguments){ %>
+        <meta name="apple-itunes-app" content="app-id=962045697, app-argument=jound://venues<%=data.schemeArguments%>"/>
+        <meta property="al:ios:url" content="jound://venues<%=data.schemeArguments%>" />
+        <meta property="al:android:url" content="jound://venues<%=data.schemeArguments%>" />
+        <% } else { %>
+        <meta name="apple-itunes-app" content="app-id=962045697, app-argument=jound://venues"/>
+        <meta property="al:ios:url" content="jound://venues" />
+        <meta property="al:android:url" content="jound://venues" />
+        <% } %>
+        <meta property="al:ios:url" content="jound://venues" />
+        <meta property="al:ios:app_store_id" content="962045697" />
+        <meta property="al:ios:app_name" content="Jound" />
+        <meta property="al:android:app_name" content="Jound" />
+        <meta property="al:android:package" content="mx.jound.app" />
+        <meta property="al:web:url" content="http://www.jound.mx" />
+
         <meta property="og:title" content="<%= data.title %>" id="ogtitle"/>
         <meta property="og:image" content="<%= data.image %>" id="ogimage" />
         <meta property="og:url" content="<%= data.url %>" id="ogurl" />
         <meta property="og:site_name" content="Jound"/>
         <meta property="og:description" content="<%=data.description || 'Descarga Jound, te va a encantar'%>"/>
+
         <% if(data.venue) { %>
+        <meta property="og:type"                              content="business.business" />
         <meta property="business:contact_data:street_address" content="<%=data.venue.getAddress()%>" />
         <meta property="business:contact_data:locality"       content="<%=data.venue.getCityName()%>" />
         <meta property="business:contact_data:postal_code"    content="<%=data.venue.get('postal_code')%>" />
         <meta property="business:contact_data:country_name"   content="Mexico" />
         <meta property="place:location:latitude"              content="<%=data.venue.get('position').latitude%>" />
         <meta property="place:location:longitude"             content="<%=data.venue.get('position').longitude%>" />
-        <% } %>
-        <meta property="fb:app_id" content="<%=FACEBOOK_ID%>" />
+        <% } else { %>
         <meta property="og:type" content="website" />
-        <meta property="al:android:url" content="jound://home">
-        <meta property="al:android:package" content="mx.jound.app">
-        <meta property="al:android:app_name" content="Jound">
+        <% } %>
 
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:site" content="@joundmx">
