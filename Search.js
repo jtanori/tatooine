@@ -7,6 +7,9 @@ var validations = require('./validations.js');
 
 var search = function(req, res){
     var data = {q: req.query.q, p: {lat: req.query.lat, lng: req.query.lng, radius: req.query.radius}, c: req.query.category};
+
+    console.log('data', data);
+
     var query = new Parse.Query(Venues.Venue);
     var position, q;
     var protocol = req.connection.encrypted ? 'https' : 'http';

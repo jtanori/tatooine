@@ -102,7 +102,7 @@ var Venue = Parse.Object.extend('Location', {
     },
     getLogo: function(){
         var l;
-        console.log(this, 'logo');
+
         if(this.get('logo')){
             l = this.get('logo').get('file');
 
@@ -215,11 +215,12 @@ var venueParse = function(v){
 
 var savePhotoForVenue = function(req, res){
     var body = req.body;
-    var File = Parse.Object.extend('File');
-    var F, f;
+	var id = req.params.id;
 
-    if(body.id && body.data){
-        var venue = new Venue({id: body.id})
+    if(id && body.data){
+		var File = Parse.Object.extend('File');
+	    var F, f;
+        var venue = new Venue({id: id})
 
         venue
             .fetch()
@@ -334,12 +335,14 @@ var setPageForVenue = function(req, res){
 
 var report = function(req, res){
     var body = req.body;
-    var Ticket = Parse.Object.extend('Ticket');
-    var User = Parse.Object.extend('_User');
-    var venue, user, ticket;
+	var id = req.params.id;
 
-    if(body.id && body.userId && body.details && body.problemType){
-        venue = new Venue({id: body.id});
+    if(id && body.userId && body.details && body.problemType){
+		var Ticket = Parse.Object.extend('Ticket');
+	    var User = Parse.Object.extend('_User');
+	    var venue, user, ticket;
+
+        venue = new Venue({id: id});
         user = new User({id: body.userId});
 
         ticket = new Ticket({
@@ -370,14 +373,16 @@ var report = function(req, res){
 
 var updatePage = function(req, res){
     var body = req.body;
+	var id = req.params.id;
     var Page = Parse.Object.extend('Page');
     var pageQuery = new Parse.Query(Page);
 
     body.val = body.val || undefined;
 
-    if(body.id && body.attr && body.val && _.isString(body.attr)){
+    if(id && body.attr && body.val && _.isString(body.attr)){
+		//TODO: Enforce venue check
         pageQuery
-            .equalTo('objectId', body.id)
+            .equalTo('objectId', id)
             .first(function(p){
                 if(p){
                     Parse.Cloud.useMasterKey();
@@ -401,13 +406,12 @@ var updatePage = function(req, res){
 };
 
 var isClaimed = function(req, res){
-    var body = req.body;
-    var Claim = Parse.Object.extend('LocationClaim');
-    var claimQuery = new Parse.Query(Claim);
-    var venue;
+    var body = req.params;
 
     if(body.id){
-        venue = new Venue({id: body.id});
+		var Claim = Parse.Object.extend('LocationClaim');
+	    var claimQuery = new Parse.Query(Claim);
+	    var venue = new Venue({id: body.id});
 
         claimQuery
             .equalTo('venue', venue)
@@ -429,13 +433,15 @@ var isClaimed = function(req, res){
 
 var claimVenue = function(req, res){
     var body = req.body;
-    var User = Parse.Object.extend('_User');
-    var Claim = Parse.Object.extend('LocationClaim');
-    var claimQuery = new Parse.Query(Claim);
-    var user, venue;
+	var id = req.params.id;
 
-    if(body.id && body.userId && body.details){
-        venue = new Venue({id: body.id});
+    if(id && body.userId && body.details){
+		var User = Parse.Object.extend('_User');
+	    var Claim = Parse.Object.extend('LocationClaim');
+	    var claimQuery = new Parse.Query(Claim);
+	    var user, venue;
+
+        venue = new Venue({id: id});
         user = new User({id: body.userId});
 
         claimQuery
@@ -467,14 +473,16 @@ var claimVenue = function(req, res){
 
 var checkUserCheckIn = function(req, res){
     var body = req.body;
-    var User = Parse.Object.extend('_User');
-    var venue = new Venue();
-    var query = new Parse.Query('Checkin');
-    var user, date;
-    var sixteenHours = 16*60*60*1000;
+    var id = req.params.id;
 
-    if(body.id && body.userId){
-        venue.id = body.id;
+    if(id && body.userId){
+		var User = Parse.Object.extend('_User');
+	    var venue = new Venue();
+	    var query = new Parse.Query('Checkin');
+	    var user, date;
+	    var sixteenHours = 16*60*60*1000;
+
+        venue.id = id;
         user = new User({id: body.userId});
         date = (((new Date())*1)-sixteenHours);
 
@@ -495,13 +503,15 @@ var checkUserCheckIn = function(req, res){
 
 var checkIn = function(req, res){
     var body = req.body;
-    var User = Parse.Object.extend('_User');
-    var Checkin = Parse.Object.extend('Checkin');
-    var venue = new Venue();
-    var user, c;
+	var id = req.params.id;
 
-    if(body.id && body.userId){
-        venue.id = body.id;
+    if(id && body.userId){
+		var User = Parse.Object.extend('_User');
+	    var Checkin = Parse.Object.extend('Checkin');
+	    var venue = new Venue();
+	    var user, c;
+
+        venue.id = id;
         user = new User({id: body.userId});
         c = new Checkin({venue: venue, user: user});
 
@@ -528,16 +538,18 @@ var checkIn = function(req, res){
 
 var saveReview = function(req, res){
     var body = req.body;
-    var Review = Parse.Object.extend('Review');
-    var User = Parse.Object.extend('_User');
-    var venue = new Venue();
-    var user = new User();
-    var review = new Review();
+	var id = req.params.id;
 
-    if(body.id && body.userId && body.text && body.text.length){
+    if(id && body.userId && body.text && body.text.length){
+		var Review = Parse.Object.extend('Review');
+	    var User = Parse.Object.extend('_User');
+	    var venue = new Venue();
+	    var user = new User();
+	    var review = new Review();
+
         body.rating = body.rating || 0;
 
-        venue.id = body.id;
+        venue.id = id;
         user.id = body.userId;
 
         review
@@ -558,12 +570,13 @@ var saveReview = function(req, res){
 };
 
 var getReviews = function(req, res){
-    var body = req.body;
-    var Review = Parse.Object.extend('Review');
-    var query = new Parse.Query(Review);
-    var venue = new Venue();
+    var body = req.params;
 
     if(body.id){
+		var Review = Parse.Object.extend('Review');
+	    var query = new Parse.Query(Review);
+	    var venue = new Venue();
+
         venue.id = body.id;
 
         query
@@ -585,69 +598,76 @@ var getReviews = function(req, res){
         query
             .find()
             .then(function(reviews){
-                reviews = _.map(reviews, function(r){
-                    var u = r.get('author').toJSON();
-                    var v = r.get('venue').toJSON();
-                    var a = u.avatar;
+                if(!_.isEmpty(reviews)){
+					reviews = _.map(reviews, function(r){
+	                    var u = r.get('author').toJSON();
+	                    var v = r.get('venue').toJSON();
+	                    var a = u.avatar;
 
-                    if(_.isEmpty(a) || !_.isString(a)){
-                        u.avatar = 'http://www.gravatar.com/avatar/' + md5(u.email);
-                    }
+	                    if(_.isEmpty(a) || !_.isString(a)){
+	                        u.avatar = 'http://www.gravatar.com/avatar/' + md5(u.email);
+	                    }
 
-                    return {
-                        comments: r.get('comments'),
-                        rating: r.get('rating'),
-                        createdAt: r.createdAt,
-                        updatedAt: r.updatedAt,
-                        id: r.id,
-                        venue: v,
-                        author: u
-                    };
-                });
-                res.status(200).json({status: 'success', results: reviews});
+	                    return {
+	                        comments: r.get('comments'),
+	                        rating: r.get('rating'),
+	                        createdAt: r.createdAt,
+	                        updatedAt: r.updatedAt,
+	                        id: r.id,
+	                        venue: v,
+	                        author: u
+	                    };
+	                });
+
+	                res.status(200).json({status: 'success', results: reviews});
+				}else{
+					res.status(400).json({status: 'error', error: {message:'No reviews found for given venue'}});
+				}
             }, function(e){
                 res.status(400).json({status: 'error', error: e});
             });
-
     }else{
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
 
 var getEventById = function(req, res){
-    var body = req.body;
-    var E = Parse.Object.extend('Event');
-    var e = new E();
+	var body = req.params;
 
-    if(body.id){
-        e.id = body.id;
-        e
-            .fetch()
-            .then(function(e){
-                if(e){
-                    res.status(200).json({status: 'success', results: e.toJSON()});
+    if(body.eventId && body.id){
+        var venue = new Venue({id: body.id});
+        var E = Parse.Object.extend('Event');
+        var eventQuery = new Parse.Query(E);
+
+        Parse.Cloud.useMasterKey();
+
+        eventQuery
+            .equalTo('objectId', body.eventId)
+            .equalTo('client', venue)
+            .first(function(p){
+                if(p){
+                    res.status(200).json({status: 'success', product: p.toJSON()});
                 }else{
-                    res.status(400).json({status: 'error', error: {message: 'event not found'}});
+                    res.status(404).json({status: 'error', error: {message: 'Event not found', code: 404}});
                 }
             }, function(e){
-                res.status(400).json({status: 'error', error: e});
+                res.status(200).json({status: 'success', error: e});
             });
-
     }else{
         res.status(400).json({status: 'error', error: {message: 'Invalid params'}});
     }
 };
 
 var getEvents = function(req, res){
-    var body = req.body;
-    var E = Parse.Object.extend('Event');
-    var query = new Parse.Query(E);
-    var venue = new Venue();
-    var now = new Date();
-    var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
-    var isAjax = req.xhr || req.headers.accept.indexOf('json') > -1;
+    var body = req.params;
 
     if(body.id){
+		var E = Parse.Object.extend('Event');
+	    var query = new Parse.Query(E);
+	    var venue = new Venue();
+	    var now = new Date();
+	    var plusFiveDays = new Date((now*1) + (5*24*60*60*1000));
+
         venue.id = body.id || req.params.id;
 
         query
@@ -657,25 +677,13 @@ var getEvents = function(req, res){
             .greaterThan('endViewableDate', new Date((now*1) + 5*24*60*60*1000))
             .find()
             .then(function(events){
-                if(isAjax){
-                    res.status(200).json({status: 'success', results: events});
-                }else{
-                    res.render('events', {
-                        data: {
-                            events: events.toJSON()
-                        }
-                    });
-                }
+				if(!_.isEmpty(events)){
+					res.status(200).json({status: 'success', results: events});
+				}else{
+					res.status(400).json({status: 'error', error: {message: 'Events not found'}});
+				}
             }, function(e){
-                if(isAjax){
-                    res.status(400).json({status: 'error', error: e});
-                }else{
-                    res.render('events', {
-                        data: {
-                            events: []
-                        }
-                    });
-                }
+                res.status(400).json({status: 'error', error: e});
             });
 
     }else{
@@ -709,17 +717,17 @@ var getDeals = function(req, res){
 };
 
 var getProductById = function(req, res){
-    var body = req.body;
+    var body = req.params;
 
-    if(body.id && body.venue){
-        var venue = new Venue({id: body.venue});
+    if(body.productId && body.id){
+        var venue = new Venue({id: body.id});
         var Product = Parse.Object.extend('Product');
         var productQuery = new Parse.Query(Product);
 
         Parse.Cloud.useMasterKey();
 
         productQuery
-            .equalTo('objectId', body.id)
+            .equalTo('objectId', body.productId)
             .equalTo('client', venue)
             .equalTo('available', true)
             .first(function(p){
@@ -737,7 +745,7 @@ var getProductById = function(req, res){
 };
 
 var getProducts = function(req, res){
-    var body = req.body;
+    var body = req.params;
     var Product = Parse.Object.extend('Product');
     var query = new Parse.Query(Product);
     var venue = new Venue();
@@ -769,17 +777,17 @@ var getProducts = function(req, res){
 };
 
 var getProductForVenue= function(req, res){
-    var body = req.body;
+    var body = req.params;
 
-    if(body.id && body.venue){
-        var venue = new Venue({id: body.venue});
+    if(body.id && body.productId){
+        var venue = new Venue({id: body.id});
         var Product = Parse.Object.extend('Product');
         var productQuery = new Parse.Query(Product);
 
         Parse.Cloud.useMasterKey();
 
         productQuery
-            .equalTo('objectId', body.id)
+            .equalTo('objectId', body.productId)
             .equalTo('client', venue)
             .equalTo('available', true)
             .include('client')
@@ -864,28 +872,74 @@ var getChannelForVenue = function(req, res){
 };
 
 var unlike = function(req, res){
-    var data = req.body;
-    var userQuery = new Parse.Query(Parse.User);
-    var venueQuery = new Parse.Query(Venue);
+	var data = req.body;
+	var id = req.params.id;
 
-    if(_.isString(data.u) && _.isString(data.token) && data.id){
+    if(_.isString(data.u) && _.isString(data.token) && id){
+		var userQuery = new Parse.Query(Parse.User);
+	    var venueQuery = new Parse.Query(Venue);
+
         userQuery
             .select('likedVenues').get(data.u)
             .then(function(u){
-                venueQuery.get(data.id, {
+                venueQuery.get(id, {
                     success: function(v){
-                        Parse.Cloud.useMasterKey();
+	                    if(!_.isEmpty(v)){
+							Parse.Cloud.useMasterKey();
 
-                        var relation = v.relation('likedBy');
-                        relation.remove(u);
+	                        var relation = v.relation('likedBy');
+	                        relation.remove(u);
 
-                        if(v.get('likes') > 0){
-                            v.increment('likes', -1)
-                        }
+	                        if(v.get('likes') > 0){
+	                            v.increment('likes', -1)
+	                        }
 
-                        v.save()
-                            .done(function(){res.status(200).json({ status: 'success' });})
-                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
+	                        v.save()
+	                            .done(function(){res.status(200).json({ status: 'success' });})
+	                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
+						}else{
+							res.status(404).json({ status: 'error', error: 'Venue not found', code: 404 });
+						}
+                    },
+                    error: function(o, e){
+                        res.status(404).json({ status: 'error', error: e.message, code: e.code });
+                    }
+                });
+            })
+            .fail(function(o, e){
+                res.status(400).json({ status: 'error', error: e.message, code: e.code });
+            });
+    }else{
+        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
+    }
+};
+
+var like = function(req, res){
+    var data = req.body;
+	var id = req.params.id;
+
+    if(_.isString(data.u) && _.isString(data.token) && id){
+		var userQuery = new Parse.Query(Parse.User);
+	    var venueQuery = new Parse.Query(Venue);
+
+        userQuery
+            .select('likedVenues').get(data.u)
+            .then(function(u){
+                venueQuery.get(id, {
+                    success: function(v){
+                        if(!_.isEmpty(v)){
+							Parse.Cloud.useMasterKey();
+
+							var relation = v.relation('likedBy');
+	                        relation.add(u);
+
+	                        v.increment('likes')
+	                            .save()
+	                            .done(function(){res.status(200).json({ status: 'success' });})
+	                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
+						}else{
+							res.status(404).json({ status: 'error', error: 'Venue not found', code: 404});
+						}
                     },
                     error: function(o, e){
                         res.status(400).json({ status: 'error', error: e.message, code: e.code });
@@ -900,38 +954,30 @@ var unlike = function(req, res){
     }
 };
 
-var like = function(req, res){
-    var data = req.body;
-    var userQuery = new Parse.Query(Parse.User);
+var getVenueById = function(req, res){
     var venueQuery = new Parse.Query(Venue);
+    var url = _.compact(req.url.split('/'));
 
-    if(_.isString(data.u) && _.isString(data.token) && data.id){
-        userQuery
-            .select('likedVenues').get(data.u)
-            .then(function(u){
-                venueQuery.get(data.id, {
-                    success: function(v){
-                        Parse.Cloud.useMasterKey();
+    venueQuery
+        .include('category')
+        .include('logo')
+        .include('cover')
+        .include('page')
+        .select(fieldsWhiteList)
+		.get(req.params.id)
+		.then(function(v){
+			if(!_.isEmpty(v)){
+				var venue = venueParse(v);
 
-                        var relation = v.relation('likedBy');
-                        relation.add(u);
+				console.log(JSON.stringify(venue));
 
-                        v.increment('likes')
-                            .save()
-                            .done(function(){res.status(200).json({ status: 'success' });})
-                            .fail(function(m, e){res.status(404).json({ status: 'error', error: e.message, code: e.code });});
-                    },
-                    error: function(o, e){
-                        res.status(400).json({ status: 'error', error: e.message, code: e.code });
-                    }
-                });
-            })
-            .fail(function(o, e){
-                res.status(400).json({ status: 'error', error: e.message, code: e.code });
-            });
-    }else{
-        res.status(400).json({ status: 'error', error: 'Unprocessable entity', code: 400 });
-    }
+				res.status(200).json({ status: 'success', venue: venue});
+			}else{
+				res.status(404).json({ status: 'error', error: {message: 'Venue not found', code: 404} });
+			}
+		}, function(e){
+			res.status(404).json({ status: 'error', error: e });
+		});
 };
 
 module.exports = {
@@ -957,5 +1003,6 @@ module.exports = {
 	getProductForVenue: getProductForVenue,
 	getChannel: getChannelForVenue,
 	unlike: unlike,
-	like: like
+	like: like,
+	getById: getVenueById
 };

@@ -65,34 +65,40 @@ MAIN API
 
 **/
 
-
-Jound.post('/parse/unlike', Venues.unlike);
-Jound.post('/parse/like', Venues.like);
-Jound.post('/parse/venue/reviews', Venues.review);
-Jound.post('/parse/venue/checkin', Venues.checkIn);
-Jound.post('/parse/venue/claim', Venues.claim);
-Jound.post('/parse/venue/update', Venues.updatePage);
-Jound.post('/parse/venue/report', Venues.report);
-Jound.post('/parse/venue/add/page', Venues.setPage);
-Jound.post('/parse/venue/update/logo', Venues.setLogo);
-Jound.post('/parse/venue/add/photo', Venues.savePhoto);
+//POST
+//TODO: Improve security on all POST
+Jound.post('/parse/venue/:id/unlike', Venues.unlike);
+Jound.post('/parse/venue/:id/like', Venues.like);
+Jound.post('/parse/venue/:id/reviews', Venues.review);
+Jound.post('/parse/venue/:id/checkin', Venues.checkIn);
+Jound.post('/parse/venue/:id/claim', Venues.claim);
+Jound.post('/parse/venue/:id/update', Venues.updatePage);
+Jound.post('/parse/venue/:id/report', Venues.report);
+//Jound.post('/parse/venue/add/page', Venues.setPage);
+//Jound.post('/parse/venue/update/logo', Venues.setLogo);
+Jound.post('/parse/venue/:id/add/photo', Venues.savePhoto);
+Jound.post('/parse/venue/:id/channel', Venues.getChannel);
 Jound.post('/parse/analytics', Analytics.track);
 Jound.post('/parse/subscribe', Newsletter.subscribe);
 
-Jound.get('/directions/:from/:to', Geo.getDirections);
-Jound.get('/directions/:from/:to/:mode', Geo.getDirections);
-Jound.get('/parse/venue/:id/channel', Venues.getChannel);
+//GET
+Jound.get('/parse/directions/:from/:to', Geo.getDirections);
+Jound.get('/parse/directions/:from/:to/:mode', Geo.getDirections);
+Jound.get('/parse/venue/:id', Venues.getById);
 Jound.get('/parse/venue/:id/products', Venues.getProducts);
-Jound.get('/parse/venue/:id/products/:id', Venues.getProductById);
-Jound.get('/parse/venue/:id/products/:id/include', Venues.getProductForVenue);
+Jound.get('/parse/venue/:id/products/:productId', Venues.getProductById);
+Jound.get('/parse/venue/:id/products/:productId/include', Venues.getProductForVenue);
 Jound.get('/parse/venue/:id/deals', Venues.getDeals);
 Jound.get('/parse/venue/:id/events', Venues.getEvents);
-Jound.get('/parse/venue/:id/events/:id', Venues.getEventById);
+Jound.get('/parse/venue/:id/events/:eventId', Venues.getEventById);
 Jound.get('/parse/venue/:id/reviews', Venues.reviews);
 Jound.get('/parse/venue/:id/checkin', Venues.isUserCheckedIn);
 Jound.get('/parse/venue/:id/claimed', Venues.isClaimed);
 Jound.get('/parse/search', Search.search);
-
+//Default home message
+Jound.get('/', function(req, res){
+    res.status(200).send('Hello.');
+});
 
 /**
 
@@ -102,11 +108,6 @@ MAIN API END
 
 // Serve the Parse API on the /parse URL prefix
 app.use('/', Jound);
-
-// Hello world
-app.get('/', function(req, res) {
-  res.status(200).send('Hello.');
-});
 
 var port = process.env.PORT || 5000;
 

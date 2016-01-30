@@ -132,6 +132,7 @@ var youtube = function(url){
             var parsed = JSON.parse(body);
             var items;
 
+			console.log(parsed, 'parse');
             if(parsed.error){
                 promise.reject(parsed.error);
             }else{
