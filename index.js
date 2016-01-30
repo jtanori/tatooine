@@ -13,6 +13,8 @@ var ParseServer = require('parse-server').ParseServer;
 var Venues = require('./Venue.js');
 var app = express();
 
+console.log(__dirname, 'dir name');
+
 app.set('port', (process.env.PORT || 5000));
 app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
 app.use(rollbar.errorHandler(process.env.ROLLBAR_ACCESS_TOKEN));
@@ -22,8 +24,8 @@ app.use(multer());
 app.use(express.static(__dirname + '/public'));
 app.use(helmet());
 
-//Enable CORS
-app.use(function(req, res, next){
+//Enable CORS - Already done by ParseServer
+/*app.use(function(req, res, next){
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
         next();
@@ -31,7 +33,7 @@ app.use(function(req, res, next){
     .options('*', function(req, res, next){
         res.end();
     });
-
+*/
 
 var logRequest = function(req, res, next){
     console.log(req.body);

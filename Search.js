@@ -28,12 +28,13 @@ var search = function(req, res){
             if(data.q){
                 data.q = !_.isEmpty(data.q) ? decodeURIComponent(data.q) : '';
                 q = _.chain(data.q.split(',')).compact().uniq().invoke('trim').invoke('toLowerCase').value();
+                q = utils.strings.sanitize(q);
 
-                if(data.q.length === 1){
-                    query.equalTo('keywords', q[0].toLowerCase());
-                }else{
-                    query.containedIn('keywords', utils.strings.sanitize(q));
+                if(!_.isEmpty(data.q)){
+                    query.containedIn('keywords', q);
                 }
+
+                console.log('will query for', q);
             }
 
             if(data.c && data.c !== 'all'){
@@ -64,7 +65,7 @@ var search = function(req, res){
 
                         _.each(r, function(v){
                             var city = v.get('locality');
-                            
+
                             if(cities.indexOf(city) < 0){
                                 cities.push(city);
                             }
