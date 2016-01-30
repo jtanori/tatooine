@@ -13,8 +13,6 @@ var ParseServer = require('parse-server').ParseServer;
 var Venues = require('./Venue.js');
 var app = express();
 
-console.log(__dirname, 'dir name');
-
 app.set('port', (process.env.PORT || 5000));
 app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
 app.use(rollbar.errorHandler(process.env.ROLLBAR_ACCESS_TOKEN));
