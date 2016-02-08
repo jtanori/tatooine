@@ -43,6 +43,7 @@ var Search = require('./Search');
 var Analytics = require('./Analytics');
 var Geo = require('./Geo.js');
 var Newsletter = require('./Newsletter.js');
+var Categories = require('./Categories.js');
 
 // Specify the connection string for your mongodb database
 // and the location to your Parse cloud code
@@ -65,34 +66,36 @@ MAIN API
 
 //POST
 //TODO: Improve security on all POST
-Jound.post('/parse/venue/:id/unlike', Venues.unlike);
-Jound.post('/parse/venue/:id/like', Venues.like);
-Jound.post('/parse/venue/:id/reviews', Venues.review);
-Jound.post('/parse/venue/:id/checkin', Venues.checkIn);
-Jound.post('/parse/venue/:id/claim', Venues.claim);
-Jound.post('/parse/venue/:id/update', Venues.updatePage);
-Jound.post('/parse/venue/:id/report', Venues.report);
-//Jound.post('/parse/venue/add/page', Venues.setPage);
-//Jound.post('/parse/venue/update/logo', Venues.setLogo);
-Jound.post('/parse/venue/:id/add/photo', Venues.savePhoto);
-Jound.post('/parse/venue/:id/channel', Venues.getChannel);
-Jound.post('/parse/analytics', Analytics.track);
-Jound.post('/parse/subscribe', Newsletter.subscribe);
+Jound.post('/venue/:id/unlike', Venues.unlike);
+Jound.post('/venue/:id/like', Venues.like);
+Jound.post('/venue/:id/reviews', Venues.review);
+Jound.post('/venue/:id/checkin', Venues.checkIn);
+Jound.post('/venue/:id/claim', Venues.claim);
+Jound.post('/venue/:id/update', Venues.updatePage);
+Jound.post('/venue/:id/report', Venues.report);
+//Jound.post('/venue/add/page', Venues.setPage);
+//Jound.post('/venue/update/logo', Venues.setLogo);
+Jound.post('/venue/:id/add/photo', Venues.savePhoto);
+Jound.post('/venue/:id/channel', Venues.getChannel);
+Jound.post('/analytics', Analytics.track);
+Jound.post('/subscribe', Newsletter.subscribe);
 
 //GET
-Jound.get('/parse/directions/:from/:to', Geo.getDirections);
-Jound.get('/parse/directions/:from/:to/:mode', Geo.getDirections);
-Jound.get('/parse/venue/:id', Venues.getById);
-Jound.get('/parse/venue/:id/products', Venues.getProducts);
-Jound.get('/parse/venue/:id/products/:productId', Venues.getProductById);
-Jound.get('/parse/venue/:id/products/:productId/include', Venues.getProductForVenue);
-Jound.get('/parse/venue/:id/deals', Venues.getDeals);
-Jound.get('/parse/venue/:id/events', Venues.getEvents);
-Jound.get('/parse/venue/:id/events/:eventId', Venues.getEventById);
-Jound.get('/parse/venue/:id/reviews', Venues.reviews);
-Jound.get('/parse/venue/:id/checkin', Venues.isUserCheckedIn);
-Jound.get('/parse/venue/:id/claimed', Venues.isClaimed);
-Jound.get('/parse/search', Search.search);
+Jound.get('/directions/:from/:to', Geo.getDirections);
+Jound.get('/directions/:from/:to/:mode', Geo.getDirections);
+Jound.get('/venue/:id', Venues.getById);
+Jound.get('/venue/:id/products', Venues.getProducts);
+Jound.get('/venue/:id/products/:productId', Venues.getProductById);
+Jound.get('/venue/:id/products/:productId/include', Venues.getProductForVenue);
+Jound.get('/venue/:id/deals', Venues.getDeals);
+Jound.get('/venue/:id/events', Venues.getEvents);
+Jound.get('/venue/:id/events/:eventId', Venues.getEventById);
+Jound.get('/venue/:id/reviews', Venues.reviews);
+Jound.get('/venue/:id/checkin', Venues.isUserCheckedIn);
+Jound.get('/venue/:id/claimed', Venues.isClaimed);
+Jound.get('/search', Search.search);
+Jound.get('/categories', Categories.get);
+Jound.get('/categories/:id', Categories.getById);
 //Default home message
 Jound.get('/', function(req, res){
     res.status(200).send('Hello.');

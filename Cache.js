@@ -9,20 +9,22 @@ var client = memjs.Client.create(process.env.MEMCACHEDCLOUD_SERVERS, {
 
 var Categories = require('./Category');
 
-var getCategories = function(){
+var getCategories = function(all){
     var promise = new Parse.Promise();
 
     client.get("categories", function (err, value, key) {
         if (!_.isEmpty(value)) {
-            promise.resolve(JSON.parse(value));
+            var categories = JSON.parse(value);
+
+            categories = categories.map(Categories.parseCategory);
+
+            promise.resolve(categories);
         }else{
-            var categories = new Categories.Query();
+            var categories = new Categories.Query(all);
             //Try getting those damm categories
             categories.find({
                 success: function(c){
-                    c = c.map(function(category){
-                        return category.toJSON();
-                    });
+                    c = c.map(Categories.parseCategory);
 
                     client.set('categories', JSON.stringify(c));
 
@@ -38,7 +40,12 @@ var getCategories = function(){
     return promise;
 };
 
+var getAllCategories = function(){
+    return getCategories(true);
+};
+
 module.exports = {
     client: client,
-    getCategories: getCategories
+    getCategories: getCategories,
+    getAllCategories: getAllCategories
 };
