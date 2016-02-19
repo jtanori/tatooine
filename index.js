@@ -6,15 +6,22 @@ var express = require('express');
 var helmet = require('helmet');
 var bodyParser = require('body-parser');
 var compression = require('compression');
+var forceSSL = require('express-force-ssl');
 var multer = require('multer');
 var rollbar = require('rollbar');
 var session = require('express-session');
 var ParseServer = require('parse-server').ParseServer;
-var Venues = require('./Venue.js');
+var _ = require('lodash');
 var app = express();
+const sessions = require("client-sessions");
 
 app.set('port', (process.env.PORT || 5000));
-app.use(session({secret: process.env.SESSION_SECRET, rolling: true, saveUninitialized: true, resave: false}));
+app.use(sessions({
+    cookieName: 'session',
+    secret: process.env.SESSION_SECRET,
+    duration: 24 * 60 * 60 * 1000,
+    activeDuration: 1000 * 60 * 20
+}));
 app.use(rollbar.errorHandler(process.env.ROLLBAR_ACCESS_TOKEN));
 app.use(compression());
 app.use(bodyParser.json());
@@ -22,16 +29,15 @@ app.use(multer());
 app.use(express.static(__dirname + '/public'));
 app.use(helmet());
 
-//Enable CORS - Already done by ParseServer
-/*app.use(function(req, res, next){
-        res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        next();
-    })
-    .options('*', function(req, res, next){
-        res.end();
+//Enable SSL enforcement for production
+if(process.env.NODE_ENV === 'production'){
+    app.set('forceSSLOptions', {
+        enable301Redirects: true,
+        trustXFPHeader: false,
+        httpsPort: 443,
+        sslRequiredMessage: 'SSL Required.'
     });
-*/
+}
 
 var logRequest = function(req, res, next){
     console.log(req.body);
@@ -44,6 +50,8 @@ var Analytics = require('./Analytics');
 var Geo = require('./Geo.js');
 var Newsletter = require('./Newsletter.js');
 var Categories = require('./Categories.js');
+var Venues = require('./Venue.js');
+var Manager = require('./Manager.js');
 
 // Specify the connection string for your mongodb database
 // and the location to your Parse cloud code
@@ -55,8 +63,10 @@ var Jound = new ParseServer({
   javascriptKey: process.env.PARSE_JS_KEY
 });
 
-Jound.use(logRequest);
+Parse.User.enableRevocableSession();
+Parse.User.enableUnsafeCurrentUser();
 
+Jound.use(logRequest);
 
 /**
 
@@ -96,10 +106,14 @@ Jound.get('/venue/:id/claimed', Venues.isClaimed);
 Jound.get('/search', Search.search);
 Jound.get('/categories', Categories.get);
 Jound.get('/categories/:id', Categories.getById);
+
 //Default home message
 Jound.get('/', function(req, res){
     res.status(200).send('Hello.');
 });
+
+// Serve the Parse API on the /parse URL prefix
+app.use('/', Jound);
 
 /**
 
@@ -107,8 +121,77 @@ MAIN API END
 
 **/
 
-// Serve the Parse API on the /parse URL prefix
-app.use('/', Jound);
+/**
+
+MANAGER API
+
+**/
+
+var JoundManager = express.Router();
+
+//Add auth checking
+JoundManager.use(Manager.check);
+//Auth
+JoundManager.route('/login').post(Manager.login);
+JoundManager.route('/logout').post(Manager.logout);
+//Roles and Users
+JoundManager.route('/roles').get(Manager.getRoles);
+JoundManager.route('/roles/:id').get(Manager.getRoleById);
+JoundManager
+    .route('/roles/:id/users')
+    .get(Manager.getUsersForRole)
+    .put(Manager.addUserToRole);
+JoundManager.route('/roles/:id/roles')
+    .get(Manager.getRolesForRole)
+    .put(Manager.addRoleToRole);
+JoundManager.route('/users').post(Manager.getUsers);
+JoundManager.route('/users/:id').get(Manager.getUser);
+
+//Categories
+JoundManager.route('/categories/indicators').get(Manager.getCategoryIndicators);
+JoundManager
+    .route('/categories/:id')
+    .get(Manager.getCategoryById)
+    .patch(Manager.updateCategory);
+JoundManager
+    .route('/categories/:id/i18n')
+    .get(Manager.getLocalizationsForCategory)
+    .post(Manager.addLocalizationForCategory);
+JoundManager
+    .route('/categories/:id/i18n/:i18nid')
+    .patch(Manager.updateLocalizationForCategory)
+    .delete(Manager.removeLocalizationForCategory);
+JoundManager
+    .route('/categories')
+    .get(Manager.getCategories)
+    .post(Manager.addCategory);
+
+//Venues
+JoundManager
+    .route('/venues/collection')
+    .post(Manager.saveVenues);
+
+//Geodata
+JoundManager
+    .route('/countries/:id/states')
+    .patch(Manager.addStatesToCountry);
+JoundManager
+    .route('/countries/:id/states/:stateId')
+    .get(Manager.getStateById)
+    .patch(Manager.addMunicipalitiesToState);
+JoundManager
+    .route('/countries/:id')
+    .get(Manager.getCountryById);
+JoundManager
+    .route('/countries')
+    .get(Manager.getCountries);
+app.use('/manager', JoundManager);
+
+/**
+
+MANAGER API END
+
+*/
 
 var port = process.env.PORT || 5000;
 

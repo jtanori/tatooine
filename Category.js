@@ -24,7 +24,8 @@ module.exports = {
             pluralized: category.get('pluralized'),
             updateHistory: category.get('updateHistory'),
             updatedAt: category.get('updatedAt'),
-            id: category.id
+            id: category.id,
+            slug: category.get('slug')
         };
     },
     parseKeywords: function(k){

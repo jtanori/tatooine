@@ -33,6 +33,15 @@ var nobueno = [
 	'deL',
 	'dEL',
 	'dEl',
+	'bcs',
+	'por',
+    'menor',
+    'comercio',
+    'excepto',
+    'sin',
+    'nombre',
+    'venta',
+    'compra'
 ];
 
 var good = function(r){
@@ -53,7 +62,7 @@ module.exports = {
 				d = d ? d : ',';
 				results = s.split(d);
 				results = _.chain(results);
-				results = results.invoke('trim').uniq().map(good).compact().value();
+				results = results.invoke('trim').invoke('toLowerCase').uniq().map(good).compact().value();
 			}catch(e){
 				results = [];
 			}finally{
@@ -64,7 +73,7 @@ module.exports = {
 			var results;
 			try{
 				results = _.chain(words);
-				results = results.invoke('trim').uniq().map(good).compact().value();
+				results = results.invoke('trim').uniq().invoke('toLowerCase').map(good).compact().value();
 			}catch(e){
 				results = [];
 			}finally{

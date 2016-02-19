@@ -16,11 +16,13 @@ module.exports = {
             }, function(e){
                 res.status(404).json({ message: 'No categories found', code: 404 });
             });*/
-
-        var categories = new Categories.Query(true);
+        var categories = new Categories.Query();
         var promise = new Parse.Promise();
+        var body = req.params;
 
-        console.log('categories get');
+        if(body.lang){
+            categories.equalTo('lang', body.lang);
+        }
 
         categories.find({
             success: function(c){
