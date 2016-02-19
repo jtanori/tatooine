@@ -13,7 +13,7 @@ var ParseServer = require('parse-server').ParseServer;
 var _ = require('lodash');
 var app = express();
 const sessions = require("client-sessions");
-var forceSSL = require('./middleware/ssl').force(proces.env.HOST_NAME);
+var forceSSL = require('./middleware/ssl').force(process.env.HOST_NAME);
 
 if ('production' == app.get('env')) {
   app.use(forceSSL);
