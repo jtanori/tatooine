@@ -6,7 +6,6 @@ var express = require('express');
 var helmet = require('helmet');
 var bodyParser = require('body-parser');
 var compression = require('compression');
-var forceSSL = require('express-force-ssl');
 var multer = require('multer');
 var rollbar = require('rollbar');
 var session = require('express-session');
@@ -14,6 +13,11 @@ var ParseServer = require('parse-server').ParseServer;
 var _ = require('lodash');
 var app = express();
 const sessions = require("client-sessions");
+var forceSSL = require('./middleware/ssl').force(proces.env.HOST_NAME);
+
+if ('production' == app.get('env')) {
+  app.use(forceSSL);
+}
 
 app.set('port', (process.env.PORT || 5000));
 app.use(sessions({
@@ -28,16 +32,6 @@ app.use(bodyParser.json());
 app.use(multer());
 app.use(express.static(__dirname + '/public'));
 app.use(helmet());
-
-//Enable SSL enforcement for production
-if(process.env.NODE_ENV === 'production'){
-    app.set('forceSSLOptions', {
-        enable301Redirects: true,
-        trustXFPHeader: false,
-        httpsPort: 443,
-        sslRequiredMessage: 'SSL Required.'
-    });
-}
 
 var logRequest = function(req, res, next){
     console.log(req.body);
