@@ -38,7 +38,7 @@ var logRequest = function(req, res, next){
     console.log('%s %s %s', req.method, req.url, req.path);
     next();
 };
-
+//Include API modules
 var Search = require('./Search');
 var Analytics = require('./Analytics');
 var Geo = require('./Geo.js');
@@ -54,7 +54,9 @@ var Jound = new ParseServer({
   cloud: process.env.CLOUD_PATH + '/cloud/main.js', // Provide an absolute path
   appId: process.env.PARSE_APP_ID,
   masterKey: process.env.PARSE_MASTER_KEY,
-  javascriptKey: process.env.PARSE_JS_KEY
+  javascriptKey: process.env.PARSE_JS_KEY,
+  fileKey: process.env.PARSE_FILE_KEY,
+  facebookAppIds: [process.env.FACEBOOK_ID]
 });
 
 Parse.User.enableRevocableSession();
