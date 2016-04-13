@@ -11,19 +11,16 @@ var checkAuth = function (req, res, next) {
     /*
     * If there is not user we do the following:
     * - Check the request url
-    * -- If it is equal to /login we continue
-    * -- We redirect to /login otherwise (because there is no user)
+    * -- If it is equal to /login /logout we continue
+    * -- Become user if this does not exists and the token is valid
+    * -- We reject the request otherwise
     */
 
-    console.log('Current User', Parse.User.current());
     if(req.url === '/logout' || req.url === '/login'){
-        console.log('no auth operation');
         next();
     }else if(_.isEmpty(token)){
-        console.log('Token not empty');
         res.status(403).json({message: 'Not authorized.'});
-    }else if(!Parse.User.current()){//Become user if this does not exists and the token is valid
-        console.log('we will become', token);
+    }else if(!Parse.User.current()){
         Parse.User
             .become(token)
             .then(function(u){
@@ -39,14 +36,12 @@ var checkAuth = function (req, res, next) {
                     RoleQuery
                         .matchesQuery('users', UserQuery)
                         .find(function(roles){
-                            console.log('we have roles for user', roles);
                             try{
                                 var roles = roles.map(function(r){
                                     return {name: r.get('name'), id: r.id, priority: r.get('priority')};
                                 });
 
                                 if(!_.isEmpty(roles)){
-                                    console.log('we have roles', roles);
                                     req.session.user = u.toJSON();
                                     req.session.sessionToken = u.getSessionToken();
                                     req.session.roles = roles;
@@ -73,19 +68,14 @@ var checkAuth = function (req, res, next) {
                 }
             });
     }else if(_.isEmpty(req.session)){
-        console.log('no sess');
         res.status(403).json({message: 'Not authorized.'});
     }else if(_.isEmpty(req.session.user)){
-        console.log('no user');
         res.status(403).json({message: 'Not authorized.'});
     }else if(_.isEmpty(req.session.user.sessionToken)){
-        console.log('no token');
         res.status(403).json({message: 'Not authorized.'});
     }else if(req.session.user.sessionToken !== token){
-        console.log('no token match');
         res.status(403).json({message: 'Not authorized.'});
     }else{
-        console.log('everything seems fine');
         next();
     }
 };
@@ -712,8 +702,9 @@ var addCategory = function(req, res){
             var name = s.titleize(data.name);
             var displayName = s.titleize(data.displayName);
             var slug = s.slugify(data.slug);
-            var active = _.isEmpty(data.active) ? false : true;
+            var active = !!data.active;
             var pluralized = s.titleize(data.pluralized);
+            var primary = !!data.primary;
 
             var nameCheck = new Parse.Query(Category);
             nameCheck.equalTo('name', name);
@@ -732,7 +723,6 @@ var addCategory = function(req, res){
                 .find()
                 .then(function(c){
                     if(!_.isEmpty(c)){
-                        console.log('category', c);
                         res.status(409).json({message: 'There seems to be a conflict with either your category name, slug, pluralized name or display name, please check your data.'});
                     }else{
                         var c = new Category({
@@ -742,14 +732,15 @@ var addCategory = function(req, res){
                             displayName: displayName,
                             keywords: keywords,
                             pluralized: pluralized,
-                            primary: true,
-                            createdBy: Parse.User.current(),
+                            primary: primary,
+                            createdBy: new Parse.User({id: sess.user.objectId}),
                             updateHistory: [{
                                 by: sess.user.objectId,
                                 op: 'create',
                                 timestamp: new Date()*1
                             }]
                         });
+
                         //Save category
                         c
                             .save()
@@ -774,6 +765,36 @@ var addCategory = function(req, res){
     }
 };
 
+var deleteCategory = function(req, res){
+    var sess = req.session;
+    var id = req.params.id;
+    var roles = sess && sess.roles ? sess.roles.map(function(r){return r.name;}) : null;
+
+    if(!_.isEmpty(sess) && !_.isEmpty(sess.user) && !_.isEmpty(roles) && !_.isEmpty(id)){
+        var isSuperAdmin = roles.indexOf('SuperAdmin') !== -1;
+        var isAdmin = roles.indexOf('Admin') !== -1;
+
+        if(isSuperAdmin || isAdmin){
+            Parse.Cloud.useMasterKey();
+            //Fetch role
+            var Category = Parse.Object.extend('Category');
+            var category = new Category({id: id});
+
+            category
+                .destroy()
+                .then(function(){
+                    res.status(200).json({message: 'Category Destroyed.'});
+                }, function(e){
+                    res.status(500).json({message: e.message});
+                })
+        }else{
+            res.status(403).json({message: 'You don\'t have privilegies to perform this operation.'});
+        }
+    }else{
+        res.status(403).json({message: 'You don\'t have privilegies to perform this operation.'});
+    }
+};
+
 var getCategories = function(req, res){
     var sess = req.session;
     var roles = sess && sess.roles ? sess.roles.map(function(r){return r.name;}) : null;
@@ -786,26 +807,28 @@ var getCategories = function(req, res){
             var categories = new Categories.Query(true);
             var promise = new Parse.Promise();
 
-            categories.find({
-                success: function(c){
-                    if(c){
-                        var ca = c.map(function(category){
-                            var indicators = category.get('indicators') || [];
+            categories
+                .limit(400)
+                .find({
+                    success: function(c){
+                        if(c){
+                            var ca = c.map(function(category){
+                                var indicators = category.get('indicators') || [];
 
-                            category = Categories.parseCategory(category);
-                            category.indicators = indicators;
+                                category = Categories.parseCategory(category);
+                                category.indicators = indicators;
 
-                            return category;
-                        });
-                        res.status(200).json({ status: 'success', results: ca});
-                    }else{
-                        res.status(404).json({ message: 'No categories found'});
+                                return category;
+                            });
+                            res.status(200).json({ status: 'success', results: ca});
+                        }else{
+                            res.status(404).json({ message: 'No categories found'});
+                        }
+                    },
+                    error: function(e){
+                        res.status(404).json({ message: e.message});
                     }
-                },
-                error: function(e){
-                    res.status(404).json({ message: e.message});
-                }
-            });
+                });
         }else{
             res.status(403).json({message: 'You don\'t have privilegies to perform this operation.'});
         }
@@ -1582,6 +1605,7 @@ module.exports = {
     removeLocalizationForCategory: removeLocalizationForCategory,
     getCategoryIndicators: getCategoryIndicators,
     addCategory: addCategory,
+    deleteCategory: deleteCategory,
     //Venues
     saveVenues: saveVenues,
     //Geostatic

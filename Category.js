@@ -6,17 +6,20 @@ module.exports = {
     Query: function(all){
         var query = new Parse.Query(Category);
 
-        query.ascending('pluralized').equalTo('primary', true);
+        query.ascending('displayName');
 
         if(!all){
+            query.equalTo('primary', true)
             query.equalTo('active', true);
         }
 
         return query;
     },
     parseCategory: function(category){
+        console.log('parse category', category);
         return {
             active: category.get('active'),
+            primary: category.get('primary'),
             displayName: category.get('displayName'),
             keywords: category.get('keywords'),
             hasSubcategory: category.get('hasSubcategory'),

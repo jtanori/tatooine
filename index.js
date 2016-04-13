@@ -148,7 +148,8 @@ JoundManager.route('/categories/indicators').get(Manager.getCategoryIndicators);
 JoundManager
     .route('/categories/:id')
     .get(Manager.getCategoryById)
-    .patch(Manager.updateCategory);
+    .patch(Manager.updateCategory)
+    .delete(Manager.deleteCategory);
 JoundManager
     .route('/categories/:id/i18n')
     .get(Manager.getLocalizationsForCategory)
